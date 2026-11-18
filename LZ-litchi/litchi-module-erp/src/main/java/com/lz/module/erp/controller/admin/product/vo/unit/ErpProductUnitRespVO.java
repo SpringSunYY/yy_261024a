@@ -1,0 +1,39 @@
+package com.lz.module.erp.controller.admin.product.vo.unit;
+
+import com.lz.framework.excel.core.annotations.ExcelColumnSelect;
+import com.lz.module.system.enums.DictTypeConstants;
+import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
+import com.alibaba.excel.annotation.ExcelProperty;
+import com.lz.framework.excel.core.annotations.ExcelI18n;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Data;
+
+import java.time.LocalDateTime;
+
+@Schema(description = "管理后台 - ERP 产品单位 Response VO")
+@Data
+@ExcelIgnoreUnannotated
+public class ErpProductUnitRespVO {
+
+    @Schema(description = "单位编号", requiredMode = Schema.RequiredMode.REQUIRED, example = "31254")
+    @ExcelProperty("单位编号")
+    @ExcelI18n(i18nKey = "erp.productUnit.field.id")
+    private Long id;
+
+    @Schema(description = "单位名字", requiredMode = Schema.RequiredMode.REQUIRED, example = "YY")
+    @ExcelProperty("单位名字")
+    @ExcelI18n(i18nKey = "erp.productUnit.field.name")
+    private String name;
+
+    @Schema(description = "单位状态", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
+    @ExcelProperty("单位状态")
+    @ExcelColumnSelect(dictType = DictTypeConstants.COMMON_STATUS, i18n = true)
+    @ExcelI18n(i18nKey = "erp.productUnit.field.status")
+    private Integer status;
+
+    @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
+    @ExcelProperty("创建时间")
+    @ExcelI18n(i18nKey = "erp.productUnit.field.createTime")
+    private LocalDateTime createTime;
+
+}

@@ -1,0 +1,57 @@
+<script lang="ts" setup>
+import { ref } from 'vue';
+
+import { useVbenModal } from '@vben/common-ui';
+
+import FormCreate from '@form-create/ant-design-vue';
+
+import { getFormDetail } from '#/api/bpm/form';
+import { useFormCreateLocale } from '#/components/form-create';
+import { $t } from '#/locales';
+import { setConfAndFields2 } from '#/utils';
+
+/** 详情 */
+const formConfig = ref<any>({});
+const formCreateLocale = useFormCreateLocale(formConfig);
+
+const [Modal, modalApi] = useVbenModal({
+  footer: false,
+  async onOpenChange(isOpen: boolean) {
+    if (!isOpen) {
+      return;
+    }
+    // 加载数据
+    const data = modalApi.getData();
+    if (!data || !data.id) {
+      return;
+    }
+    modalApi.lock();
+    try {
+      formConfig.value = await getFormDetail(data.id as number);
+      setConfAndFields2(
+        formConfig.value,
+        formConfig.value.conf,
+        formConfig.value.fields,
+      );
+    } finally {
+      modalApi.unlock();
+    }
+  },
+});
+</script>
+
+<template>
+  <Modal
+    class="w-[40%]"
+    :title="$t('bpm.form.message.detail')"
+    :body-style="{
+      maxHeight: '100px',
+    }"
+  >
+    <FormCreate
+      :locale="formCreateLocale"
+      :option="formConfig.option"
+      :rule="formConfig.rule"
+    />
+  </Modal>
+</template>

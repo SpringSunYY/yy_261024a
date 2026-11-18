@@ -1,0 +1,755 @@
+{
+  "common": {
+    "ownerUser": "Owner",
+    "date": "Date"
+  },
+  "followup": {
+    "field": {
+      "createTime": "create time",
+      "creatorName": "follow-up by",
+      "type": "follow-up type",
+      "content": "follow-up content",
+      "nextTime": "next contact time",
+      "contacts": "associated contacts",
+      "businesses": "associated businesses",
+      "contactLastContent": "last follow-up record",
+      "contactLastTime": "last follow-up time",
+      "ownerUserName": "owner",
+      "creator": "creator",
+      "updateTime": "update time",
+      "picUrls": "images",
+      "fileUrls": "attachments",
+      "contactIds": "associated contacts",
+      "businessIds": "associated businesses"
+    },
+    "action": {
+      "create": "create follow-up",
+      "write": "write follow-up"
+    }
+  },
+  "customer": {
+    "customer": "customer",
+    "list": "customer list",
+    "detail": "customer detail",
+    "detail.menu": "customer detail",
+    "field": {
+      "name": "customer name",
+      "source": "customer source",
+      "mobile": "mobile",
+      "telephone": "phone",
+      "email": "email",
+      "wechat": "wechat",
+      "qq": "qq",
+      "industryId": "customer industry",
+      "level": "customer level",
+      "areaCode": "area",
+      "areaName": "area",
+      "detailAddress": "detail address",
+      "ownerUserId": "owner",
+      "ownerUserName": "owner",
+      "ownerUserDeptName": "department",
+      "contactNextTime": "next contact time",
+      "contactLastTime": "last contact time",
+      "dealStatus": "deal status",
+      "remark": "remark",
+      "createTime": "create time",
+      "updateTime": "update time"
+    },
+    "action": {
+      "updateDealStatus": "change deal status",
+      "import": "import customer",
+      "transfer": "transfer",
+      "receive": "receive",
+      "distribute": "distribute",
+      "lock": "lock",
+      "unlock": "unlock",
+      "putPool": "put into pool"
+    },
+    "tab": {
+      "detail": "details",
+      "followUp": "follow-up records",
+      "contact": "contacts",
+      "teamMember": "team members",
+      "business": "business",
+      "contract": "contracts",
+      "receivable": "receivables",
+      "operateLog": "operation logs"
+    },
+    "description": {
+      "baseInfo": "basic info",
+      "systemInfo": "system info"
+    },
+    "message": {
+      "updateDealStatusConfirm": "are you sure you want to update deal status to 【{0}】?",
+      "updateDealStatusSuccess": "deal status updated successfully",
+      "updateDealStatusFailed": "failed to update deal status",
+      "dealYes": "dealed",
+      "dealNo": "not dealed",
+      "importHelp": "only xls, xlsx format files are allowed",
+      "importTemplate": "customer import template.xls",
+      "updateSupport": "whether to overwrite",
+      "updateSupportHelp": "whether to update existing user data",
+      "selectExcel": "select excel file",
+      "downloadTemplate": "download import template"
+    },
+    "tabPane": {
+      "myResponsible": "my responsible",
+      "myParticipant": "my participant",
+      "subordinateResponsible": "subordinate's responsible"
+    }
+  },
+  "backlog": {
+    "menu": {
+      "customerTodayContact": "customers to contact today",
+      "clueFollow": "clues assigned to me",
+      "customerFollow": "customers assigned to me",
+      "customerPutPoolRemind": "customers pending into pool",
+      "contractAudit": "contracts pending approval",
+      "receivableAudit": "receivables pending approval",
+      "receivablePlanRemind": "receivable reminders",
+      "contractRemind": "contracts expiring soon"
+    },
+    "field": {
+      "status": "status",
+      "attribution": "attribution",
+      "contractStatus": "contract status",
+      "expiryStatus": "expiry status"
+    },
+    "action": {
+      "viewDetail": "view detail",
+      "viewApproval": "view approval",
+      "createReceivable": "create receivable"
+    },
+    "option": {
+      "followUpPending": "pending follow-up",
+      "followUpDone": "followed up",
+      "myResponsible": "my responsible",
+      "myParticipant": "my participant",
+      "subordinateResponsible": "subordinate's responsible",
+      "todayToContact": "to contact today",
+      "overdue": "overdue",
+      "contacted": "contacted",
+      "pendingApproval": "pending approval",
+      "approvalPassed": "approved",
+      "approvalRejected": "rejected",
+      "pendingReceivable": "pending receivable",
+      "received": "received",
+      "expiringSoon": "expiring soon",
+      "expired": "expired"
+    }
+  },
+  "clue": {
+    "clue": "clue",
+    "list": "clue list",
+    "detail": "clue detail",
+    "detail.menu": "clue detail",
+    "field": {
+      "name": "clue name",
+      "source": "clue source",
+      "customerSource": "customer source",
+      "mobile": "mobile",
+      "telephone": "phone",
+      "email": "email",
+      "wechat": "wechat",
+      "qq": "qq",
+      "industryId": "customer industry",
+      "level": "customer level",
+      "areaCode": "area",
+      "areaName": "area",
+      "detailAddress": "detail address",
+      "ownerUserId": "owner",
+      "ownerUserName": "owner",
+      "ownerUserDeptName": "department",
+      "contactNextTime": "next contact time",
+      "contactLastTime": "last contact time",
+      "transformStatus": "transform status",
+      "remark": "remark",
+      "createTime": "create time",
+      "updateTime": "update time",
+      "creatorName": "creator"
+    },
+    "action": {
+      "transfer": "transfer",
+      "transform": "transform to customer"
+    },
+    "tab": {
+      "detail": "details",
+      "followUp": "follow-up records",
+      "teamMember": "team members",
+      "operateLog": "operation logs"
+    },
+    "description": {
+      "baseInfo": "basic info",
+      "systemInfo": "system info"
+    },
+    "message": {
+      "transformConfirm": "are you sure you want to transform this clue into a customer?",
+      "transformSuccess": "clue transformed successfully",
+      "transformFailed": "transformation failed"
+    },
+    "option": {
+      "transformNo": "not transformed",
+      "transformYes": "transformed"
+    }
+  },
+  "contact": {
+    "contact": "contact",
+    "list": "contact list",
+    "detail": "contact detail",
+    "detail.menu": "contact detail",
+    "field": {
+      "name": "contact name",
+      "customerName": "customer name",
+      "ownerUserId": "owner",
+      "ownerUserName": "owner",
+      "ownerUserDeptName": "department",
+      "mobile": "mobile",
+      "telephone": "phone",
+      "email": "email",
+      "wechat": "wechat",
+      "qq": "qq",
+      "post": "position",
+      "sex": "gender",
+      "master": "key decision maker",
+      "parentId": "direct superior",
+      "parentName": "direct superior",
+      "areaCode": "area",
+      "areaName": "area",
+      "detailAddress": "detail address",
+      "contactNextTime": "next contact time",
+      "remark": "remark",
+      "createTime": "create time",
+      "updateTime": "update time"
+    },
+    "action": {
+      "transfer": "transfer"
+    },
+    "tab": {
+      "detail": "details",
+      "followUp": "follow-up records",
+      "teamMember": "team members",
+      "business": "business",
+      "operateLog": "operation logs"
+    },
+    "description": {
+      "baseInfo": "basic info",
+      "systemInfo": "system info"
+    },
+    "message": {
+      "selectFirst": "please select a contact first",
+      "disassociateConfirm": "are you sure you want to disassociate {0}?",
+      "associateTitle": "associate contact"
+    },
+    "option": {
+      "myResponsible": "my responsible",
+      "myParticipant": "my participant",
+      "subordinateResponsible": "subordinate's responsible"
+    }
+  },
+  "business": {
+    "business": "business",
+    "list": "business list",
+    "detail": "business detail",
+    "detail.menu": "business detail",
+    "field": {
+      "name": "business name",
+      "ownerUser": "owner",
+      "customerName": "customer name",
+      "contact": "contact",
+      "statusType": "business status type",
+      "dealTime": "expected deal date",
+      "product": "product list",
+      "totalProductPrice": "product total amount",
+      "discountPercent": "discount (%)",
+      "totalPrice": "discounted amount",
+      "remark": "remark",
+      "contactNextTime": "next contact time",
+      "ownerUserDeptName": "department",
+      "contactLastTime": "last contact time",
+      "statusTypeName": "status type",
+      "statusName": "stage",
+      "status": "business status",
+      "stage": "stage",
+      "winRate": "win rate: {0}%",
+      "createTime": "create time",
+      "updateTime": "update time",
+      "creatorName": "creator name"
+    },
+    "action": {
+      "changeStatus": "change status",
+      "transfer": "transfer"
+    },
+    "tab": {
+      "detail": "details",
+      "followUp": "follow-up records",
+      "contact": "contacts",
+      "product": "products",
+      "contract": "contracts",
+      "teamMember": "team members",
+      "operateLog": "operation logs"
+    },
+    "description": {
+      "baseInfo": "basic info",
+      "systemInfo": "system info"
+    },
+    "message": {
+      "selectFirst": "please select a business first",
+      "disassociateConfirm": "are you sure you want to disassociate {0}?",
+      "associate": "associate",
+      "disassociate": "disassociate",
+      "associateTitle": "associate business",
+      "changeStatusTitle": "change business status"
+    }
+  },
+  "businessStatus": {
+    "businessStatus": "business status type",
+    "list": "business status list",
+    "field": {
+      "name": "status name",
+      "dept": "department",
+      "selectDept": "please select department",
+      "allCompany": "all company",
+      "createTime": "create time",
+      "creator": "creator",
+      "stage": "stage",
+      "stageName": "stage name",
+      "winRate": "win rate",
+      "operation": "operation",
+      "end": "end",
+      "placeholderName": "please enter status name",
+      "placeholderWinRate": "please enter win rate",
+      "stagePhase": "stage {0}"
+    }
+  },
+  "contract": {
+    "contract": "contract",
+    "list": "contract list",
+    "detail": "contract detail",
+    "detail.menu": "contract detail",
+    "field": {
+      "no": "contract no",
+      "name": "contract name",
+      "customerName": "customer name",
+      "businessName": "business name",
+      "ownerUserId": "owner",
+      "ownerUserName": "owner",
+      "ownerUserDeptName": "department",
+      "customerId": "customer name",
+      "businessId": "business name",
+      "orderDate": "order date",
+      "startTime": "start date",
+      "endTime": "end date",
+      "signUserId": "company signer",
+      "signContactId": "customer signer",
+      "product": "product list",
+      "totalProductPrice": "product total amount",
+      "discountPercent": "discount (%)",
+      "totalPrice": "discounted amount",
+      "totalReceivablePrice": "received amount",
+      "unpaidPrice": "unpaid amount",
+      "signContactName": "customer signer",
+      "signUserName": "company signer",
+      "remark": "remark",
+      "auditStatus": "contract status",
+      "contactLastTime": "last contact time",
+      "createTime": "create time",
+      "updateTime": "update time",
+      "creatorName": "creator"
+    },
+    "action": {
+      "transfer": "transfer",
+      "submit": "submit for approval"
+    },
+    "tab": {
+      "detail": "details",
+      "followUp": "follow-up records",
+      "product": "products",
+      "receivable": "receivables",
+      "teamMember": "team members",
+      "operateLog": "operation logs"
+    },
+    "description": {
+      "baseInfo": "basic info",
+      "systemInfo": "system info"
+    },
+    "option": {
+      "myResponsible": "my responsible",
+      "myParticipant": "my participant",
+      "subordinateResponsible": "subordinate's responsible"
+    },
+    "config": {
+      "title": "contract settings",
+      "notifyEnabled": "advance reminder settings",
+      "notifyDays": "advance days",
+      "remind": "remind",
+      "notRemind": "do not remind",
+      "daysTip": "days reminder"
+    }
+  },
+  "customerPool": {
+    "customerPool": "customer pool",
+    "list": "customer pool list",
+    "field": {
+      "name": "customer name",
+      "source": "customer source",
+      "mobile": "mobile",
+      "telephone": "phone",
+      "email": "email",
+      "level": "customer level",
+      "industryId": "customer industry",
+      "contactNextTime": "next contact time",
+      "contactLastTime": "last contact time",
+      "contactLastContent": "last follow-up record",
+      "remark": "remark",
+      "dealStatus": "deal status",
+      "createTime": "create time",
+      "updateTime": "update time",
+      "creatorName": "creator"
+    }
+  },
+  "customerPoolConfig": {
+    "field": {
+      "poolConfig": "pool rules settings",
+      "contactExpireDays": "contact expire days",
+      "dealExpireDays": "deal expire days",
+      "notifyEnabled": "advance reminder settings",
+      "notifyDays": "advance reminder days",
+      "daysTip": "days reminder",
+      "poolConfigTitle": "customer pool rules settings",
+      "enable": "enable",
+      "disable": "disable",
+      "or": "or"
+    }
+  },
+  "customerLimitConfig": {
+    "customerLimitConfig": "customer limit config",
+    "menu": "customer limit config",
+    "field": {
+      "id": "id",
+      "userIds": "applicable users",
+      "deptIds": "applicable departments",
+      "ownerCustomerCountLimit": "owner customer count limit",
+      "lockCustomerCountLimit": "lock customer count limit",
+      "dealCountOccupied": "whether deal customers occupy owner count",
+      "ownerCustomerTab": "owner customer count limit",
+      "lockCustomerTab": "lock customer count limit",
+      "yes": "yes",
+      "no": "no"
+    }
+  },
+  "permission": {
+    "teamMember": "team member",
+    "field": {
+      "nickname": "name",
+      "deptName": "department",
+      "postNames": "position",
+      "level": "permission level",
+      "createTime": "join time",
+      "newOwnerUserId": "select new owner",
+      "oldOwnerHandler": "old owner",
+      "oldOwnerPermissionLevel": "old owner permission level",
+      "toBizTypes": "transfer together",
+      "userId": "select user",
+      "bizType": "crm type",
+      "contact": "contact",
+      "business": "business",
+      "contract": "contract",
+      "addTo": "add to together",
+      "add": "add to team",
+      "remove": "remove"
+    },
+    "action": {
+      "transfer": "transfer",
+      "quit": "quit team"
+    },
+    "message": {
+      "cannotSelectOwner": "cannot select owner",
+      "selectMemberFirst": "please select team member first",
+      "onlySelectOne": "only one team member can be selected for editing",
+      "quitConfirm": "are you sure you want to remove {0} from the team?",
+      "quitSuccess": "removed successfully",
+      "ownerCannotQuit": "owner cannot quit team",
+      "notTeamMember": "you are not a team member",
+      "quitTeamSuccess": "quit team member successfully",
+      "noTransferApi": "no transfer api"
+    }
+  },
+  "product": {
+    "product": "product",
+    "list": "product list",
+    "detail": "product detail",
+    "detail.menu": "product detail",
+    "field": {
+      "id": "product id",
+      "name": "product name",
+      "no": "product no",
+      "categoryId": "product category",
+      "categoryName": "product category",
+      "unit": "unit",
+      "price": "price",
+      "priceUnit": "price (yuan)",
+      "description": "description",
+      "status": "status",
+      "ownerUserId": "owner",
+      "ownerUserName": "owner",
+      "updateTime": "update time",
+      "createTime": "create time",
+      "creatorName": "creator",
+      "baseInfo": "basic info"
+    },
+    "action": {
+      "addProduct": "add product"
+    },
+    "tab": {
+      "detail": "details",
+      "operateLog": "operation logs"
+    },
+    "productTable": {
+      "seq": "seq",
+      "productId": "product name",
+      "productNo": "barcode",
+      "productUnit": "unit",
+      "productPrice": "price (yuan)",
+      "sellingPrice": "selling price (yuan)",
+      "count": "count",
+      "totalPrice": "total",
+      "totalProductPrice": "product total amount",
+      "discountPercent": "discount",
+      "actualAmount": "actual amount"
+    }
+  },
+  "productCategory": {
+    "productCategory": "product category",
+    "menu": "product category",
+    "field": {
+      "id": "category id",
+      "name": "category name",
+      "parentIdName": "parent category",
+      "createTime": "create time"
+    },
+    "message": {
+      "topLevelCategory": "top level category"
+    }
+  },
+  "receivable": {
+    "receivable": "receivable",
+    "menu": "receivable management",
+    "detail": "receivable detail",
+    "detail.menu": "receivable detail",
+    "field": {
+      "no": "receivable no",
+      "customerId": "customer",
+      "customerName": "customer name",
+      "contractId": "contract",
+      "contract": "contract no",
+      "planId": "period",
+      "ownerUserId": "owner",
+      "ownerUserName": "owner",
+      "ownerUserDeptName": "department",
+      "returnTime": "return date",
+      "price": "amount",
+      "priceUnit": "amount (yuan)",
+      "returnType": "return type",
+      "remark": "remark",
+      "totalPrice": "contract amount",
+      "auditStatus": "status",
+      "createTime": "create time",
+      "updateTime": "update time",
+      "creatorName": "creator",
+      "baseInfo": "basic info",
+      "systemInfo": "system info"
+    },
+    "tab": {
+      "myResponsibility": "my responsibility",
+      "myParticipation": "my participation",
+      "subordinate": "subordinate",
+      "detail": "details",
+      "teamMember": "team members",
+      "operateLog": "operation logs"
+    },
+    "message": {
+      "autoGenerateNo": "auto generated on save",
+      "submitAudit": "submit for review",
+      "viewAudit": "view audit"
+    }
+  },
+  "receivablePlan": {
+    "receivablePlan": "receivable plan",
+    "menu": "receivable plan",
+    "detail": "receivable plan detail",
+    "detail.menu": "receivable plan detail",
+    "field": {
+      "customerId": "customer",
+      "customerName": "customer name",
+      "contractId": "contract",
+      "contractNo": "contract no",
+      "period": "period",
+      "price": "planned amount",
+      "priceUnit": "planned amount (yuan)",
+      "returnTime": "planned return date",
+      "remindDays": "remind days in advance",
+      "remindTime": "remind date",
+      "returnType": "return type",
+      "remark": "remark",
+      "totalPrice": "contract amount",
+      "ownerUserName": "owner",
+      "receivablePriceUnit": "actual amount (yuan)",
+      "receivableTime": "actual return date",
+      "unpaidPriceUnit": "unpaid amount (yuan)",
+      "createTime": "create time",
+      "updateTime": "update time",
+      "creatorName": "creator",
+      "baseInfo": "basic info",
+      "systemInfo": "system info"
+    },
+    "tab": {
+      "myResponsibility": "my responsibility",
+      "subordinate": "subordinate",
+      "detail": "details",
+      "teamMember": "team members",
+      "operateLog": "operation logs"
+    },
+    "message": {
+      "autoGenerateNo": "auto generated on save",
+      "periodPhase": "period {0}"
+    }
+  },
+  "statistics": {
+    "customer": {
+      "customerTotal": "customer total",
+      "followUpSummary": "follow up summary",
+      "followUpType": "follow up type",
+      "poolAnalysis": "pool analysis",
+      "dealCycleByEmployee": "deal cycle (by employee)",
+      "dealCycleByProduct": "deal cycle (by product)",
+      "customerConversion": "customer conversion",
+      "dealCycleDays": "deal cycle (days)",
+      "avgDealCycle": "avg deal cycle",
+      "days": "days",
+      "dealCycleRankByProduct": "deal cycle ranking (by product)",
+      "dealCycleTrend": "deal cycle trend",
+      "dealCycleRankByEmployee": "deal cycle ranking (by employee)",
+      "dealCycleRankByArea": "deal cycle ranking (by area)",
+      "newCustomer": "new customer",
+      "dealCustomer": "deal customer",
+      "customerTotalTrend": "customer total trend",
+      "customerTotalRankByEmployee": "customer total ranking (by employee)",
+      "dealCustomerCount": "deal customer count",
+      "dealRate": "deal rate",
+      "newCustomerCount": "new customer count",
+      "followUpCount": "follow up count",
+      "followUpCustomerCount": "follow up customer count",
+      "totalFollowUpCount": "total follow up count",
+      "avgFollowUpPerCustomer": "avg follow up per customer",
+      "followUpCountTrend": "follow up count trend",
+      "followUpCountRankByEmployee": "follow up count ranking (by employee)",
+      "followUpTypeDistribution": "follow up type distribution",
+      "putIntoPool": "put into pool",
+      "takeFromPool": "take from pool",
+      "putIntoPoolCount": "put into pool count",
+      "takeFromPoolCount": "take from pool count",
+      "netGrowthCustomerCount": "net growth customer count",
+      "poolCustomerTrend": "pool customer trend",
+      "poolCustomerRankByEmployee": "pool customer ranking (by employee)",
+      "receivableRate": "receivable rate",
+      "dealCycleByArea": "deal cycle (by area)"
+    },
+    "funnel": {
+      "title": "sales funnel",
+      "businessAnalysis": "business analysis",
+      "businessInversionRateAnalysis": "business conversion rate analysis",
+      "endStatus": "business status",
+      "businessName": "business name",
+      "totalProductPrice": "total product price",
+      "discountPercent": "discount rate",
+      "creator": "creator",
+      "winRate": "win rate",
+      "totalBusinessCount": "total business count",
+      "winBusinessCount": "win business count",
+      "newBusinessCount": "new business count",
+      "newBusinessAmount": "new business amount",
+      "customerView": "customer view",
+      "dynamicView": "dynamic view",
+      "orderDate": "order date"
+    },
+    "performance": {
+      "contractCountAnalysis": "contract count statistics",
+      "contractPriceAnalysis": "contract amount statistics",
+      "receivablePriceAnalysis": "receivable amount statistics",
+      "currentMonthCount": "current month count",
+      "lastMonthCount": "last month count",
+      "lastYearCount": "same period last year count",
+      "currentMonthAmount": "current month amount",
+      "lastMonthAmount": "last month amount",
+      "lastYearAmount": "same period last year amount",
+      "currentMonthReceivable": "current month receivable",
+      "lastMonthReceivable": "last month receivable",
+      "lastYearReceivable": "same period last year receivable",
+      "monthChainRate": "month over month",
+      "yearChainRate": "year over year",
+      "contractCount": "contract count",
+      "contractAmount": "contract amount",
+      "receivableAmount": "receivable amount"
+    },
+    "portrait": {
+      "areaAnalysis": "area distribution",
+      "levelAnalysis": "level distribution",
+      "sourceAnalysis": "source distribution",
+      "industryAnalysis": "industry distribution",
+      "areaName": "area",
+      "customerArea": "customer area distribution",
+      "customerCount": "customer count",
+      "areaPortion": "customer proportion",
+      "dealCount": "deal count",
+      "dealPortion": "deal proportion",
+      "level": "level",
+      "levelPortion": "level proportion",
+      "source": "source",
+      "sourcePortion": "source proportion",
+      "industry": "industry",
+      "industryPortion": "industry proportion",
+      "totalPrice": "total contract amount",
+      "receivablePrice": "received amount",
+      "receivableNotPrice": "unreceived amount",
+      "allCustomer": "all customers",
+      "dealCustomer": "deal customers"
+    },
+    "rank": {
+      "contractPriceAnalysis": "contract amount ranking",
+      "receivablePriceAnalysis": "receivable amount ranking",
+      "contractCountAnalysis": "contract count ranking",
+      "productSalesAnalysis": "product sales ranking",
+      "customerCountAnalysis": "new customer count ranking",
+      "contactCountAnalysis": "new contact count ranking",
+      "followCountAnalysis": "follow up count ranking",
+      "followCustomerCountAnalysis": "follow up customer count ranking",
+      "count": "count",
+      "contractPrice": "contract amount",
+      "contactsCount": "new contact count",
+      "productSales": "product sales",
+      "followCustomerCount": "follow up customer count",
+      "followCount": "follow up count",
+      "customerCount": "customer count",
+      "receivablePrice": "receivable amount",
+      "contractCount": "contract count"
+    },
+    "common": {
+      "noDeptAndTime": "please select department and time range",
+      "interval": "time type",
+      "intervalDay": "by day",
+      "intervalWeek": "by week",
+      "intervalMonth": "by month",
+      "intervalQuarter": "by quarter",
+      "intervalYear": "by year",
+      "department": "department",
+      "employee": "employee",
+      "customerCount": "customer count",
+      "businessCount": "business count",
+      "businessAmount": "business amount",
+      "businessStage": "business stage",
+      "customerName": "customer name",
+      "productName": "product name",
+      "businessWinCount": "win business count"
+    }
+  }
+}

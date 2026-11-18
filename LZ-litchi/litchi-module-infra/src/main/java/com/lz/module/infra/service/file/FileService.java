@@ -1,0 +1,153 @@
+package com.lz.module.infra.service.file;
+
+import com.lz.framework.common.pojo.PageResult;
+import com.lz.module.infra.controller.admin.file.vo.file.*;
+import com.lz.module.infra.dal.dataobject.file.FileDO;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * 文件 Service 接口
+ *
+ * @author 荔枝源码
+ */
+public interface FileService {
+
+    /**
+     * 获得文件分页
+     *
+     * @param pageReqVO 分页查询
+     * @return 文件分页
+     */
+    PageResult<FileRespVO> getFilePage(FilePageReqVO pageReqVO);
+
+    /**
+     * 保存文件，并返回文件的访问路径（根据配置返回相对路径或绝对路径）
+     *
+     * @param content    文件内容
+     * @param name       文件名称，允许空
+     * @param directory  目录，允许空
+     * @param type       文件的 MIME 类型，允许空
+     * @param moduleType 模块类型，允许空
+     * @return 文件访问路径（相对路径或绝对路径）
+     */
+    FileUploadRespVO createFile(@NotEmpty(message = "文件内容不能为空") byte[] content,
+                                String name, String directory, String type, String moduleType);
+
+    /**
+     * 生成文件预签名地址信息
+     *
+     * @param name      文件名
+     * @param directory 目录
+     * @return 预签名地址信息
+     */
+    FilePresignedUrlRespVO getFilePresignedUrl(@NotEmpty(message = "文件名不能为空") String name,
+                                               String directory);
+
+    /**
+     * 创建文件（用于前端上传模式）
+     * 根据配置返回相对路径或绝对路径
+     *
+     * @param createReqVO 创建信息（包含已上传文件的相对路径和绝对路径）
+     * @return 文件访问路径（相对路径或绝对路径）
+     */
+    String createFile(FileCreateReqVO createReqVO);
+
+    /**
+     * 删除文件
+     *
+     * @param id 编号
+     */
+    void deleteFile(Long id) throws Exception;
+
+    /**
+     * 批量删除文件
+     *
+     * @param ids 编号列表
+     */
+    void deleteFileList(List<Long> ids) throws Exception;
+
+    /**
+     * 获得文件内容
+     *
+     * @param configKey 配置key
+     * @param path      文件路径
+     * @return 文件内容
+     */
+    byte[] getFileContent(String configKey, String path) throws Exception;
+
+    byte[] getFileContent(String path);
+
+    /**
+     * 根据 path 获得 FileConfigDO
+     *
+     * @param path 路径
+     * @return FileConfigDO
+     */
+    public String getFileConfigByPath(String path);
+
+    /**
+     * 构建文件访问的完整URL（用于重定向）
+     *
+     * @param configKey 配置key
+     * @param path      文件路径
+     * @param domain    域名（可选，为空时使用配置的域名）
+     * @return 完整的文件访问URL
+     */
+    String buildFileAccessUrl(String configKey, String path, String domain);
+
+    /**
+     * 构建文件访问的完整URL（根据配置自动获取域名）
+     *
+     * @param configKey 配置key
+     * @param path      文件路径
+     * @return 完整的文件访问URL
+     */
+    String buildFileAccessUrl(String configKey, String path);
+
+    /**
+     * 构建文件访问的完整URL（根据请求构建域名）
+     *
+     * @param configKey  配置key
+     * @param path       文件路径
+     * @param scheme     请求协议
+     * @param serverName 服务器名称
+     * @param serverPort 服务器端口
+     * @return 完整的文件访问URL
+     */
+    String buildFileAccessUrl(String configKey, String path, String scheme, String serverName, int serverPort);
+
+    /**
+     * 获得文件总数
+     *
+     * @param pageVO 分页查询
+     * @return 文件数量
+     */
+    FileCountRespVO getFileCount(@Valid FilePageReqVO pageVO);
+
+    FileDO getFileByFileName(String originalFilename);
+
+    /**
+     * 一次性查询若干 fileName 在 infra_file 中已存在的子集（避免逐个 SELECT）。
+     *
+     * <p>用于以图搜图批量入口（多文件上传 / URL 批量 / 本地目录导入），先把"待入库文件
+     * 名集合"传给本方法，回 Set 后内存里就能区分需要新建 vs 跳过。
+     *
+     * <p>超过 {@link #BATCH_IN_LIMIT} 会分批 SELECT，避免单条 SQL 的 IN 列表过大。
+     *
+     * @param fileNames 待查询的文件名集合（{@code null} / 空集合返回空集）
+     * @return 已经存在的文件名（小写敏感 — 与 DB 列 {@code infra_file.name} 一致）
+     */
+    Set<String> getExistingFileNames(Collection<String> fileNames);
+
+    /**
+     * 获得文件列表
+     *
+     * @param fileIds 文件编号列表
+     */
+    List<FileDO> getFileSimpList(List<Long> fileIds);
+}

@@ -1,0 +1,205 @@
+<script lang="ts" setup>
+import type { EchartsUIType } from '@vben/plugins/echarts';
+
+import type { CrmStatisticsCustomerApi } from '#/api/crm/statistics/customer';
+
+import { nextTick, reactive, ref } from 'vue';
+
+import { EchartsUI, useEcharts } from '@vben/plugins/echarts';
+
+import { Card, Col, Row, Statistic } from 'ant-design-vue';
+
+import { useVbenVxeGrid } from '#/adapter/vxe-table';
+import {
+  getCustomerSummaryByDate,
+  getCustomerSummaryByUser,
+} from '#/api/crm/statistics/customer';
+import { $t } from '#/locales';
+
+import { customerSummaryColumns } from '../data';
+
+defineOptions({ name: 'CustomerSummary' });
+
+const props = defineProps<{
+  queryParams: {
+    deptId?: number;
+    interval: number;
+    times: string[];
+    userId?: number;
+  };
+}>();
+
+const loading = ref(false);
+const totalStats = reactive({
+  customerCreateCount: 0,
+  customerDealCount: 0,
+  dealRate: '0.00',
+});
+const chartData = ref<CrmStatisticsCustomerApi.CustomerSummaryByDate[]>([]);
+const tableData = ref<CrmStatisticsCustomerApi.CustomerSummaryByUser[]>([]);
+
+const chartRef = ref<EchartsUIType>();
+const { renderEcharts } = useEcharts(chartRef);
+
+const [Grid, gridApi] = useVbenVxeGrid({
+  gridOptions: {
+    columns: customerSummaryColumns,
+    height: 300,
+    data: [],
+  },
+});
+
+function renderChart() {
+  const times = chartData.value.map((i) => i.time);
+  const createCounts = chartData.value.map((i) => i.customerCreateCount);
+  const dealCounts = chartData.value.map((i) => i.customerDealCount);
+
+  renderEcharts({
+    tooltip: { trigger: 'axis' },
+    legend: {
+      data: [
+        $t('crm.statistics.customer.newCustomer'),
+        $t('crm.statistics.customer.dealCustomer'),
+      ],
+      bottom: 0,
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '15%',
+      top: '8%',
+      containLabel: true,
+    },
+    xAxis: {
+      type: 'category',
+      data: times,
+    },
+    yAxis: {
+      type: 'value',
+    },
+    series: [
+      {
+        name: $t('crm.statistics.customer.newCustomer'),
+        type: 'bar',
+        barMaxWidth: 40,
+        itemStyle: { color: '#5ab1ef', borderRadius: [4, 4, 0, 0] },
+        data: createCounts,
+      },
+      {
+        name: $t('crm.statistics.customer.dealCustomer'),
+        type: 'bar',
+        barMaxWidth: 40,
+        itemStyle: { color: '#2fc25b', borderRadius: [4, 4, 0, 0] },
+        data: dealCounts,
+      },
+    ],
+  });
+}
+
+async function loadData() {
+  if (!props.queryParams.deptId) return;
+  loading.value = true;
+  try {
+    const params = {
+      interval: props.queryParams.interval,
+      deptId: props.queryParams.deptId,
+      userId: props.queryParams.userId,
+      times: props.queryParams.times,
+    };
+
+    const [dateRes, userRes] = await Promise.all([
+      getCustomerSummaryByDate(params),
+      getCustomerSummaryByUser(params),
+    ]);
+
+    totalStats.customerCreateCount = userRes.reduce(
+      (sum, item) => sum + item.customerCreateCount,
+      0,
+    );
+    totalStats.customerDealCount = userRes.reduce(
+      (sum, item) => sum + item.customerDealCount,
+      0,
+    );
+    totalStats.dealRate =
+      totalStats.customerCreateCount > 0
+        ? (
+            (totalStats.customerDealCount / totalStats.customerCreateCount) *
+            100
+          ).toFixed(2)
+        : '0.00';
+
+    const tableRows = userRes.map((item) => ({
+      ...item,
+      dealRate:
+        item.customerCreateCount > 0
+          ? ((item.customerDealCount / item.customerCreateCount) * 100).toFixed(
+              2,
+            )
+          : '0.00',
+      receivableRate:
+        item.contractPrice > 0
+          ? ((item.receivablePrice / item.contractPrice) * 100).toFixed(2)
+          : '0.00',
+      receivableNotPrice: item.contractPrice - item.receivablePrice,
+    }));
+
+    chartData.value = dateRes;
+    tableData.value = userRes;
+    gridApi.grid?.loadData(tableRows);
+
+    await nextTick();
+    renderChart();
+  } finally {
+    loading.value = false;
+  }
+}
+
+defineExpose({ loadData });
+</script>
+
+<template>
+  <div v-loading="loading">
+    <Row :gutter="16" class="mb-4">
+      <Col :span="6">
+        <Card :bordered="false">
+          <Statistic
+            :title="$t('crm.statistics.customer.newCustomerCount')"
+            :value="totalStats.customerCreateCount"
+          />
+        </Card>
+      </Col>
+      <Col :span="6">
+        <Card :bordered="false">
+          <Statistic
+            :title="$t('crm.statistics.customer.dealCustomerCount')"
+            :value="totalStats.customerDealCount"
+          />
+        </Card>
+      </Col>
+      <Col :span="12">
+        <Card :bordered="false">
+          <Statistic
+            :title="$t('crm.statistics.customer.dealRate')"
+            :value="totalStats.dealRate"
+            suffix="%"
+          />
+        </Card>
+      </Col>
+    </Row>
+
+    <Card
+      :title="$t('crm.statistics.customer.customerTotalTrend')"
+      :bordered="false"
+      class="mb-4"
+    >
+      <EchartsUI ref="chartRef" style="height: 300px" />
+    </Card>
+
+    <Card
+      :title="$t('crm.statistics.customer.customerTotalRankByEmployee')"
+      :bordered="false"
+    >
+      <Grid />
+    </Card>
+  </div>
+</template>
