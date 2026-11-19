@@ -63,4 +63,9 @@ public class DeptDO extends TenantBaseDO {
      */
     private Integer status;
 
+    /**
+     * 祖级列表
+     */
+    private String ancestors;
+
 }

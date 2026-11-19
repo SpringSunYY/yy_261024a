@@ -15,8 +15,17 @@ public class CrmCustomerLimitConfigRespVO {
     @Schema(description = "编号", requiredMode = Schema.RequiredMode.REQUIRED, example = "27930")
     private Long id;
 
+    @Schema(description = "配置名称", requiredMode = Schema.RequiredMode.REQUIRED, example = "规则1")
+    private String name;
+
     @Schema(description = "规则类型", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
     private Integer type;
+
+    /**
+     * 适用类型
+     */
+    @Schema(description = "适用类型", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
+    private Integer applicableType;
 
     @Schema(description = "规则适用人群")
     private List<Long> userIds;
@@ -35,6 +44,12 @@ public class CrmCustomerLimitConfigRespVO {
 
     @Schema(description = "规则适用部门名称")
     private List<DeptRespDTO> depts;
+
+    /**
+     * 状态
+     */
+    @Schema(description = "状态", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
+    private Integer status;
 
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
     private LocalDateTime createTime;

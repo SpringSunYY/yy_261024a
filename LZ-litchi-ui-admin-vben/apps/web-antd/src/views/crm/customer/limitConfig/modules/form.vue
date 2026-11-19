@@ -55,6 +55,7 @@ const [Modal, modalApi] = useVbenModal({
     const data =
       (await formApi.getValues()) as CrmCustomerLimitConfigApi.CustomerLimitConfig;
     try {
+      data.type = confType.value;
       await (formData.value?.id
         ? updateCustomerLimitConfig(data)
         : createCustomerLimitConfig(data));

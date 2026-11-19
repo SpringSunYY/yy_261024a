@@ -12,7 +12,22 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class CrmCustomerLimitConfigPageReqVO extends PageParam {
 
+    @Schema(description = "配置名称", example = "规则1")
+    private String name;
+
     @Schema(description = "规则类型", example = "1")
     private Integer type;
+
+    /**
+     * 适用类型
+     */
+    @Schema(description = "适用类型", example = "1")
+    private Integer applicableType;
+
+    /**
+     * 状态
+     */
+    @Schema(description = "状态", example = "2")
+    private Integer status;
 
 }

@@ -48,6 +48,10 @@ export function useFormSchema(): VbenFormSchema[] {
           value: 'id',
         },
       },
+      dependencies: {
+        triggerFields: ['id'],
+        disabled: ({ id }) => id !== null && id !== undefined,
+      },
       rules: 'required',
     },
     {

@@ -7,21 +7,22 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import com.lz.framework.common.exception.ServiceException;
 import com.lz.framework.common.pojo.PageResult;
-import com.lz.framework.common.util.collection.CollectionUtils;
 import com.lz.framework.common.util.object.BeanUtils;
+import com.lz.framework.common.util.object.ObjectUtils;
 import com.lz.module.crm.controller.admin.business.vo.business.CrmBusinessTransferReqVO;
 import com.lz.module.crm.controller.admin.contact.vo.CrmContactTransferReqVO;
 import com.lz.module.crm.controller.admin.contract.vo.contract.CrmContractTransferReqVO;
 import com.lz.module.crm.controller.admin.customer.vo.customer.*;
+import com.lz.module.crm.controller.admin.customer.vo.limitconfig.CrmCustomerLimitConfigSimpVO;
 import com.lz.module.crm.dal.dataobject.business.CrmBusinessDO;
 import com.lz.module.crm.dal.dataobject.contact.CrmContactDO;
 import com.lz.module.crm.dal.dataobject.contract.CrmContractDO;
 import com.lz.module.crm.dal.dataobject.customer.CrmCustomerDO;
-import com.lz.module.crm.dal.dataobject.customer.CrmCustomerLimitConfigDO;
 import com.lz.module.crm.dal.dataobject.customer.CrmCustomerPoolConfigDO;
 import com.lz.module.crm.dal.mysql.customer.CrmCustomerMapper;
 import com.lz.module.crm.enums.common.CrmBizTypeEnum;
 import com.lz.module.crm.enums.common.CrmSceneTypeEnum;
+import com.lz.module.crm.enums.customer.CrmCustomerLimitConfigApplicableTypeEnum;
 import com.lz.module.crm.enums.permission.CrmPermissionLevelEnum;
 import com.lz.module.crm.framework.permission.core.annotations.CrmPermission;
 import com.lz.module.crm.service.business.CrmBusinessService;
@@ -128,7 +129,6 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
     @CrmPermission(bizType = CrmBizTypeEnum.CRM_CUSTOMER, bizId = "#updateReqVO.id", level = CrmPermissionLevelEnum.WRITE)
     public void updateCustomer(CrmCustomerSaveReqVO updateReqVO) {
         Assert.notNull(updateReqVO.getId(), "客户编号不能为空");
-        updateReqVO.setOwnerUserId(null);  // 更新的时候，要把 updateReqVO 负责人设置为空，避免修改
         // 1. 校验存在
         CrmCustomerDO oldCustomer = validateCustomerExists(updateReqVO.getId());
 
@@ -610,19 +610,23 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
      * @param newCount 附加数量
      */
     private void validateCustomerExceedOwnerLimit(Long userId, int newCount) {
-        List<CrmCustomerLimitConfigDO> limitConfigs = customerLimitConfigService.getCustomerLimitConfigListByUserId(
+        CrmCustomerLimitConfigSimpVO simpVO = customerLimitConfigService.getCustomerLimitConfigListByUserId(
                 CUSTOMER_OWNER_LIMIT.getType(), userId);
-        if (CollUtil.isEmpty(limitConfigs)) {
+        if (ObjectUtils.isNull(simpVO)) {
             return;
         }
         Long ownerCount = customerMapper.selectCountByDealStatusAndOwnerUserId(null, userId);
         Long dealOwnerCount = customerMapper.selectCountByDealStatusAndOwnerUserId(true, userId);
-        limitConfigs.forEach(limitConfig -> {
-            long nowCount = limitConfig.getDealCountEnabled() ? ownerCount : ownerCount - dealOwnerCount;
-            if (nowCount + newCount > limitConfig.getMaxCount()) {
-                throw exception(CUSTOMER_OWNER_EXCEED_LIMIT);
+        long nowCount = simpVO.getDealCountEnabled() != null && simpVO.getDealCountEnabled() ? ownerCount : ownerCount - dealOwnerCount;
+        if (nowCount + newCount > simpVO.getMaxCount()) {
+            //判断是部门还是用户
+            if (Objects.equals(simpVO.getApplicableType(),
+                    CrmCustomerLimitConfigApplicableTypeEnum.CUSTOMER_LIMIT_CONFIG_APPLICABLE_TYPE_2.getValue())) {
+                throw exception(CUSTOMER_OWNER_EXCEED_LIMIT_USER, simpVO.getUserName(), simpVO.getUserName(),simpVO.getMaxCount(), simpVO.getName(),simpVO.getName(),simpVO.getId());
+            } else {
+                throw exception(CUSTOMER_OWNER_EXCEED_LIMIT_DEPT, simpVO.getUserName(), simpVO.getDeptName(), simpVO.getMaxCount(), simpVO.getName(),simpVO.getId());
             }
-        });
+        }
     }
 
     /**
@@ -631,16 +635,22 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
      * @param userId 用户编号
      */
     private void validateCustomerExceedLockLimit(Long userId) {
-        List<CrmCustomerLimitConfigDO> limitConfigs = customerLimitConfigService.getCustomerLimitConfigListByUserId(
+        CrmCustomerLimitConfigSimpVO simpVO = customerLimitConfigService.getCustomerLimitConfigListByUserId(
                 CUSTOMER_LOCK_LIMIT.getType(), userId);
-        if (CollUtil.isEmpty(limitConfigs)) {
+        if (ObjUtil.isNull(simpVO)) {
             return;
         }
         Long lockCount = customerMapper.selectCountByLockStatusAndOwnerUserId(true, userId);
-        Integer maxCount = CollectionUtils.getMaxValue(limitConfigs, CrmCustomerLimitConfigDO::getMaxCount);
+        Integer maxCount = simpVO.getMaxCount();
         assert maxCount != null;
         if (lockCount >= maxCount) {
-            throw exception(CUSTOMER_LOCK_EXCEED_LIMIT);
+            // 判断是部门还是用户
+            if (Objects.equals(simpVO.getApplicableType(),
+                    CrmCustomerLimitConfigApplicableTypeEnum.CUSTOMER_LIMIT_CONFIG_APPLICABLE_TYPE_2.getValue())) {
+                throw exception(CUSTOMER_LOCK_EXCEED_LIMIT_USER, simpVO.getUserName(), simpVO.getUserName(), simpVO.getName(),simpVO.getName(),simpVO.getId());
+            } else {
+                throw exception(CUSTOMER_LOCK_EXCEED_LIMIT_DEPT, simpVO.getDeptName(), simpVO.getDeptName(),simpVO.getName(),simpVO.getId());
+            }
         }
     }
 

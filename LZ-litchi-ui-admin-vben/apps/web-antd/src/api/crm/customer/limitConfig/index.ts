@@ -22,6 +22,14 @@ export enum LimitConfType {
   CUSTOMER_QUANTITY_LIMIT = 1,
 }
 
+/** 客户限制使用类型 */
+export enum CrmCustomerLimitConfigApplicableType {
+  /** 部门 */
+  DEPT = 1,
+  /** 个人 */
+  USER = 2,
+}
+
 /** 查询客户限制配置列表 */
 export function getCustomerLimitConfigPage(params: PageParam) {
   return requestClient.get<

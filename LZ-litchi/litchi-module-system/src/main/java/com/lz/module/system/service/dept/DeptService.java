@@ -90,6 +90,14 @@ public interface DeptService {
     List<DeptDO> getChildDeptList(Collection<Long> ids);
 
     /**
+     * 获得指定部门的所有父部门
+     *
+     * @param id 部门编号
+     * @return 父部门列表
+     */
+     List<DeptDO> getParentDeptList(Long id);
+
+    /**
      * 获得指定领导者的部门列表
      *
      * @param id 领导者编号

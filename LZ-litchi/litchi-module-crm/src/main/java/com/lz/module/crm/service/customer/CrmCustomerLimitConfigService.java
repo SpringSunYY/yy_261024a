@@ -3,6 +3,7 @@ package com.lz.module.crm.service.customer;
 import com.lz.framework.common.pojo.PageResult;
 import com.lz.module.crm.controller.admin.customer.vo.limitconfig.CrmCustomerLimitConfigPageReqVO;
 import com.lz.module.crm.controller.admin.customer.vo.limitconfig.CrmCustomerLimitConfigSaveReqVO;
+import com.lz.module.crm.controller.admin.customer.vo.limitconfig.CrmCustomerLimitConfigSimpVO;
 import com.lz.module.crm.dal.dataobject.customer.CrmCustomerLimitConfigDO;
 import jakarta.validation.Valid;
 
@@ -59,6 +60,6 @@ public interface CrmCustomerLimitConfigService {
      * @param type   类型
      * @param userId 用户类型
      */
-    List<CrmCustomerLimitConfigDO> getCustomerLimitConfigListByUserId(Integer type, Long userId);
+    CrmCustomerLimitConfigSimpVO getCustomerLimitConfigListByUserId(Integer type, Long userId);
 
 }

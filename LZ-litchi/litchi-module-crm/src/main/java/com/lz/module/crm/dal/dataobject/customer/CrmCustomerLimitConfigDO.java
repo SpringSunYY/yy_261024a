@@ -1,7 +1,9 @@
 package com.lz.module.crm.dal.dataobject.customer;
 
+import com.lz.framework.common.enums.CommonStatusEnum;
 import com.lz.framework.mybatis.core.dataobject.BaseDO;
 import com.lz.framework.mybatis.core.type.LongListTypeHandler;
+import com.lz.module.crm.enums.customer.CrmCustomerLimitConfigApplicableTypeEnum;
 import com.lz.module.crm.enums.customer.CrmCustomerLimitConfigTypeEnum;
 import com.baomidou.mybatisplus.annotation.KeySequence;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -31,12 +33,24 @@ public class CrmCustomerLimitConfigDO extends BaseDO {
      */
     @TableId
     private Long id;
+
+    /**
+     * 规则名称
+     */
+    private String name;
     /**
      * 规则类型
      * <p>
      * 枚举 {@link CrmCustomerLimitConfigTypeEnum}
      */
     private Integer type;
+
+    /**
+     * 适用类型
+     *
+     * 枚举 {@link CrmCustomerLimitConfigApplicableTypeEnum}
+     */
+    private Integer applicableType;
     /**
      * 规则适用人群
      */
@@ -47,6 +61,13 @@ public class CrmCustomerLimitConfigDO extends BaseDO {
      */
     @TableField(typeHandler = LongListTypeHandler.class)
     private List<Long> deptIds;
+
+    /**
+     * 状态
+     *
+     * 枚举 {@link CommonStatusEnum}
+     */
+    private Integer status;
     /**
      * 数量上限
      */

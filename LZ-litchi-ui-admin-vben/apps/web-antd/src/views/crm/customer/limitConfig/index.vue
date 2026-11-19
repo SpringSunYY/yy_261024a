@@ -64,6 +64,7 @@ async function handleDelete(
   }
 }
 
+// @ts-ignore
 const [Grid, gridApi] = useVbenVxeGrid({
   gridOptions: {
     columns: useGridColumns(configType.value),
@@ -113,7 +114,7 @@ function onChangeConfigType(key: number | string) {
       />
     </template>
 
-    <FormModal />
+    <FormModal @success="onRefresh" />
     <Grid>
       <template #top>
         <Tabs class="border-none" @change="onChangeConfigType">

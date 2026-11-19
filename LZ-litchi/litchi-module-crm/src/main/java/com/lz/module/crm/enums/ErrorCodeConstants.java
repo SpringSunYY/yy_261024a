@@ -60,8 +60,10 @@ public interface ErrorCodeConstants {
     ErrorCode CUSTOMER_UPDATE_OWNER_USER_FAIL = new ErrorCode(1_020_006_006, "crm.customer.back.ownerUpdateFail", "更新客户【{}】负责人失败, 原因：系统异常");
     ErrorCode CUSTOMER_LOCK_FAIL_IS_LOCK = new ErrorCode(1_020_006_007, "crm.customer.back.alreadyLocked", "锁定客户失败，它已经处于锁定状态");
     ErrorCode CUSTOMER_UNLOCK_FAIL_IS_UNLOCK = new ErrorCode(1_020_006_008, "crm.customer.back.alreadyUnlocked", "解锁客户失败，它已经处于未锁定状态");
-    ErrorCode CUSTOMER_LOCK_EXCEED_LIMIT = new ErrorCode(1_020_006_009, "crm.customer.back.lockQuotaExceeded", "锁定客户失败，超出锁定规则上限");
-    ErrorCode CUSTOMER_OWNER_EXCEED_LIMIT = new ErrorCode(1_020_006_010, "crm.customer.back.ownerQuotaExceeded", "操作失败，超出客户数拥有上限");
+    ErrorCode CUSTOMER_LOCK_EXCEED_LIMIT_USER = new ErrorCode(1_020_006_009, "crm.customer.back.lockQuotaExceeded", "锁定客户操作失败，【{}】超出客户数拥有上限，超出原因：用户【{}】超出上限，最大值为{}，对应配置名称【{}】，编号：【{}】");
+    ErrorCode CUSTOMER_LOCK_EXCEED_LIMIT_DEPT = new ErrorCode(1_020_006_010, "crm.customer.back.lockQuotaExceeded.dept", "锁定客户操作失败，【{}】超出客户数拥有上限，超出原因：部门【{}】超出上限，最大值为{}，对应配置名称【{}】，编号：【{}】");
+    ErrorCode CUSTOMER_OWNER_EXCEED_LIMIT_USER = new ErrorCode(1_020_006_010, "crm.customer.back.ownerQuotaExceeded.user", "操作失败，【{}】超出客户数拥有上限，超出原因：用户【{}】超出上限，最大值为{}，对应配置名称【{}】，编号：【{}】");
+    ErrorCode CUSTOMER_OWNER_EXCEED_LIMIT_DEPT = new ErrorCode(1_020_006_010, "crm.customer.back.ownerQuotaExceeded.dept", "操作失败，【{}】超出客户数拥有上限，超出原因：部门【{}】超出上限，最大值为{}，对应配置名称【{}】，编号：【{}】");
     ErrorCode CUSTOMER_DELETE_FAIL_HAVE_REFERENCE = new ErrorCode(1_020_006_011, "crm.customer.back.hasReference", "删除客户失败，有关联{}");
     ErrorCode CUSTOMER_IMPORT_LIST_IS_EMPTY = new ErrorCode(1_020_006_012, "crm.customer.back.importEmpty", "导入客户数据不能为空！");
     ErrorCode CUSTOMER_CREATE_NAME_NOT_NULL = new ErrorCode(1_020_006_013, "crm.customer.back.nameRequired", "客户名称不能为空！");
@@ -98,8 +100,13 @@ public interface ErrorCodeConstants {
     ErrorCode BUSINESS_STATUS_DELETE_FAIL_USED = new ErrorCode(1_020_010_004, "crm.businessStatusType.back.prohibitDelete", "已经被使用的商机状态组，无法进行删除");
     ErrorCode BUSINESS_STATUS_NOT_EXISTS = new ErrorCode(1_020_010_003, "crm.businessStatus.back.notExists", "商机状态不存在");
 
-    // ========== 客户公海规则设置 1-020-012-000 ==========
+    // ========== 客户限制规则设置 1-020-012-000 ==========
     ErrorCode CUSTOMER_LIMIT_CONFIG_NOT_EXISTS = new ErrorCode(1_020_012_001, "crm.customerLimitConfig.back.notExists", "客户限制配置不存在");
+    ErrorCode CUSTOMER_LIMIT_CONFIG_USER_NOT_NULL = new ErrorCode(1_020_012_002, "crm.customerLimitConfig.back.userNotNull", "客户限制配置的适用人群不能为空");
+    ErrorCode CUSTOMER_LIMIT_CONFIG_USER_EXISTS = new ErrorCode(1_020_012_003, "crm.customerLimitConfig.back.userExists", "客户限制配置的用户【{}】已存在限制配置，配置名称：【{}】，编号：{}");
+    ErrorCode CUSTOMER_LIMIT_CONFIG_DEPT_NOT_NULL = new ErrorCode(1_020_012_004, "crm.customerLimitConfig.back.deptNotNull", "客户限制配置的适用部门不能为空");
+    ErrorCode CUSTOMER_LIMIT_CONFIG_DEPT_EXISTS = new ErrorCode(1_020_012_005, "crm.customerLimitConfig.back.deptExists", "客户限制配置的部门【{}】已存在限制配置，配置名称：【{}】，编号：{}");
+
 
     // ========== 跟进记录 1-020-013-000 ==========
     ErrorCode FOLLOW_UP_RECORD_NOT_EXISTS = new ErrorCode(1_020_013_000, "crm.followUpRecord.back.notExists", "跟进记录不存在");

@@ -542,35 +542,64 @@ VALUES ('客户-已解锁', 'crm.customer.back.alreadyUnlocked', @LOCALE_ZH_CN, 
 
 -- 32. 客户-锁定超限
 
-DELETE FROM infra_i18n_key WHERE message_key = 'crm.customer.back.lockQuotaExceeded';
+DELETE FROM infra_i18n_key WHERE message_key = 'crm.customer.back.lockQuotaExceeded.user';
 INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
-VALUES ('客户-锁定超限', 'crm.customer.back.lockQuotaExceeded', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+VALUES ('客户-锁定超限', 'crm.customer.back.lockQuotaExceeded.user', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
 
 -- 32. 客户-锁定超限 - en-US
-DELETE FROM infra_i18n_message WHERE message_key = 'crm.customer.back.lockQuotaExceeded' AND locale = @LOCALE_EN;
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customer.back.lockQuotaExceeded.user' AND locale = @LOCALE_EN;
 INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
-VALUES ('客户-锁定超限', 'crm.customer.back.lockQuotaExceeded', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'customer lock failed, lock quota exceeded', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+VALUES ('客户-锁定超限', 'crm.customer.back.lockQuotaExceeded.user', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'Failed to process customer operation. The number of customers exceeds the maximum limit. Reason: User [{1}] exceeded the limit. Maximum value: {2}. Corresponding configuration name: [{3}], Number: [{4}]', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
 
 -- 32. 客户-锁定超限 - zh-CN
-DELETE FROM infra_i18n_message WHERE message_key = 'crm.customer.back.lockQuotaExceeded' AND locale = @LOCALE_ZH_CN;
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customer.back.lockQuotaExceeded.user' AND locale = @LOCALE_ZH_CN;
 INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
-VALUES ('客户-锁定超限', 'crm.customer.back.lockQuotaExceeded', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '锁定客户失败，超出锁定规则上限', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+VALUES ('客户-锁定超限', 'crm.customer.back.lockQuotaExceeded.user', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '锁定客户操作失败，【{0}】超出客户数拥有上限，超出原因：用户【{1}】超出上限，最大值为{2}，对应配置名称【{3}】，编号：【{4}】', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+-- 32. 客户-锁定超限
+
+DELETE FROM infra_i18n_key WHERE message_key = 'crm.customer.back.lockQuotaExceeded.dept';
+INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('客户-锁定超限', 'crm.customer.back.lockQuotaExceeded.dept', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 32. 客户-锁定超限 - en-US
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customer.back.lockQuotaExceeded.dept' AND locale = @LOCALE_EN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('客户-锁定超限', 'crm.customer.back.lockQuotaExceeded.dept', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'Failed to process customer operation. The number of customers exceeds the maximum limit. Reason: Department [{1}] exceeded the limit. Maximum value: {}. Corresponding configuration name: [{3}], Number: [{}]', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 32. 客户-锁定超限 - zh-CN
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customer.back.lockQuotaExceeded.dept' AND locale = @LOCALE_ZH_CN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('客户-锁定超限', 'crm.customer.back.lockQuotaExceeded.dept', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '锁定客户操作失败，【{}】超出客户数拥有上限，超出原因：部门【{1}】超出上限，最大值为{2}，对应配置名称【{3}】，编号：【{4}】', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
 
 -- 33. 客户-拥有数量超限
 
-DELETE FROM infra_i18n_key WHERE message_key = 'crm.customer.back.ownerQuotaExceeded';
+DELETE FROM infra_i18n_key WHERE message_key = 'crm.customer.back.ownerQuotaExceeded.user';
 INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
-VALUES ('客户-拥有数量超限', 'crm.customer.back.ownerQuotaExceeded', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+VALUES ('客户-拥有数量超限', 'crm.customer.back.ownerQuotaExceeded.user', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
 
 -- 33. 客户-拥有数量超限 - en-US
-DELETE FROM infra_i18n_message WHERE message_key = 'crm.customer.back.ownerQuotaExceeded' AND locale = @LOCALE_EN;
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customer.back.ownerQuotaExceeded.user' AND locale = @LOCALE_EN;
 INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
-VALUES ('客户-拥有数量超限', 'crm.customer.back.ownerQuotaExceeded', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'operation failed, customer count quota exceeded', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+VALUES ('客户-拥有数量超限', 'crm.customer.back.ownerQuotaExceeded.user', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'operation failed. The number of customers exceeds the maximum limit. Reason: User {} exceeded the limit, with a maximum value of {}，corresponding configuration name:{}, ID:{4}.', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
 
 -- 33. 客户-拥有数量超限 - zh-CN
-DELETE FROM infra_i18n_message WHERE message_key = 'crm.customer.back.ownerQuotaExceeded' AND locale = @LOCALE_ZH_CN;
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customer.back.ownerQuotaExceeded.user' AND locale = @LOCALE_ZH_CN;
 INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
-VALUES ('客户-拥有数量超限', 'crm.customer.back.ownerQuotaExceeded', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '操作失败，超出客户数拥有上限', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+VALUES ('客户-拥有数量超限', 'crm.customer.back.ownerQuotaExceeded.user', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '操作失败，【{}】超出客户数拥有上限，超出原因：用户【{}】超出上限，最大值为{}，对应配置名称:{}, 编号:{}.', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+DELETE FROM infra_i18n_key WHERE message_key = 'crm.customer.back.ownerQuotaExceeded.dept';
+INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('客户-拥有数量超限', 'crm.customer.back.ownerQuotaExceeded.dept', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 33. 客户-拥有数量超限 - en-US
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customer.back.ownerQuotaExceeded.dept' AND locale = @LOCALE_EN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('客户-拥有数量超限', 'crm.customer.back.ownerQuotaExceeded.dept', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'operation failed. The number of customers exceeds the maximum limit. Reason: Department {} exceeded the limit, with a maximum value of {}，corresponding configuration name:{}, ID:{}.', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 33. 客户-拥有数量超限 - zh-CN
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customer.back.ownerQuotaExceeded.dept' AND locale = @LOCALE_ZH_CN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('客户-拥有数量超限', 'crm.customer.back.ownerQuotaExceeded.dept', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '操作失败，【{}】超出客户数拥有上限，超出原因：部门【{}】超出上限，最大值为{}，对应配置名称:{}, 编号:{}.', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
 
 -- 34. 客户-有关联引用
 
@@ -1040,38 +1069,102 @@ DELETE FROM infra_i18n_message WHERE message_key = 'crm.customerLimitConfig.back
 INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
 VALUES ('客户限制配置-不存在', 'crm.customerLimitConfig.back.notExists', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '客户限制配置不存在', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
 
+-- 62. 客户限制配置-适用人群不能为空
+
+DELETE FROM infra_i18n_key WHERE message_key = 'crm.customerLimitConfig.back.userNotNull';
+INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('客户限制配置-适用人群不能为空', 'crm.customerLimitConfig.back.userNotNull', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 62. 客户限制配置-适用人群不能为空 - en-US
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customerLimitConfig.back.userNotNull' AND locale = @LOCALE_EN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('客户限制配置-适用人群不能为空', 'crm.customerLimitConfig.back.userNotNull', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'customer limit config user cannot be empty', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 62. 客户限制配置-适用人群不能为空 - zh-CN
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customerLimitConfig.back.userNotNull' AND locale = @LOCALE_ZH_CN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('客户限制配置-适用人群不能为空', 'crm.customerLimitConfig.back.userNotNull', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '客户限制配置的适用人群不能为空', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 63. 客户限制配置-用户已存在
+
+DELETE FROM infra_i18n_key WHERE message_key = 'crm.customerLimitConfig.back.userExists';
+INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('客户限制配置-用户已存在', 'crm.customerLimitConfig.back.userExists', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 63. 客户限制配置-用户已存在 - en-US
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customerLimitConfig.back.userExists' AND locale = @LOCALE_EN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('客户限制配置-用户已存在', 'crm.customerLimitConfig.back.userExists', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'customer limit config user ({}) already has limit config, max count: ({}), id: ({})', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 63. 客户限制配置-用户已存在 - zh-CN
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customerLimitConfig.back.userExists' AND locale = @LOCALE_ZH_CN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('客户限制配置-用户已存在', 'crm.customerLimitConfig.back.userExists', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '客户限制配置的用户【{}】已存在限制配置，数量上限：{}，编号：{}', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 64. 客户限制配置-适用部门不能为空
+
+DELETE FROM infra_i18n_key WHERE message_key = 'crm.customerLimitConfig.back.deptNotNull';
+INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('客户限制配置-适用部门不能为空', 'crm.customerLimitConfig.back.deptNotNull', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 64. 客户限制配置-适用部门不能为空 - en-US
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customerLimitConfig.back.deptNotNull' AND locale = @LOCALE_EN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('客户限制配置-适用部门不能为空', 'crm.customerLimitConfig.back.deptNotNull', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'customer limit config dept cannot be empty', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 64. 客户限制配置-适用部门不能为空 - zh-CN
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customerLimitConfig.back.deptNotNull' AND locale = @LOCALE_ZH_CN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('客户限制配置-适用部门不能为空', 'crm.customerLimitConfig.back.deptNotNull', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '客户限制配置的适用部门不能为空', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 65. 客户限制配置-部门已存在
+
+DELETE FROM infra_i18n_key WHERE message_key = 'crm.customerLimitConfig.back.deptExists';
+INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('客户限制配置-部门已存在', 'crm.customerLimitConfig.back.deptExists', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 65. 客户限制配置-部门已存在 - en-US
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customerLimitConfig.back.deptExists' AND locale = @LOCALE_EN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('客户限制配置-部门已存在', 'crm.customerLimitConfig.back.deptExists', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'customer limit config dept ({}) already has limit config, config name: ({}), id: ({})', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 65. 客户限制配置-部门已存在 - zh-CN
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customerLimitConfig.back.deptExists' AND locale = @LOCALE_ZH_CN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('客户限制配置-部门已存在', 'crm.customerLimitConfig.back.deptExists', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '客户限制配置的部门【{}】已存在限制配置，配置名称：【{}】，编号：{}', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
 -- =============================================
 -- 跟进记录 1-020-013-000
 -- =============================================
 
--- 62. 跟进记录-不存在
+-- 66. 跟进记录-不存在
 
 DELETE FROM infra_i18n_key WHERE message_key = 'crm.followUpRecord.back.notExists';
 INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
 VALUES ('跟进记录-不存在', 'crm.followUpRecord.back.notExists', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
 
--- 62. 跟进记录-不存在 - en-US
+-- 66. 跟进记录-不存在 - en-US
 DELETE FROM infra_i18n_message WHERE message_key = 'crm.followUpRecord.back.notExists' AND locale = @LOCALE_EN;
 INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
 VALUES ('跟进记录-不存在', 'crm.followUpRecord.back.notExists', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'follow-up record not exists', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
 
--- 62. 跟进记录-不存在 - zh-CN
+-- 66. 跟进记录-不存在 - zh-CN
 DELETE FROM infra_i18n_message WHERE message_key = 'crm.followUpRecord.back.notExists' AND locale = @LOCALE_ZH_CN;
 INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
 VALUES ('跟进记录-不存在', 'crm.followUpRecord.back.notExists', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '跟进记录不存在', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
 
--- 63. 跟进记录-删除拒绝
+-- 67. 跟进记录-删除拒绝
 
 DELETE FROM infra_i18n_key WHERE message_key = 'crm.followUpRecord.back.deleteDenied';
 INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
 VALUES ('跟进记录-删除拒绝', 'crm.followUpRecord.back.deleteDenied', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
 
--- 63. 跟进记录-删除拒绝 - en-US
+-- 67. 跟进记录-删除拒绝 - en-US
 DELETE FROM infra_i18n_message WHERE message_key = 'crm.followUpRecord.back.deleteDenied' AND locale = @LOCALE_EN;
 INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
 VALUES ('跟进记录-删除拒绝', 'crm.followUpRecord.back.deleteDenied', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'follow-up record deletion failed, permission denied', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
 
--- 63. 跟进记录-删除拒绝 - zh-CN
+-- 67. 跟进记录-删除拒绝 - zh-CN
 DELETE FROM infra_i18n_message WHERE message_key = 'crm.followUpRecord.back.deleteDenied' AND locale = @LOCALE_ZH_CN;
 INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
 VALUES ('跟进记录-删除拒绝', 'crm.followUpRecord.back.deleteDenied', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '删除跟进记录失败，原因：没有权限', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
