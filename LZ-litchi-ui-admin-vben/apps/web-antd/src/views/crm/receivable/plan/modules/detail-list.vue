@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { CrmReceivableApi } from '#/api/crm/receivable';
 import type { CrmReceivablePlanApi } from '#/api/crm/receivable/plan';
 
 import { watch } from 'vue';
@@ -51,8 +50,8 @@ function handleCreateReceivable(row: CrmReceivablePlanApi.Plan) {
 }
 
 /** 编辑回款计划 */
-function handleEdit(row: CrmReceivableApi.Receivable) {
-  formModalApi.setData({ receivable: row }).open();
+function handleEdit(row: CrmReceivablePlanApi.Plan) {
+  formModalApi.setData(row).open();
 }
 
 /** 删除回款计划 */

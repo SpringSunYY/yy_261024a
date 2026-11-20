@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { CrmContactApi } from '#/api/crm/contact';
 import type { CrmFollowUpApi } from '#/api/crm/followup';
 
 import { watch } from 'vue';
@@ -61,13 +60,13 @@ async function handleDelete(row: CrmFollowUpApi.FollowUpRecord) {
 }
 
 /** 打开联系人详情 */
-function openContactDetail(row: CrmContactApi.Contact) {
+function openContactDetail(row: CrmFollowUpApi.Contact) {
   setPendingExtraTitle(row.name || row.id);
   push({ name: 'CrmContactDetail', params: { id: row.id } });
 }
 
 /** 打开商机详情 */
-function openBusinessDetail(row: CrmContactApi.Contact) {
+function openBusinessDetail(row: CrmFollowUpApi.Business) {
   setPendingExtraTitle(row.name || row.id);
   push({ name: 'CrmBusinessDetail', params: { id: row.id } });
 }
@@ -166,13 +165,23 @@ watch(
         />
       </template>
       <template #contacts="{ row }">
-        <Button type="link" @click="openContactDetail(row)">
-          {{ row.name }}
+        <Button
+          v-for="contact in row.contacts"
+          :key="contact.id"
+          type="link"
+          @click="openContactDetail(contact)"
+        >
+          {{ contact.name }}
         </Button>
       </template>
       <template #businesses="{ row }">
-        <Button type="link" @click="openBusinessDetail(row)">
-          {{ row.name }}
+        <Button
+          v-for="business in row.businesses"
+          :key="business.id"
+          type="link"
+          @click="openBusinessDetail(business)"
+        >
+          {{ business.name }}
         </Button>
       </template>
       <template #actions="{ row }">
@@ -184,7 +193,7 @@ watch(
               danger: true,
               icon: ACTION_ICON.DELETE,
               popConfirm: {
-                title: $t('ui.actionMessage.deleteConfirm', [row.name]),
+                title: $t('ui.actionMessage.deleteConfirm', [row.id]),
                 confirm: handleDelete.bind(null, row),
               },
             },

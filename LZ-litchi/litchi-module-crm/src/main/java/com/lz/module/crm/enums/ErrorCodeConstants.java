@@ -114,4 +114,14 @@ public interface ErrorCodeConstants {
 
     // ========== 数据统计 1-020-014-000 ==========
 
+    // ========== CRM 客户来源 1-020-015-000 ==========
+    ErrorCode CUSTOMER_SOURCE_NOT_EXISTS = new ErrorCode(1_020_015_001, "crm.customerSource.back.notExists", "CRM 客户来源不存在");
+    ErrorCode CUSTOMER_SOURCE_EXIST_CHILDREN = new ErrorCode(1_020_015_002, "crm.customerSource.back.existChildren", "存在子CRM 客户来源，无法删除");
+    ErrorCode CUSTOMER_SOURCE_PARENT_NOT_EXISTS = new ErrorCode(1_020_015_003, "crm.customerSource.back.parentNotExists", "父级CRM 客户来源不存在");
+    ErrorCode CUSTOMER_SOURCE_PARENT_ERROR = new ErrorCode(1_020_015_004, "crm.customerSource.back.parentError", "不能设置自己为父CRM 客户来源");
+    ErrorCode CUSTOMER_SOURCE_DUPLICATE = new ErrorCode(1_020_015_005, "crm.customerSource.back.nameDuplicate", "已经存在该分类名称的CRM 客户来源");
+    ErrorCode CUSTOMER_SOURCE_PARENT_IS_CHILD = new ErrorCode(1_020_015_006, "crm.customerSource.back.parentIsChild", "不能设置自己的子分类名称为父分类名称");
+    // ========== 导入通用错误码（可自行配置国际化） ==========
+    ErrorCode CUSTOMER_SOURCE_IMPORT_DATA_EMPTY = new ErrorCode(1_020_015_100, "crm.back.import.dataEmpty", "CRM 客户来源导入数据不能为空！");
+
 }

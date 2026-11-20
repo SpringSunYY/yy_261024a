@@ -64,7 +64,6 @@ async function handleDelete(
   }
 }
 
-// @ts-ignore
 const [Grid, gridApi] = useVbenVxeGrid({
   gridOptions: {
     columns: useGridColumns(configType.value),

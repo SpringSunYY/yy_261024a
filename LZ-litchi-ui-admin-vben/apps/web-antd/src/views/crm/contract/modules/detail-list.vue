@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { CrmBusinessApi } from '#/api/crm/business';
 import type { CrmContractApi } from '#/api/crm/contract';
 
 import { ref } from 'vue';
@@ -90,7 +89,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       refresh: { code: 'query' },
       search: true,
     },
-  } as VxeTableGridOptions<CrmBusinessApi.Business>,
+  } as VxeTableGridOptions<CrmContractApi.Contract>,
   gridEvents: {
     checkboxAll: setCheckedRows,
     checkboxChange: setCheckedRows,

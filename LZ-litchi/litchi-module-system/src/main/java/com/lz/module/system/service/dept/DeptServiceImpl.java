@@ -4,6 +4,8 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.google.common.annotations.VisibleForTesting;
+import com.lz.framework.common.enums.CommonConstants;
 import com.lz.framework.common.enums.CommonStatusEnum;
 import com.lz.framework.common.util.object.BeanUtils;
 import com.lz.framework.datapermission.core.annotation.DataPermission;
@@ -12,14 +14,13 @@ import com.lz.module.system.controller.admin.dept.vo.dept.DeptSaveReqVO;
 import com.lz.module.system.dal.dataobject.dept.DeptDO;
 import com.lz.module.system.dal.mysql.dept.DeptMapper;
 import com.lz.module.system.dal.redis.RedisKeyConstants;
-import com.google.common.annotations.VisibleForTesting;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
-import jakarta.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,14 +38,6 @@ import static com.lz.module.system.enums.ErrorCodeConstants.*;
 @Slf4j
 public class DeptServiceImpl implements DeptService {
 
-    /**
-     * 祖级列表的分隔符
-     */
-    private static final String ANCESTORS_SEPARATOR = ",";
-    /**
-     * 祖级列表的根标识，顶级部门的祖级列表为 “0”
-     */
-    private static final String ANCESTORS_ROOT = "0";
 
     @Resource
     private DeptMapper deptMapper;
@@ -108,7 +101,7 @@ public class DeptServiceImpl implements DeptService {
         List<DeptDO> children = deptMapper.selectListByParentId(Collections.singleton(deptId));
         for (DeptDO child : children) {
             // 子部门的祖级列表 = 父部门的祖级列表 + 父部门编号
-            String childAncestors = deptAncestors + ANCESTORS_SEPARATOR + deptId;
+            String childAncestors = deptAncestors + CommonConstants.ANCESTORS_SEPARATOR + deptId;
             DeptDO updateObj = new DeptDO();
             updateObj.setId(child.getId());
             updateObj.setAncestors(childAncestors);
@@ -126,7 +119,7 @@ public class DeptServiceImpl implements DeptService {
      */
     private String buildAncestors(Long parentId) {
         if (parentId == null || DeptDO.PARENT_ID_ROOT.equals(parentId)) {
-            return ANCESTORS_ROOT;
+            return CommonConstants.ANCESTORS_ROOT.toString();
         }
         // 自下而上收集父级编号
         List<Long> ancestorIds = new ArrayList<>();
@@ -144,9 +137,9 @@ public class DeptServiceImpl implements DeptService {
         }
         // 反转：从顶级到直属父级的顺序
         Collections.reverse(ancestorIds);
-        StringBuilder sb = new StringBuilder(ANCESTORS_ROOT);
+        StringBuilder sb = new StringBuilder(CommonConstants.ANCESTORS_ROOT.toString());
         for (Long ancestorId : ancestorIds) {
-            sb.append(ANCESTORS_SEPARATOR).append(ancestorId);
+            sb.append(CommonConstants.ANCESTORS_SEPARATOR).append(ancestorId);
         }
         return sb.toString();
     }
@@ -308,10 +301,10 @@ public class DeptServiceImpl implements DeptService {
         if (StrUtil.isBlank(ancestors)) {
             return ancestorIds;
         }
-        for (String ancestor : StrUtil.split(ancestors, ANCESTORS_SEPARATOR)) {
+        for (String ancestor : StrUtil.split(ancestors, CommonConstants.ANCESTORS_SEPARATOR)) {
             Long ancestorId = NumberUtil.parseLong(ancestor);
             // 跳过根标识 “0”
-            if (ancestorId == null || DeptDO.PARENT_ID_ROOT.equals(ancestorId)) {
+            if (DeptDO.PARENT_ID_ROOT.equals(ancestorId)) {
                 continue;
             }
             ancestorIds.add(ancestorId);

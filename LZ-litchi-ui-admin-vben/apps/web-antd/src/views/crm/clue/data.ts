@@ -28,11 +28,11 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       fieldName: 'source',
-      label: $t('crm.clue.field.customerSource'),
+      label: $t('crm.clue.field.source'),
       component: 'I18nSelect',
       componentProps: {
         placeholder: $t('ui.placeholder.select', [
-          $t('crm.clue.field.customerSource'),
+          $t('crm.clue.field.source'),
         ]),
         options: getDictOptions(DICT_TYPE.CRM_CUSTOMER_SOURCE, 'number'),
       },

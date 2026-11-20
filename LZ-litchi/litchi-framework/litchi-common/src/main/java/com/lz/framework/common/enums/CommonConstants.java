@@ -16,5 +16,5 @@ public class CommonConstants {
     /**
      * 祖级列表的根标识，顶级部门的祖级列表为 “0”
      */
-    public static final String ANCESTORS_ROOT = "0";
+    public static final Long ANCESTORS_ROOT = 0L;
 }
