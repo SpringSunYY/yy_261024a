@@ -665,18 +665,34 @@ DELETE FROM infra_i18n_message WHERE message_key = 'crm.customer.back.nameExists
 INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
 VALUES ('客户-名称已存在', 'crm.customer.back.nameExists', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '已存在名为【{}】的客户！', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
 
--- 38. 客户-成交状态未变
+-- 38. 客户-手机号已存在
+
+DELETE FROM infra_i18n_key WHERE message_key = 'crm.customer.back.mobileExists';
+INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('客户-手机号已存在', 'crm.customer.back.mobileExists', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 38. 客户-手机号已存在 - en-US
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customer.back.mobileExists' AND locale = @LOCALE_EN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('客户-手机号已存在', 'crm.customer.back.mobileExists', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'customer with mobile ({}) already exists', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 38. 客户-手机号已存在 - zh-CN
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customer.back.mobileExists' AND locale = @LOCALE_ZH_CN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('客户-手机号已存在', 'crm.customer.back.mobileExists', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '已存在手机号为【{}】的客户！', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 39. 客户-成交状态未变
 
 DELETE FROM infra_i18n_key WHERE message_key = 'crm.customer.back.dealStatusEquals';
 INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
 VALUES ('客户-成交状态未变', 'crm.customer.back.dealStatusEquals', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
 
--- 38. 客户-成交状态未变 - en-US
+-- 39. 客户-成交状态未变 - en-US
 DELETE FROM infra_i18n_message WHERE message_key = 'crm.customer.back.dealStatusEquals' AND locale = @LOCALE_EN;
 INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
 VALUES ('客户-成交状态未变', 'crm.customer.back.dealStatusEquals', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'customer deal status update failed, already in this status', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
 
--- 38. 客户-成交状态未变 - zh-CN
+-- 39. 客户-成交状态未变 - zh-CN
 DELETE FROM infra_i18n_message WHERE message_key = 'crm.customer.back.dealStatusEquals' AND locale = @LOCALE_ZH_CN;
 INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
 VALUES ('客户-成交状态未变', 'crm.customer.back.dealStatusEquals', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '更新客户的成交状态失败，原因：已经是该状态，无需更新', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);

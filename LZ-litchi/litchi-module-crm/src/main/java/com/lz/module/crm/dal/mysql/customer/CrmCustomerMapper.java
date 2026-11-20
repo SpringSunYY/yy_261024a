@@ -1,5 +1,6 @@
 package com.lz.module.crm.dal.mysql.customer;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.ObjUtil;
 import com.lz.framework.common.pojo.PageResult;
@@ -86,6 +87,34 @@ public interface CrmCustomerMapper extends BaseMapperX<CrmCustomerDO> {
 
     default CrmCustomerDO selectByCustomerName(String name) {
         return selectOne(CrmCustomerDO::getName, name);
+    }
+
+    /**
+     * 获得指定客户名称的客户
+     *
+     * @param name 客户名称
+     * @param excludeId 需要排除的客户编号（修改场景，排除自身）
+     * @return 客户
+     */
+    default CrmCustomerDO selectByCustomerName(String name, Long excludeId) {
+        List<CrmCustomerDO> list = selectList(new LambdaQueryWrapperX<CrmCustomerDO>()
+                .eq(CrmCustomerDO::getName, name)
+                .neIfPresent(CrmCustomerDO::getId, excludeId));
+        return CollUtil.isEmpty(list) ? null : list.getFirst();
+    }
+
+    /**
+     * 获得指定手机号的客户
+     *
+     * @param mobile 手机号
+     * @param excludeId 需要排除的客户编号（修改场景，排除自身）
+     * @return 客户
+     */
+    default CrmCustomerDO selectByMobile(String mobile, Long excludeId) {
+        List<CrmCustomerDO> list = selectList(new LambdaQueryWrapperX<CrmCustomerDO>()
+                .eq(CrmCustomerDO::getMobile, mobile)
+                .neIfPresent(CrmCustomerDO::getId, excludeId));
+        return CollUtil.isEmpty(list) ? null : list.getFirst();
     }
 
     default PageResult<CrmCustomerDO> selectPutPoolRemindCustomerPage(CrmCustomerPageReqVO pageReqVO,

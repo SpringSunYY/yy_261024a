@@ -4,7 +4,7 @@ import type { CrmClueApi } from '#/api/crm/clue';
 
 import { useRouter } from 'vue-router';
 
-import { DocAlert, Page, useVbenModal } from '@vben/common-ui';
+import { DocAlert, Page, useVbenModelDrawer } from '@vben/common-ui';
 import { downloadFileFromBlobPart } from '@vben/utils';
 
 import { Button, message } from 'ant-design-vue';
@@ -22,7 +22,7 @@ const { push } = useRouter();
 const tableTitle = $t('crm.clue.list');
 const exportFileName = $t('crm.clue.clue');
 
-const [FormModal, formModalApi] = useVbenModal({
+const [FormModalDrawer, formModalDrawerApi] = useVbenModelDrawer({
   connectedComponent: Form,
   destroyOnClose: true,
 });
@@ -34,12 +34,12 @@ function onRefresh() {
 
 /** 创建线索 */
 function handleCreate() {
-  formModalApi.setData(null).open();
+  formModalDrawerApi.setData(null).open();
 }
 
 /** 编辑线索 */
 function handleEdit(row: CrmClueApi.Clue) {
-  formModalApi.setData(row).open();
+  formModalDrawerApi.setData(row).open();
 }
 
 /** 删除线索 */
@@ -115,7 +115,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
       />
     </template>
 
-    <FormModal @success="onRefresh" />
+    <FormModalDrawer @success="onRefresh" />
     <Grid :table-title="tableTitle">
       <template #toolbar-tools>
         <TableAction

@@ -8,7 +8,7 @@ import com.lz.framework.excel.core.annotations.DictFormat;
 import com.lz.module.crm.enums.customer.CrmCustomerLevelEnum;
 import com.lz.module.crm.framework.operatelog.core.CrmCustomerIndustryParseFunction;
 import com.lz.module.crm.framework.operatelog.core.CrmCustomerLevelParseFunction;
-import com.lz.module.crm.framework.operatelog.core.CrmCustomerSourceParseFunction;
+import com.lz.module.crm.framework.operatelog.core.CrmCustomerSourceIdParseFunction;
 import com.lz.module.crm.framework.operatelog.core.SysAreaParseFunction;
 import com.mzt.logapi.starter.annotation.DiffLogField;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -86,8 +86,8 @@ public class CrmCustomerSaveReqVO {
     private Integer level;
 
     @Schema(description = "客户来源", example = "3")
-    @DiffLogField(name = "客户来源", function = CrmCustomerSourceParseFunction.NAME)
-    private Integer source;
+    @DiffLogField(name = "客户来源", function = CrmCustomerSourceIdParseFunction.NAME)
+    private String source;
 
     @Schema(description = "备注", example = "随便")
     @DiffLogField(name = "备注")

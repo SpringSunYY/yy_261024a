@@ -5,7 +5,12 @@ import type { SystemOperateLogApi } from '#/api/system/operate-log';
 import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import { confirm, Page, useVbenModal } from '@vben/common-ui';
+import {
+  confirm,
+  Page,
+  useVbenModal,
+  useVbenModelDrawer,
+} from '@vben/common-ui';
 import { useTabs } from '@vben/hooks';
 
 import { Button, Card, message, Tabs } from 'ant-design-vue';
@@ -54,9 +59,10 @@ const [Description] = useDescription({
   schema: useDetailSchema(),
 });
 
-const [FormModal, formModalApi] = useVbenModal({
+const [FormModalDrawer, formModalDrawerApi] = useVbenModelDrawer({
   connectedComponent: CustomerForm,
   destroyOnClose: true,
+  type: 'drawer',
 });
 
 const [TransferModal, transferModalApi] = useVbenModal({
@@ -91,7 +97,7 @@ function handleBack() {
 
 /** 编辑 */
 function handleEdit() {
-  formModalApi.setData({ id: customerId.value }).open();
+  formModalDrawerApi.setData({ id: customerId.value }).open();
 }
 
 /** 转移客户 */
@@ -163,7 +169,7 @@ onMounted(() => {
 
 <template>
   <Page auto-content-height :title="customer?.name" :loading="loading">
-    <FormModal @success="loadCustomerDetail" />
+    <FormModalDrawer @success="loadCustomerDetail" />
     <TransferModal @success="loadCustomerDetail" />
     <DistributeModal @success="loadCustomerDetail" />
     <template #extra>

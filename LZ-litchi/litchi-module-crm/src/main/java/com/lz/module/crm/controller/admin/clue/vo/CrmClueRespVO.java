@@ -123,11 +123,15 @@ public class CrmClueRespVO {
     @ExcelI18n(i18nKey = "crm.clue.field.level")
     private Integer level;
 
-    @Schema(description = "客户来源", requiredMode = Schema.RequiredMode.REQUIRED, example = "13563")
-    @ExcelProperty(value = "客户来源", converter = DictConvert.class)
-    @ExcelColumnSelect(dictType = com.lz.module.crm.enums.DictTypeConstants.CRM_CUSTOMER_SOURCE, i18n = true)
+    @Schema(description = "客户来源编号", requiredMode = Schema.RequiredMode.REQUIRED, example = "13563")
+    @ExcelProperty("客户来源编号")
     @ExcelI18n(i18nKey = "crm.clue.field.source")
-    private Integer source;
+    private String source;
+
+    @Schema(description = "客户来源名称", example = "13563")
+    @ExcelProperty("客户来源名称")
+    @ExcelI18n(i18nKey = "crm.clue.field.source")
+    private String sourceName;
 
     @Schema(description = "备注", example = "随便")
     @ExcelProperty("备注")

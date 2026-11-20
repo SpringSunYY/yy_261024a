@@ -44,13 +44,8 @@ export function useDetailBaseSchema(): DescriptionItemSchema[] {
       label: $t('crm.customer.field.name'),
     },
     {
-      field: 'source',
+      field: 'sourceName',
       label: $t('crm.customer.field.source'),
-      content: (data) =>
-        h(I18nDictTag, {
-          type: DICT_TYPE.CRM_CUSTOMER_SOURCE,
-          value: data?.source,
-        }),
     },
     {
       field: 'mobile',

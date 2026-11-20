@@ -1,8 +1,6 @@
 package com.lz.module.crm.controller.admin.customer.vo.customer;
 
-import com.lz.framework.excel.core.annotations.DictFormat;
-import com.lz.framework.excel.core.annotations.ExcelColumnSelect;
-import com.lz.framework.excel.core.annotations.ExcelI18n;
+import com.lz.framework.excel.core.annotations.*;
 import com.lz.framework.excel.core.convert.DictConvert;
 import com.lz.module.infra.enums.DictTypeConstants;
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
@@ -128,12 +126,16 @@ public class CrmCustomerRespVO {
     @ExcelI18n(i18nKey = "crm.customer.field.level")
     private Integer level;
 
-    @Schema(description = "客户来源", requiredMode = Schema.RequiredMode.REQUIRED, example = "13563")
-    @ExcelProperty(value = "客户来源", converter = DictConvert.class)
-    @DictFormat(com.lz.module.crm.enums.DictTypeConstants.CRM_CUSTOMER_SOURCE)
-    @ExcelColumnSelect(dictType = com.lz.module.crm.enums.DictTypeConstants.CRM_CUSTOMER_SOURCE, i18n = true)
+    @Schema(description = "客户来源编号", requiredMode = Schema.RequiredMode.REQUIRED, example = "13563")
+    @ExcelProperty("客户来源编号")
     @ExcelI18n(i18nKey = "crm.customer.field.source")
-    private Integer source;
+    private String source;
+
+    @Schema(description = "客户来源名称", example = "13563")
+    @ExcelProperty("客户来源名称")
+    @ExcelI18n(i18nKey = "crm.customer.field.source")
+    @ExcelType(ExcelDirection.ONLY_EXPORT)
+    private String sourceName;
 
     @Schema(description = "备注", example = "25682")
     @ExcelProperty("备注")

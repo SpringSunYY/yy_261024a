@@ -15,6 +15,7 @@ import com.lz.module.crm.enums.common.CrmBizTypeEnum;
 import com.lz.module.crm.enums.permission.CrmPermissionLevelEnum;
 import com.lz.module.crm.framework.permission.core.annotations.CrmPermission;
 import com.lz.module.crm.service.customer.CrmCustomerService;
+import com.lz.module.crm.service.customer.CrmCustomerSourceService;
 import com.lz.module.crm.service.customer.bo.CrmCustomerCreateReqBO;
 import com.lz.module.crm.service.followup.CrmFollowUpRecordService;
 import com.lz.module.crm.service.followup.bo.CrmFollowUpCreateReqBO;
@@ -56,6 +57,8 @@ public class CrmClueServiceImpl implements CrmClueService {
 
     @Resource
     private CrmCustomerService customerService;
+    @Resource
+    private CrmCustomerSourceService customerSourceService;
     @Resource
     private CrmPermissionService crmPermissionService;
     @Resource
@@ -115,6 +118,8 @@ public class CrmClueServiceImpl implements CrmClueService {
                 Objects.isNull(adminUserApi.getUser(reqVO.getOwnerUserId()))) {
             throw exception(USER_NOT_EXISTS);
         }
+        // 校验客户来源编号是否存在
+        customerSourceService.validateCustomerSourceExists(reqVO.getSource(), null);
     }
 
     @Override

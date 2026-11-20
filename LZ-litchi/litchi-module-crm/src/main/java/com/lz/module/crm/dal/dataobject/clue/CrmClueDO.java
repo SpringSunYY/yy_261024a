@@ -115,11 +115,12 @@ public class CrmClueDO extends BaseDO {
      */
     private Integer level;
     /**
-     * 客户来源
+     * 客户来源编号
      *
-     * 对应字典 {@link DictTypeConstants#CRM_CUSTOMER_SOURCE}
+     * <p>对应 {@link com.lz.module.crm.dal.dataobject.customer.CrmCustomerSourceDO} 的编号，
+     * 前端级联选择器提交的是最后一级选择的编号
      */
-    private Integer source;
+    private String source;
     /**
      * 备注
      */

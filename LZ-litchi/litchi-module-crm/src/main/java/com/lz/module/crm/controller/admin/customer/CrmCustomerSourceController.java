@@ -102,6 +102,31 @@ public class CrmCustomerSourceController {
     }
 
     /**
+     * 获取CRM 客户来源完整树（只包含开启状态的来源）
+     *
+     * <p>用于前端的级联选择器：顶级为 parentId = 0 的数据，逐级往下选择
+     */
+    @GetMapping("/tree")
+    @Operation(summary = "获得CRM 客户来源完整树")
+    public CommonResult<List<CrmCustomerSourceRespVO>> getCustomerSourceTree() {
+        List<CrmCustomerSourceDO> list = customerSourceService.getCustomerSourceTree();
+        return success(BeanUtils.toBean(list, CrmCustomerSourceRespVO.class));
+    }
+
+    /**
+     * 获取CRM 客户来源链路（从顶级到自身）
+     *
+     * <p>用于前端编辑时，还原级联选择器已选择的每一级
+     */
+    @GetMapping("/chain")
+    @Operation(summary = "获得CRM 客户来源链路")
+    @Parameter(name = "id", description = "编号", required = true, example = "1024")
+    public CommonResult<List<CrmCustomerSourceRespVO>> getCustomerSourceChain(@RequestParam("id") Long id) {
+        List<CrmCustomerSourceDO> list = customerSourceService.getCustomerSourceChain(id);
+        return success(BeanUtils.toBean(list, CrmCustomerSourceRespVO.class));
+    }
+
+    /**
      * 导出CRM 客户来源 Excel
      */
     @GetMapping("/export-excel")

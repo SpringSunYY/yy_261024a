@@ -29,7 +29,8 @@ export namespace CrmClueApi {
     detailAddress: string; // 详细地址
     industryId: number; // 所属行业
     level: number; // 客户等级
-    source: number; // 客户来源
+    source: string; // 客户来源编号
+    sourceName?: string; // 客户来源名称
     remark: string; // 备注
     creator: string; // 创建人
     creatorName?: string; // 创建人名称

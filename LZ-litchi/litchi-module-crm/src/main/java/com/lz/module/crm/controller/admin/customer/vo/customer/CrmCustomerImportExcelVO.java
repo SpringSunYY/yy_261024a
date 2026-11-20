@@ -70,11 +70,9 @@ public class CrmCustomerImportExcelVO {
     @ExcelI18n(i18nKey = "crm.customer.field.level")
     private Integer level;
 
-    @ExcelProperty(value = "客户来源", converter = DictConvert.class)
-    @DictFormat(CRM_CUSTOMER_SOURCE)
-    @ExcelColumnSelect(dictType = CRM_CUSTOMER_SOURCE, i18n = true)
+    @ExcelProperty("客户来源编号")
     @ExcelI18n(i18nKey = "crm.customer.field.source")
-    private Integer source;
+    private String source;
 
     @ExcelProperty("备注")
     @ExcelI18n(i18nKey = "crm.customer.field.remark")

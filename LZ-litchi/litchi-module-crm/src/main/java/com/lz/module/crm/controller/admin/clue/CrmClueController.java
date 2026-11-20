@@ -1,6 +1,7 @@
 package com.lz.module.crm.controller.admin.clue;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.lz.framework.apilog.core.annotation.ApiAccessLog;
 import com.lz.framework.common.pojo.CommonResult;
 import com.lz.framework.common.pojo.PageResult;
@@ -17,6 +18,7 @@ import com.lz.module.crm.dal.dataobject.clue.CrmClueDO;
 import com.lz.module.crm.dal.dataobject.customer.CrmCustomerDO;
 import com.lz.module.crm.service.clue.CrmClueService;
 import com.lz.module.crm.service.customer.CrmCustomerService;
+import com.lz.module.crm.service.customer.CrmCustomerSourceService;
 import com.lz.module.system.api.dept.DeptApi;
 import com.lz.module.system.api.dept.dto.DeptRespDTO;
 import com.lz.module.system.api.user.AdminUserApi;
@@ -55,6 +57,8 @@ public class CrmClueController {
     private CrmClueService clueService;
     @Resource
     private CrmCustomerService customerService;
+    @Resource
+    private CrmCustomerSourceService customerSourceService;
 
     @Resource
     private AdminUserApi adminUserApi;
@@ -138,7 +142,11 @@ public class CrmClueController {
             }
             // 2.1 设置客户名称
             MapUtils.findAndThen(customerMap, clueVO.getCustomerId(), customer -> clueVO.setCustomerName(customer.getName()));
-            // 2.2 设置创建人、负责人名称
+            // 2.2 设置客户来源名称（source 保留编号，便于前端还原级联选择）
+            if (StrUtil.isNotEmpty(clueVO.getSource())) {
+                clueVO.setSourceName(customerSourceService.getCustomerSourceName(clueVO.getSource()));
+            }
+            // 2.3 设置创建人、负责人名称
             MapUtils.findAndThen(userMap, NumberUtils.parseLong(clueVO.getCreator()),
                     user -> clueVO.setCreatorName(user.getNickname()));
             MapUtils.findAndThen(userMap, clueVO.getOwnerUserId(), user -> {

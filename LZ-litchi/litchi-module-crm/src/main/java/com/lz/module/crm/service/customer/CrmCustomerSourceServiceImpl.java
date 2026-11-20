@@ -5,20 +5,24 @@ import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.lz.framework.common.enums.CommonConstants;
+import com.lz.framework.common.enums.CommonStatusEnum;
+import com.lz.framework.common.util.object.BeanUtils;
+import com.lz.framework.mybatis.core.query.LambdaQueryWrapperX;
 import com.lz.module.crm.controller.admin.customer.vo.source.CrmCustomerSourceReqVO;
 import com.lz.module.crm.controller.admin.customer.vo.source.CrmCustomerSourceSaveReqVO;
+import com.lz.module.crm.dal.dataobject.customer.CrmCustomerSourceDO;
+import com.lz.module.crm.dal.mysql.customer.CrmCustomerSourceMapper;
+import com.lz.module.crm.enums.CrmRedisKeyConstants;
+import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import jakarta.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
-import com.lz.module.crm.dal.dataobject.customer.CrmCustomerSourceDO;
-import com.lz.framework.common.util.object.BeanUtils;
-
-import com.lz.module.crm.dal.mysql.customer.CrmCustomerSourceMapper;
 
 import static com.lz.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.lz.module.crm.enums.ErrorCodeConstants.*;
@@ -28,6 +32,7 @@ import static com.lz.module.crm.enums.ErrorCodeConstants.*;
  *
  * @author 荔枝软件
  */
+@Slf4j
 @Service
 @Validated
 public class CrmCustomerSourceServiceImpl implements CrmCustomerSourceService {
@@ -36,6 +41,8 @@ public class CrmCustomerSourceServiceImpl implements CrmCustomerSourceService {
     private CrmCustomerSourceMapper customerSourceMapper;
 
     @Override
+    @CacheEvict(cacheNames = {CrmRedisKeyConstants.CUSTOMER_SOURCE_ANCESTOR_NAME, CrmRedisKeyConstants.CUSTOMER_SOURCE_TREE,
+            CrmRedisKeyConstants.CUSTOMER_SOURCE_NAME}, allEntries = true)
     public Long createCustomerSource(CrmCustomerSourceSaveReqVO createReqVO) {
         if (createReqVO.getParentId() == null) {
             createReqVO.setParentId(CrmCustomerSourceDO.PARENT_ID_ROOT);
@@ -56,6 +63,8 @@ public class CrmCustomerSourceServiceImpl implements CrmCustomerSourceService {
     }
 
     @Override
+    @CacheEvict(cacheNames = {CrmRedisKeyConstants.CUSTOMER_SOURCE_ANCESTOR_NAME, CrmRedisKeyConstants.CUSTOMER_SOURCE_TREE,
+            CrmRedisKeyConstants.CUSTOMER_SOURCE_NAME}, allEntries = true) // allEntries 清空所有缓存，因为名称或父级变更会影响自身及所有子级的祖先名称
     public void updateCustomerSource(CrmCustomerSourceSaveReqVO updateReqVO) {
         if (updateReqVO.getParentId() == null) {
             updateReqVO.setParentId(CrmCustomerSourceDO.PARENT_ID_ROOT);
@@ -84,6 +93,8 @@ public class CrmCustomerSourceServiceImpl implements CrmCustomerSourceService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @CacheEvict(cacheNames = {CrmRedisKeyConstants.CUSTOMER_SOURCE_ANCESTOR_NAME, CrmRedisKeyConstants.CUSTOMER_SOURCE_TREE,
+            CrmRedisKeyConstants.CUSTOMER_SOURCE_NAME}, allEntries = true) // allEntries 清空所有缓存，因为删除后自身及所有子级的祖先名称缓存都会失效
     public void deleteCustomerSource(Long id, Boolean isDeleteChildren) {
         // 校验存在
         validateCustomerSourceExists(id);
@@ -106,7 +117,7 @@ public class CrmCustomerSourceServiceImpl implements CrmCustomerSourceService {
      * 递归收集所有子CRM 客户来源
      *
      * @param parentId 父级编号
-     * @param result 收集结果
+     * @param result   收集结果
      */
     private void selectCustomerSourceChildren(Long parentId, List<CrmCustomerSourceDO> result) {
         List<CrmCustomerSourceDO> children = customerSourceMapper.selectListByParentId(Collections.singleton(parentId));
@@ -120,7 +131,7 @@ public class CrmCustomerSourceServiceImpl implements CrmCustomerSourceService {
     /**
      * 更新所有子孙CRM 客户来源的祖级列表
      *
-     * @param customerSourceId CRM 客户来源编号
+     * @param customerSourceId        CRM 客户来源编号
      * @param customerSourceAncestors 该CRM 客户来源的祖级列表
      */
     private void updateChildrenAncestors(Long customerSourceId, String customerSourceAncestors) {
@@ -269,6 +280,103 @@ public class CrmCustomerSourceServiceImpl implements CrmCustomerSourceService {
             }
         }
         return result;
+    }
+
+    @Override
+    public List<CrmCustomerSourceDO> getCustomerSourceChain(Long id) {
+        List<CrmCustomerSourceDO> result = new ArrayList<>();
+        if (id == null) {
+            return result;
+        }
+        CrmCustomerSourceDO customerSource = customerSourceMapper.selectById(id);
+        if (customerSource == null) {
+            return result;
+        }
+        // 1. 父级链路，顺序为：顶级 -> 直属父级
+        List<CrmCustomerSourceDO> parentList = getParentCustomerSourceList(id);
+        // getParentCustomerSourceList 返回的是「自己的上级 -> 顶级」，这里需要反转成「顶级 -> 直属父级」
+        Collections.reverse(parentList);
+        result.addAll(parentList);
+        // 2. 追加自身
+        result.add(customerSource);
+        return result;
+    }
+
+    @Override
+    @Cacheable(cacheNames = CrmRedisKeyConstants.CUSTOMER_SOURCE_NAME, key = "#source",
+            condition = "#source != null && !#source.isEmpty()")
+    public String getCustomerSourceName(String source) {
+        if (StrUtil.isEmpty(source)) {
+            return source;
+        }
+        Long sourceId = null;
+        try {
+            sourceId = Long.valueOf(source);
+        } catch (NumberFormatException e) {
+            log.error("CRM 客户来源编号解析异常:{}", e.getMessage());
+            return source;
+        }
+        CrmCustomerSourceDO customerSource = customerSourceMapper.selectById(sourceId);
+        if (customerSource == null) {
+            return source;
+        }
+        return customerSource.getName();
+    }
+
+    @Override
+    public void validateCustomerSourceExists(String newSourceId, String oldSourceId) {
+        // 如果新的id为空直接返回true
+        if (StrUtil.isEmpty(newSourceId)) {
+            return;
+        }
+        // 如果旧的id不为空且等于新的id，返回true
+        if (StrUtil.isNotEmpty(oldSourceId) && oldSourceId.equals(newSourceId)) {
+            return;
+        }
+        try {
+            if (customerSourceMapper.selectById(Long.valueOf(newSourceId)) == null) {
+                throw exception(CUSTOMER_SOURCE_NOT_EXISTS);
+            }
+        } catch (NumberFormatException e) {
+            log.error("CRM 客户来源编号解析异常:{}", e.getMessage());
+            throw exception(CUSTOMER_SOURCE_NOT_EXISTS);
+        }
+    }
+
+    @Override
+    @Cacheable(cacheNames = CrmRedisKeyConstants.CUSTOMER_SOURCE_ANCESTOR_NAME, key = "#source")
+    public String getCustomerSourceAncestorsName(String source) {
+        if (StrUtil.isEmpty(source)) {
+            return source;
+        }
+        Long sourceId = null;
+        try {
+            sourceId = Long.valueOf(source);
+        } catch (NumberFormatException e) {
+            log.error("CRM 客户来源编号解析异常:{}", e.getMessage());
+            return source;
+        }
+        //查询到自己
+        CrmCustomerSourceDO customerSource = customerSourceMapper.selectById(sourceId);
+        if (customerSource == null) {
+            return source;
+        }
+        //查询到所有父级
+        List<CrmCustomerSourceDO> parentCustomerSourceList = getParentCustomerSourceList(sourceId);
+
+        //把自己拼到父级然后拼接name
+        parentCustomerSourceList.add(customerSource);
+        return parentCustomerSourceList.stream().map(CrmCustomerSourceDO::getName).collect(Collectors.joining(CommonConstants.ANCESTORS_SEPARATOR));
+    }
+
+    @Override
+    @Cacheable(cacheNames = CrmRedisKeyConstants.CUSTOMER_SOURCE_TREE, key = "'all'")
+    public List<CrmCustomerSourceDO> getCustomerSourceTree() {
+        // 只查询开启状态的来源，关闭的来源不参与级联选择
+        return customerSourceMapper.selectList(new LambdaQueryWrapperX<CrmCustomerSourceDO>()
+                .eq(CrmCustomerSourceDO::getStatus, CommonStatusEnum.ENABLE.getStatus())
+                .orderByAsc(CrmCustomerSourceDO::getOrderNum)
+                .orderByAsc(CrmCustomerSourceDO::getId));
     }
 
     /**

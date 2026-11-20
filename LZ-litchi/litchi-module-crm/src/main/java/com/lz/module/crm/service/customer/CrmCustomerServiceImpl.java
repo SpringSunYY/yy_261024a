@@ -84,6 +84,8 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
     @Resource
     @Lazy
     private CrmContractService contractService;
+    @Resource
+    private CrmCustomerSourceService customerSourceService;
 
     @Resource
     private AdminUserApi adminUserApi;
@@ -96,7 +98,12 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
         createReqVO.setId(null);
         // 1. 校验拥有客户是否到达上限
         validateCustomerExceedOwnerLimit(createReqVO.getOwnerUserId(), 1);
-
+        // 1.1 校验客户来源
+        customerSourceService.validateCustomerSourceExists(createReqVO.getSource(), null);
+        // 1.2 校验客户名称唯一
+        validateCustomerNameUnique(createReqVO.getName(), null);
+        // 1.3 校验手机号唯一
+        validateCustomerMobileUnique(createReqVO.getMobile(), null);
         // 2. 插入客户
         CrmCustomerDO customer = initCustomer(createReqVO, userId);
         customerMapper.insert(customer);
@@ -131,6 +138,12 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
         Assert.notNull(updateReqVO.getId(), "客户编号不能为空");
         // 1. 校验存在
         CrmCustomerDO oldCustomer = validateCustomerExists(updateReqVO.getId());
+        // 1.1 校验客户来源
+        customerSourceService.validateCustomerSourceExists(updateReqVO.getSource(), oldCustomer.getSource());
+        // 1.2 校验客户名称唯一（排除自身）
+        validateCustomerNameUnique(updateReqVO.getName(), updateReqVO.getId());
+        // 1.3 校验手机号唯一（排除自身）
+        validateCustomerMobileUnique(updateReqVO.getMobile(), updateReqVO.getId());
 
         // 2. 更新客户
         CrmCustomerDO updateObj = BeanUtils.toBean(updateReqVO, CrmCustomerDO.class);
@@ -276,7 +289,11 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
     @LogRecord(type = CRM_CUSTOMER_TYPE, subType = CRM_CUSTOMER_CREATE_SUB_TYPE, bizNo = "{{#customer.id}}",
             success = CRM_CUSTOMER_CREATE_SUCCESS)
     public Long createCustomer(CrmCustomerCreateReqBO createReqBO, Long userId) {
-        // 1. 插入客户
+        // 1.1 校验客户名称唯一
+        validateCustomerNameUnique(createReqBO.getName(), null);
+        // 1.2 校验手机号唯一
+        validateCustomerMobileUnique(createReqBO.getMobile(), null);
+        // 2. 插入客户
         CrmCustomerDO customer = initCustomer(createReqBO, userId);
         customerMapper.insert(customer);
 
@@ -312,6 +329,13 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
             // 情况一：判断如果不存在，在进行插入
             CrmCustomerDO existCustomer = customerMapper.selectByCustomerName(importCustomer.getName());
             if (existCustomer == null) {
+                // 1.0 校验手机号唯一
+                try {
+                    validateCustomerMobileUnique(importCustomer.getMobile(), null);
+                } catch (ServiceException ex) {
+                    respVO.getFailureCustomerNames().put(importCustomer.getName(), ex.getMessage());
+                    return;
+                }
                 // 1.1 插入客户信息
                 CrmCustomerDO customer = initCustomer(importCustomer, importReqVO.getOwnerUserId());
                 customerMapper.insert(customer);
@@ -330,6 +354,13 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
             if (!importReqVO.getUpdateSupport()) {
                 respVO.getFailureCustomerNames().put(importCustomer.getName(),
                         StrUtil.format(CUSTOMER_NAME_EXISTS.getMsg(), importCustomer.getName()));
+                return;
+            }
+            // 2.0 校验手机号唯一（排除自身）
+            try {
+                validateCustomerMobileUnique(importCustomer.getMobile(), existCustomer.getId());
+            } catch (ServiceException ex) {
+                respVO.getFailureCustomerNames().put(importCustomer.getName(), ex.getMessage());
                 return;
             }
             // 2.1 更新客户信息
@@ -535,11 +566,43 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
 
     // ======================= 校验相关 =======================
 
+    /**
+     * 校验客户名称是否唯一
+     *
+     * @param name 客户名称
+     * @param excludeId 需要排除的客户编号（修改场景，排除自身），为空时不排除
+     */
+    private void validateCustomerNameUnique(String name, Long excludeId) {
+        if (StrUtil.isEmptyIfStr(name)) {
+            return;
+        }
+        if (customerMapper.selectByCustomerName(name, excludeId) != null) {
+            throw exception(CUSTOMER_NAME_EXISTS, name);
+        }
+    }
+
+    /**
+     * 校验客户手机号是否唯一
+     *
+     * @param mobile 手机号
+     * @param excludeId 需要排除的客户编号（修改场景，排除自身），为空时不排除
+     */
+    private void validateCustomerMobileUnique(String mobile, Long excludeId) {
+        if (StrUtil.isEmptyIfStr(mobile)) {
+            return;
+        }
+        if (customerMapper.selectByMobile(mobile, excludeId) != null) {
+            throw exception(CUSTOMER_MOBILE_EXISTS, mobile);
+        }
+    }
+
     private void validateCustomerForCreate(CrmCustomerImportExcelVO importCustomer) {
         // 校验客户名称不能为空
         if (StrUtil.isEmptyIfStr(importCustomer.getName())) {
             throw exception(CUSTOMER_CREATE_NAME_NOT_NULL);
         }
+        // 校验客户来源编号是否存在（导入时直接传入来源编号）
+        customerSourceService.validateCustomerSourceExists(importCustomer.getSource(), null);
     }
 
     /**
@@ -622,9 +685,9 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
             //判断是部门还是用户
             if (Objects.equals(simpVO.getApplicableType(),
                     CrmCustomerLimitConfigApplicableTypeEnum.CUSTOMER_LIMIT_CONFIG_APPLICABLE_TYPE_2.getValue())) {
-                throw exception(CUSTOMER_OWNER_EXCEED_LIMIT_USER, simpVO.getUserName(), simpVO.getUserName(),simpVO.getMaxCount(), simpVO.getName(),simpVO.getName(),simpVO.getId());
+                throw exception(CUSTOMER_OWNER_EXCEED_LIMIT_USER, simpVO.getUserName(), simpVO.getUserName(), simpVO.getMaxCount(), simpVO.getName(), simpVO.getName(), simpVO.getId());
             } else {
-                throw exception(CUSTOMER_OWNER_EXCEED_LIMIT_DEPT, simpVO.getUserName(), simpVO.getDeptName(), simpVO.getMaxCount(), simpVO.getName(),simpVO.getId());
+                throw exception(CUSTOMER_OWNER_EXCEED_LIMIT_DEPT, simpVO.getUserName(), simpVO.getDeptName(), simpVO.getMaxCount(), simpVO.getName(), simpVO.getId());
             }
         }
     }
@@ -647,9 +710,9 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
             // 判断是部门还是用户
             if (Objects.equals(simpVO.getApplicableType(),
                     CrmCustomerLimitConfigApplicableTypeEnum.CUSTOMER_LIMIT_CONFIG_APPLICABLE_TYPE_2.getValue())) {
-                throw exception(CUSTOMER_LOCK_EXCEED_LIMIT_USER, simpVO.getUserName(), simpVO.getUserName(), simpVO.getName(),simpVO.getName(),simpVO.getId());
+                throw exception(CUSTOMER_LOCK_EXCEED_LIMIT_USER, simpVO.getUserName(), simpVO.getUserName(), simpVO.getName(), simpVO.getName(), simpVO.getId());
             } else {
-                throw exception(CUSTOMER_LOCK_EXCEED_LIMIT_DEPT, simpVO.getDeptName(), simpVO.getDeptName(),simpVO.getName(),simpVO.getId());
+                throw exception(CUSTOMER_LOCK_EXCEED_LIMIT_DEPT, simpVO.getDeptName(), simpVO.getDeptName(), simpVO.getName(), simpVO.getId());
             }
         }
     }

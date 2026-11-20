@@ -36,8 +36,8 @@ public class CrmCluePageReqVO extends PageParam {
     @Schema(description = "客户等级", example = "1")
     private Integer level;
 
-    @Schema(description = "客户来源", example = "1")
-    private Integer source;
+    @Schema(description = "客户来源编号", example = "1")
+    private String source;
 
     @Schema(description = "跟进状态", example = "true")
     private Boolean followUpStatus;

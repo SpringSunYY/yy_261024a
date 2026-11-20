@@ -12,7 +12,6 @@ import { Card, Col, Row } from 'ant-design-vue';
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { getCustomerSource } from '#/api/crm/statistics/portrait';
 import { $t } from '#/locales';
-import { DICT_TYPE, getDictLabel } from '#/utils';
 
 import { sourceColumns } from '../data';
 
@@ -46,7 +45,7 @@ const COLORS = [
 
 function renderLeftPie() {
   const data = chartData.value.map((item, index) => ({
-    name: getDictLabel(DICT_TYPE.CRM_CUSTOMER_SOURCE, item.source),
+    name: item.sourceName,
     value: item.customerCount,
     itemStyle: { color: COLORS[index % COLORS.length] },
   }));
@@ -75,7 +74,7 @@ function renderLeftPie() {
 
 function renderRightPie() {
   const data = chartData.value.map((item, index) => ({
-    name: getDictLabel(DICT_TYPE.CRM_CUSTOMER_SOURCE, item.source),
+    name: item.sourceName,
     value: item.dealCount,
     itemStyle: { color: COLORS[index % COLORS.length] },
   }));
@@ -131,7 +130,7 @@ async function loadData() {
 
     const tableRows = res.map((item) => ({
       ...item,
-      sourceName: getDictLabel(DICT_TYPE.CRM_CUSTOMER_SOURCE, item.source),
+      sourceName: item.sourceName,
       sourcePortion: calcPortion(item.customerCount, totalCustomer),
       dealPortion: calcPortion(item.dealCount, totalDeal),
     }));

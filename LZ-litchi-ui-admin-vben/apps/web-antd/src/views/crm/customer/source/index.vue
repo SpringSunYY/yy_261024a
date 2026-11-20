@@ -18,6 +18,7 @@ import {
 import { CascadeDeleteSwitch } from '#/components/cascade-delete-switch';
 import { $t } from '#/locales';
 import { pickSort } from '#/utils';
+import { customerSourceStore } from '#/utils/source-cascade';
 
 import { useGridColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
@@ -37,6 +38,8 @@ function toggleExpand() {
 
 /** 刷新表格 */
 function onRefresh() {
+  // 客户来源发生变更后，清空前端的来源缓存，保证下次打开表单时能拿到最新数据
+  customerSourceStore.reset();
   gridApi.query();
 }
 

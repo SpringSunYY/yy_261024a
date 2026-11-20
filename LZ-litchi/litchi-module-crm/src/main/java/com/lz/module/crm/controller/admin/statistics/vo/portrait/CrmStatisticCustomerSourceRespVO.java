@@ -8,7 +8,10 @@ import lombok.Data;
 public class CrmStatisticCustomerSourceRespVO {
 
     @Schema(description = "客户来源编号", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
-    private Integer source;
+    private String source;
+
+    @Schema(description = "客户来源名称", example = "2")
+    private String sourceName;
 
     @Schema(description = "客户个数", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
     private Integer customerCount;

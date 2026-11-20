@@ -5,7 +5,12 @@ import type { CrmCustomerApi } from '#/api/crm/customer';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-import { DocAlert, Page, useVbenModal } from '@vben/common-ui';
+import {
+  DocAlert,
+  Page,
+  useVbenModal,
+  useVbenModelDrawer,
+} from '@vben/common-ui';
 import { downloadFileFromBlobPart } from '@vben/utils';
 
 import { Button, message, Tabs } from 'ant-design-vue';
@@ -26,7 +31,7 @@ import ImportForm from './modules/import-form.vue';
 const { push } = useRouter();
 const sceneType = ref('1');
 
-const [FormModal, formModalApi] = useVbenModal({
+const [FormModalDrawer, formModalDrawerApi] = useVbenModelDrawer({
   connectedComponent: Form,
   destroyOnClose: true,
 });
@@ -57,12 +62,12 @@ async function handleExport() {
 
 /** 创建客户 */
 function handleCreate() {
-  formModalApi.setData(null).open();
+  formModalDrawerApi.setData(null).open();
 }
 
 /** 编辑客户 */
 function handleEdit(row: CrmCustomerApi.Customer) {
-  formModalApi.setData(row).open();
+  formModalDrawerApi.setData(row).open();
 }
 
 /** 删除客户 */
@@ -138,7 +143,7 @@ function onChangeSceneType(key: number | string) {
       />
     </template>
 
-    <FormModal @success="onRefresh" />
+    <FormModalDrawer @success="onRefresh" />
     <ImportModal @success="onRefresh" />
     <Grid>
       <template #top>

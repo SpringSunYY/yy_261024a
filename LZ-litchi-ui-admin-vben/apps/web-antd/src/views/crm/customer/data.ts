@@ -23,15 +23,7 @@ export function useFormSchema(): VbenFormSchema[] {
       component: 'Input',
       rules: 'required',
     },
-    {
-      fieldName: 'source',
-      label: $t('crm.customer.field.source'),
-      component: 'I18nSelect',
-      componentProps: {
-        options: getDictOptions(DICT_TYPE.CRM_CUSTOMER_SOURCE),
-      },
-      rules: 'required',
-    },
+    // 客户来源为级联选择，字段由 form.vue 动态追加，不在这里声明
     {
       fieldName: 'mobile',
       label: $t('crm.customer.field.mobile'),
@@ -164,12 +156,8 @@ export function useGridColumns(): VxeTableGridOptions['columns'] {
       },
     },
     {
-      field: 'source',
+      field: 'sourceName',
       title: $t('crm.customer.field.source'),
-      cellRender: {
-        name: 'CellI18nDict',
-        props: { type: DICT_TYPE.CRM_CUSTOMER_SOURCE },
-      },
     },
     {
       field: 'mobile',

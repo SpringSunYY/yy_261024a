@@ -16,7 +16,8 @@ export namespace CrmStatisticsPortraitApi {
 
   /** 客户来源统计信息 */
   export interface CustomerSource extends CustomerBase {
-    source: number;
+    source: string;
+    sourceName?: string;
     sourcePortion: number | string;
   }
 

@@ -2,6 +2,7 @@ package com.lz.module.crm.controller.admin.customer;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.util.StrUtil;
 import com.lz.framework.apilog.core.annotation.ApiAccessLog;
 import com.lz.framework.common.pojo.CommonResult;
 import com.lz.framework.common.pojo.PageResult;
@@ -10,6 +11,7 @@ import com.lz.framework.common.util.collection.MapUtils;
 import com.lz.framework.common.util.date.LocalDateTimeUtils;
 import com.lz.framework.common.util.number.NumberUtils;
 import com.lz.framework.common.util.object.BeanUtils;
+import com.lz.framework.excel.core.annotations.ExcelDirection;
 import com.lz.framework.excel.core.util.ExcelUtils;
 import com.lz.framework.ip.core.utils.AreaUtils;
 import com.lz.module.crm.controller.admin.customer.vo.customer.*;
@@ -17,6 +19,7 @@ import com.lz.module.crm.dal.dataobject.customer.CrmCustomerDO;
 import com.lz.module.crm.dal.dataobject.customer.CrmCustomerPoolConfigDO;
 import com.lz.module.crm.service.customer.CrmCustomerPoolConfigService;
 import com.lz.module.crm.service.customer.CrmCustomerService;
+import com.lz.module.crm.service.customer.CrmCustomerSourceService;
 import com.lz.module.system.api.dept.DeptApi;
 import com.lz.module.system.api.dept.dto.DeptRespDTO;
 import com.lz.module.system.api.user.AdminUserApi;
@@ -56,6 +59,8 @@ public class CrmCustomerController {
     private CrmCustomerService customerService;
     @Resource
     private CrmCustomerPoolConfigService customerPoolConfigService;
+    @Resource
+    private CrmCustomerSourceService customerSourceService;
 
     @Resource
     private DeptApi deptApi;
@@ -144,14 +149,18 @@ public class CrmCustomerController {
             if (customerVO.getAreaCode()!= null){
                 customerVO.setAreaName(AreaUtils.format(customerVO.getAreaCode()));
             }
-            // 2.1 设置创建人、负责人名称
+            // 2.1 设置客户来源名称（source 保留编号，便于前端还原级联选择）
+            if (StrUtil.isNotEmpty(customerVO.getSource())) {
+                customerVO.setSourceName(customerSourceService.getCustomerSourceAncestorsName(customerVO.getSource()));
+            }
+            // 2.2 设置创建人、负责人名称
             MapUtils.findAndThen(userMap, NumberUtils.parseLong(customerVO.getCreator()),
                     user -> customerVO.setCreatorName(user.getNickname()));
             MapUtils.findAndThen(userMap, customerVO.getOwnerUserId(), user -> {
                 customerVO.setOwnerUserName(user.getNickname());
                 MapUtils.findAndThen(deptMap, user.getDeptId(), dept -> customerVO.setOwnerUserDeptName(dept.getName()));
             });
-            // 2.2 设置距离进入公海的时间
+            // 2.3 设置距离进入公海的时间
             if (customerVO.getOwnerUserId() != null) {
                 customerVO.setPoolDay(poolDayMap.get(customerVO.getId()));
             }
@@ -243,7 +252,7 @@ public class CrmCustomerController {
         List<CrmCustomerDO> list = customerService.getCustomerPage(pageVO, getLoginUserId()).getList();
         // 导出 Excel
         ExcelUtils.write(response, "客户.xls", "数据", CrmCustomerRespVO.class,
-                buildCustomerDetailList(list));
+                buildCustomerDetailList(list), ExcelDirection.ONLY_EXPORT);
     }
 
     @GetMapping("/get-import-template")
@@ -251,14 +260,13 @@ public class CrmCustomerController {
     public void importTemplate(HttpServletResponse response) throws IOException {
         // 手动创建导出 demo
         List<CrmCustomerImportExcelVO> list = Arrays.asList(
-                CrmCustomerImportExcelVO.builder().name("荔枝").industryId(1).level(1).source(1)
+                CrmCustomerImportExcelVO.builder().name("荔枝").industryId(1).level(1).source("1")
                         .mobile("15601691300").telephone("").qq("").wechat("").email("yunai@iocoder.cn")
                         .areaCode(null).detailAddress("").remark("").build(),
-                CrmCustomerImportExcelVO.builder().name("源码").industryId(1).level(1).source(1)
+                CrmCustomerImportExcelVO.builder().name("源码").industryId(1).level(1).source("1")
                         .mobile("15601691300").telephone("").qq("").wechat("").email("yunai@iocoder.cn")
                         .areaCode(null).detailAddress("").remark("").build()
-        );
-        // 输出
+        );        // 输出
         ExcelUtils.write(response, "客户导入模板.xls", "客户列表", CrmCustomerImportExcelVO.class, list);
     }
 

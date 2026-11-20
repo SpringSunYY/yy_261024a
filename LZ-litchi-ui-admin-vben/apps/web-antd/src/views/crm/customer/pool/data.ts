@@ -1,6 +1,7 @@
 import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
+import { getCustomerSourceTree } from '#/api/crm/customer/source';
 import { $t } from '#/locales';
 import { DICT_TYPE, getDictOptions } from '#/utils';
 
@@ -52,9 +53,13 @@ export function useGridFormSchema(): VbenFormSchema[] {
     {
       fieldName: 'source',
       label: $t('crm.customerPool.field.source'),
-      component: 'I18nSelect',
+      component: 'ApiSelect',
       componentProps: {
-        options: getDictOptions(DICT_TYPE.CRM_CUSTOMER_SOURCE, 'number'),
+        api: () => getCustomerSourceTree(),
+        fieldNames: {
+          label: 'name',
+          value: 'id',
+        },
         placeholder: $t('ui.placeholder.select', [
           $t('crm.customerPool.field.source'),
         ]),
@@ -74,12 +79,8 @@ export function useGridColumns(): VxeTableGridOptions['columns'] {
     },
     {
       title: $t('crm.customerPool.field.source'),
-      field: 'source',
+      field: 'sourceName',
       minWidth: 100,
-      cellRender: {
-        name: 'CellI18nDict',
-        props: { type: DICT_TYPE.CRM_CUSTOMER_SOURCE },
-      },
     },
     {
       title: $t('crm.customerPool.field.mobile'),

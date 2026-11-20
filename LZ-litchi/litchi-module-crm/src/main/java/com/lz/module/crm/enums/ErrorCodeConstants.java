@@ -69,6 +69,7 @@ public interface ErrorCodeConstants {
     ErrorCode CUSTOMER_CREATE_NAME_NOT_NULL = new ErrorCode(1_020_006_013, "crm.customer.back.nameRequired", "客户名称不能为空！");
     ErrorCode CUSTOMER_NAME_EXISTS = new ErrorCode(1_020_006_014, "crm.customer.back.nameExists", "已存在名为【{}】的客户！");
     ErrorCode CUSTOMER_UPDATE_DEAL_STATUS_FAIL = new ErrorCode(1_020_006_015, "crm.customer.back.dealStatusEquals", "更新客户的成交状态失败，原因：已经是该状态，无需更新");
+    ErrorCode CUSTOMER_MOBILE_EXISTS = new ErrorCode(1_020_006_016, "crm.customer.back.mobileExists", "已存在手机号为【{}】的客户！");
 
     // ========== 权限管理 1-020-007-000 ==========
     ErrorCode CRM_PERMISSION_NOT_EXISTS = new ErrorCode(1_020_007_000, "crm.permission.back.notExists", "数据权限不存在");

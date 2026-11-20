@@ -62,4 +62,47 @@ public interface CrmCustomerSourceService {
      */
     List<CrmCustomerSourceDO> getParentCustomerSourceList(Long id);
 
+    /**
+     * 校验CRM 客户来源是否存在，如果存在则返回true
+     *
+     * @param newSourceId 新来源编号 如果只有新编号，只查询是否存在
+     * @param oldSourceId 旧来源编号 如果有旧编号，校验新编号和旧编号是否一致，如果一致则返回true
+     * @return 是否存在
+     */
+    void validateCustomerSourceExists(String newSourceId, String oldSourceId);
+
+    /**
+     * 获得CRM 客户来源的祖先名称
+     *
+     * @param source 来源
+     * @return 祖先名称
+     */
+    String getCustomerSourceAncestorsName(String source);
+
+    /**
+     * 获得CRM 客户来源的完整树（只包含开启状态的来源）
+     *
+     * <p>用于前端的级联选择器，顶级为 parentId = 0 的数据
+     *
+     * @return 客户来源树
+     */
+    List<CrmCustomerSourceDO> getCustomerSourceTree();
+
+    /**
+     * 获得CRM 客户来源的链路（从顶级到自身，包含自身）
+     *
+     * <p>用于前端编辑时，还原级联选择器已经选择的每一级
+     *
+     * @param id 编号
+     * @return 来源链路，顺序为：顶级 -> 自身
+     */
+    List<CrmCustomerSourceDO> getCustomerSourceChain(Long id);
+
+    /**
+     * 获得CRM 客户来源的名称
+     *
+     * @param source 来源编号
+     * @return 来源名称
+     */
+    String getCustomerSourceName(String source);
 }

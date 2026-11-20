@@ -12,13 +12,8 @@ import { DICT_TYPE } from '#/utils';
 export function useDetailSchema(): DescriptionItemSchema[] {
   return [
     {
-      field: 'source',
+      field: 'sourceName',
       label: $t('crm.clue.field.source'),
-      content: (data) =>
-        h(I18nDictTag, {
-          type: DICT_TYPE.CRM_CUSTOMER_SOURCE,
-          value: data?.source,
-        }),
     },
     {
       field: 'mobile',
@@ -44,13 +39,8 @@ export function useDetailBaseSchema(): DescriptionItemSchema[] {
       label: $t('crm.clue.field.name'),
     },
     {
-      field: 'source',
+      field: 'sourceName',
       label: $t('crm.clue.field.source'),
-      content: (data) =>
-        h(I18nDictTag, {
-          type: DICT_TYPE.CRM_CUSTOMER_SOURCE,
-          value: data?.source,
-        }),
     },
     {
       field: 'mobile',

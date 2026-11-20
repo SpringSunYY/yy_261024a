@@ -1,6 +1,3 @@
-import type { PageParam, PageResult } from '@vben/request';
-import type { Dayjs } from 'dayjs';
-
 import { requestClient } from '#/api/request';
 
 export namespace CustomerSourceApi {
@@ -23,6 +20,20 @@ export function getCustomerSourceList(params: any) {
 /** 查询CRM 客户来源详情 */
 export function getCustomerSource(id: number) {
   return requestClient.get<CustomerSourceApi.CustomerSource>(`/crm/customer-source/get?id=${id}`);
+}
+
+/** 查询CRM 客户来源完整树（只包含开启状态的来源） */
+export function getCustomerSourceTree() {
+  return requestClient.get<CustomerSourceApi.CustomerSource[]>(
+    '/crm/customer-source/tree',
+  );
+}
+
+/** 查询CRM 客户来源链路（从顶级到自身） */
+export function getCustomerSourceChain(id: number) {
+  return requestClient.get<CustomerSourceApi.CustomerSource[]>(
+    `/crm/customer-source/chain?id=${id}`,
+  );
 }
 
 /** 新增CRM 客户来源 */

@@ -40,7 +40,7 @@ public class CrmCustomerPageReqVO extends PageParam {
     private Integer level;
 
     @Schema(description = "客户来源", example = "1")
-    private Integer source;
+    private String source;
 
     @Schema(description = "场景类型", example = "1")
     @InEnum(CrmSceneTypeEnum.class)

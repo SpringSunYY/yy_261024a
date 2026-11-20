@@ -3,11 +3,13 @@ package com.lz.module.crm.service.statistics;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.util.ObjUtil;
+import cn.hutool.core.util.StrUtil;
 import com.lz.framework.ip.core.Area;
 import com.lz.framework.ip.core.enums.AreaTypeEnum;
 import com.lz.framework.ip.core.utils.AreaUtils;
 import com.lz.module.crm.controller.admin.statistics.vo.portrait.*;
 import com.lz.module.crm.dal.mysql.statistics.CrmStatisticsPortraitMapper;
+import com.lz.module.crm.service.customer.CrmCustomerSourceService;
 import com.lz.module.system.api.dept.DeptApi;
 import com.lz.module.system.api.dept.dto.DeptRespDTO;
 import com.lz.module.system.api.user.AdminUserApi;
@@ -32,6 +34,9 @@ public class CrmStatisticsPortraitServiceImpl implements CrmStatisticsPortraitSe
 
     @Resource
     private CrmStatisticsPortraitMapper portraitMapper;
+
+    @Resource
+    private CrmCustomerSourceService customerSourceService;
 
     @Resource
     private AdminUserApi adminUserApi;
@@ -92,8 +97,15 @@ public class CrmStatisticsPortraitServiceImpl implements CrmStatisticsPortraitSe
         }
         reqVO.setUserIds(userIds);
 
-        // 2. 获取客户行业统计数据
-        return portraitMapper.selectCustomerSourceListGroupBySource(reqVO);
+        // 2. 获取客户来源统计数据
+        List<CrmStatisticCustomerSourceRespVO> list = portraitMapper.selectCustomerSourceListGroupBySource(reqVO);
+        // 3. 设置客户来源名称（source 保留编号）
+        for (CrmStatisticCustomerSourceRespVO item : list) {
+            if (StrUtil.isNotEmpty(item.getSource())) {
+                item.setSourceName(customerSourceService.getCustomerSourceName(item.getSource()));
+            }
+        }
+        return list;
     }
 
     @Override
