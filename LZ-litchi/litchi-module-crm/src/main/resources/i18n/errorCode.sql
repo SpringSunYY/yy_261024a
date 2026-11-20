@@ -1168,3 +1168,119 @@ VALUES ('跟进记录-删除拒绝', 'crm.followUpRecord.back.deleteDenied', @LO
 DELETE FROM infra_i18n_message WHERE message_key = 'crm.followUpRecord.back.deleteDenied' AND locale = @LOCALE_ZH_CN;
 INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
 VALUES ('跟进记录-删除拒绝', 'crm.followUpRecord.back.deleteDenied', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '删除跟进记录失败，原因：没有权限', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- =============================================
+-- CRM 客户来源 1-020-015-000
+-- =============================================
+
+-- 68. CRM 客户来源-不存在
+
+DELETE FROM infra_i18n_key WHERE message_key = 'crm.customerSource.back.notExists';
+INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 客户来源-不存在', 'crm.customerSource.back.notExists', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 68. CRM 客户来源-不存在 - en-US
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customerSource.back.notExists' AND locale = @LOCALE_EN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 客户来源-不存在', 'crm.customerSource.back.notExists', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'crm customer source not exists', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 68. CRM 客户来源-不存在 - zh-CN
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customerSource.back.notExists' AND locale = @LOCALE_ZH_CN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 客户来源-不存在', 'crm.customerSource.back.notExists', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'CRM 客户来源不存在', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 69. CRM 客户来源-存在子级
+
+DELETE FROM infra_i18n_key WHERE message_key = 'crm.customerSource.back.existChildren';
+INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 客户来源-存在子级', 'crm.customerSource.back.existChildren', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 69. CRM 客户来源-存在子级 - en-US
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customerSource.back.existChildren' AND locale = @LOCALE_EN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 客户来源-存在子级', 'crm.customerSource.back.existChildren', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'crm customer source has {} children, cannot delete', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 69. CRM 客户来源-存在子级 - zh-CN
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customerSource.back.existChildren' AND locale = @LOCALE_ZH_CN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 客户来源-存在子级', 'crm.customerSource.back.existChildren', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '存在 {} 个子CRM 客户来源，无法删除', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 70. CRM 客户来源-父级不存在
+
+DELETE FROM infra_i18n_key WHERE message_key = 'crm.customerSource.back.parentNotExists';
+INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 客户来源-父级不存在', 'crm.customerSource.back.parentNotExists', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 70. CRM 客户来源-父级不存在 - en-US
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customerSource.back.parentNotExists' AND locale = @LOCALE_EN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 客户来源-父级不存在', 'crm.customerSource.back.parentNotExists', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'parent crm customer source not exists', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 70. CRM 客户来源-父级不存在 - zh-CN
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customerSource.back.parentNotExists' AND locale = @LOCALE_ZH_CN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 客户来源-父级不存在', 'crm.customerSource.back.parentNotExists', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '父级CRM 客户来源不存在', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 71. CRM 客户来源-不能设置自己为父级
+
+DELETE FROM infra_i18n_key WHERE message_key = 'crm.customerSource.back.parentError';
+INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 客户来源-不能设置自己为父级', 'crm.customerSource.back.parentError', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 71. CRM 客户来源-不能设置自己为父级 - en-US
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customerSource.back.parentError' AND locale = @LOCALE_EN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 客户来源-不能设置自己为父级', 'crm.customerSource.back.parentError', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'cannot set itself as parent crm customer source', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 71. CRM 客户来源-不能设置自己为父级 - zh-CN
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customerSource.back.parentError' AND locale = @LOCALE_ZH_CN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 客户来源-不能设置自己为父级', 'crm.customerSource.back.parentError', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '不能设置自己为父CRM 客户来源', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 72. CRM 客户来源-名称已存在
+
+DELETE FROM infra_i18n_key WHERE message_key = 'crm.customerSource.back.nameDuplicate';
+INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 客户来源-名称已存在', 'crm.customerSource.back.nameDuplicate', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 72. CRM 客户来源-名称已存在 - en-US
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customerSource.back.nameDuplicate' AND locale = @LOCALE_EN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 客户来源-名称已存在', 'crm.customerSource.back.nameDuplicate', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'crm customer source with the same name already exists', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 72. CRM 客户来源-名称已存在 - zh-CN
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customerSource.back.nameDuplicate' AND locale = @LOCALE_ZH_CN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 客户来源-名称已存在', 'crm.customerSource.back.nameDuplicate', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '已经存在该分类名称的CRM 客户来源', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 73. CRM 客户来源-不能设置子级为父级
+
+DELETE FROM infra_i18n_key WHERE message_key = 'crm.customerSource.back.parentIsChild';
+INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 客户来源-不能设置子级为父级', 'crm.customerSource.back.parentIsChild', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 73. CRM 客户来源-不能设置子级为父级 - en-US
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customerSource.back.parentIsChild' AND locale = @LOCALE_EN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 客户来源-不能设置子级为父级', 'crm.customerSource.back.parentIsChild', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'cannot set child crm customer source as parent', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 73. CRM 客户来源-不能设置子级为父级 - zh-CN
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.customerSource.back.parentIsChild' AND locale = @LOCALE_ZH_CN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 客户来源-不能设置子级为父级', 'crm.customerSource.back.parentIsChild', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '不能设置自己的子分类名称为父分类名称', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 74. CRM 客户来源-导入数据为空
+
+DELETE FROM infra_i18n_key WHERE message_key = 'crm.back.import.dataEmpty';
+INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 客户来源-导入数据为空', 'crm.back.import.dataEmpty', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 74. CRM 客户来源-导入数据为空 - en-US
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.back.import.dataEmpty' AND locale = @LOCALE_EN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 客户来源-导入数据为空', 'crm.back.import.dataEmpty', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'crm customer source import data cannot be empty', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 74. CRM 客户来源-导入数据为空 - zh-CN
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.back.import.dataEmpty' AND locale = @LOCALE_ZH_CN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 客户来源-导入数据为空', 'crm.back.import.dataEmpty', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'CRM 客户来源导入数据不能为空！', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);

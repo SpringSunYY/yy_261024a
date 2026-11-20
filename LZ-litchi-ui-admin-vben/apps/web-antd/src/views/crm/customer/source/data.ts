@@ -195,7 +195,7 @@ export function useGridColumns(): VxeTableGridOptions<CustomerSourceApi.Customer
     },
     {
       title: $t('common.operation'),
-      width: 200,
+      width: 220,
       fixed: 'right',
       slots: { default: 'actions' },
     },

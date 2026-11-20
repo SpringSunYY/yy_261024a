@@ -98,6 +98,19 @@
       "subordinateResponsible": "下属负责的"
     }
   },
+  "customerSource": {
+    "customerSource": "客户来源",
+    "source": "客户来源",
+    "list": "客户来源列表",
+    "field": {
+      "id": "分类编号",
+      "name": "分类名称",
+      "parentId": "父级编号",
+      "status": "状态",
+      "orderNum": "排序",
+      "createTime": "创建时间"
+    }
+  },
   "backlog": {
     "menu": {
       "customerTodayContact": "今日需联系客户",

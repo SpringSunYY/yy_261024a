@@ -68,8 +68,9 @@ public class CrmCustomerSourceController {
     @Operation(summary = "删除CRM 客户来源")
     @Parameter(name = "id", description = "编号", required = true)
     @PreAuthorize("@ss.hasPermission('crm:customer-source:delete')")
-    public CommonResult<Boolean> deleteCustomerSource(@RequestParam("id") Long id) {
-        customerSourceService.deleteCustomerSource(id);
+    public CommonResult<Boolean> deleteCustomerSource(@RequestParam("id") Long id,
+                                                       @RequestParam(value = "isDeleteChildren", defaultValue = "false") Boolean isDeleteChildren) {
+        customerSourceService.deleteCustomerSource(id, isDeleteChildren);
         return success(true);
     }
 

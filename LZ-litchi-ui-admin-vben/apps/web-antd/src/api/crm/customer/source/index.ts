@@ -36,8 +36,10 @@ export function updateCustomerSource(data: CustomerSourceApi.CustomerSource) {
 }
 
 /** 删除CRM 客户来源 */
-export function deleteCustomerSource(id: number) {
-  return requestClient.delete(`/crm/customer-source/delete?id=${id}`);
+export function deleteCustomerSource(id: number, isDeleteChildren = false) {
+  return requestClient.delete(
+    `/crm/customer-source/delete?id=${id}&isDeleteChildren=${isDeleteChildren}`,
+  );
 }
 
 

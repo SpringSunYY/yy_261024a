@@ -33,4 +33,8 @@ public interface CrmCustomerSourceMapper extends BaseMapperX<CrmCustomerSourceDO
         return selectCount(CrmCustomerSourceDO::getParentId, parentId);
     }
 
+    default List<CrmCustomerSourceDO> selectListByParentId(Collection<Long> parentIds) {
+        return selectList(CrmCustomerSourceDO::getParentId, parentIds);
+    }
+
 }

@@ -33,8 +33,9 @@ public interface CrmCustomerSourceService {
      * 删除CRM 客户来源
      *
      * @param id 编号
+     * @param isDeleteChildren 是否同时删除子CRM 客户来源
      */
-    void deleteCustomerSource(Long id);
+    void deleteCustomerSource(Long id, Boolean isDeleteChildren);
 
 
     /**
@@ -53,5 +54,12 @@ public interface CrmCustomerSourceService {
      */
     List<CrmCustomerSourceDO> getCustomerSourceList(CrmCustomerSourceReqVO listReqVO);
 
+    /**
+     * 获得CRM 客户来源的父级列表（从顶级到直属父级）
+     *
+     * @param id 编号
+     * @return CRM 客户来源父级列表
+     */
+    List<CrmCustomerSourceDO> getParentCustomerSourceList(Long id);
 
 }

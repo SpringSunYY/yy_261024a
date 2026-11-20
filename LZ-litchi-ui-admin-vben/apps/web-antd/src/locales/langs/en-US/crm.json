@@ -98,6 +98,19 @@
       "subordinateResponsible": "subordinate's responsible"
     }
   },
+  "customerSource": {
+    "customerSource": "customer source",
+    "source": "customer source",
+    "list": "customer source list",
+    "field": {
+      "id": "id",
+      "name": "name",
+      "parentId": "parent id",
+      "status": "status",
+      "orderNum": "order",
+      "createTime": "create time"
+    }
+  },
   "backlog": {
     "menu": {
       "customerTodayContact": "customers to contact today",

@@ -37,7 +37,6 @@ public class CrmCustomerSourceDO extends BaseDO {
     /**
      * 状态
      *
-     * 枚举 {@link TODO common_status 对应的类}
      */
     private Integer status;
     /**

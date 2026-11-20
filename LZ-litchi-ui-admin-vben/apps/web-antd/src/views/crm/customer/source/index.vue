@@ -15,6 +15,7 @@ import {
   exportCustomerSource,
   getCustomerSourceList,
 } from '#/api/crm/customer/source';
+import { CascadeDeleteSwitch } from '#/components/cascade-delete-switch';
 import { $t } from '#/locales';
 import { pickSort } from '#/utils';
 
@@ -54,6 +55,9 @@ function handleAppend(row: CustomerSourceApi.CustomerSource) {
   formModalDrawerApi.setData({ parentId: row.id }).open();
 }
 
+/** 全局级联删除开关（默认 false） */
+const isDeleteChildren = ref(false);
+
 /** 删除CRM 客户来源 */
 async function handleDelete(row: CustomerSourceApi.CustomerSource) {
   const hideLoading = message.loading({
@@ -61,7 +65,7 @@ async function handleDelete(row: CustomerSourceApi.CustomerSource) {
     key: 'action_key_msg',
   });
   try {
-    await deleteCustomerSource(row.id as number);
+    await deleteCustomerSource(row.id as number, isDeleteChildren.value);
     message.success({
       content: $t('ui.actionMessage.deleteSuccess', [row.id]),
       key: 'action_key_msg',
@@ -172,6 +176,7 @@ const [Grid, gridApi] = useVbenVxeGrid<CustomerSourceApi.CustomerSource>({
             },
           ]"
         />
+        <CascadeDeleteSwitch v-model="isDeleteChildren" />
       </template>
       <template #actions="{ row }">
         <TableAction
@@ -197,8 +202,7 @@ const [Grid, gridApi] = useVbenVxeGrid<CustomerSourceApi.CustomerSource>({
               icon: ACTION_ICON.DELETE,
               auth: ['crm:customer-source:delete'],
               popConfirm: {
-                title: $t('ui.actionMessage.deleteConfirm', [
-                  row.id,
+                title: $t('ui.actionMessage.deleteCascadeConfirm', [
                   $t('crm.customerSource.source'),
                 ]),
                 confirm: handleDelete.bind(null, row),
