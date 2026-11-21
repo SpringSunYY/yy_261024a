@@ -15,7 +15,13 @@ import { useTabs } from '@vben/hooks';
 
 import { Button, Card, message, Tabs } from 'ant-design-vue';
 
-import { getCustomer, updateCustomerDealStatus } from '#/api/crm/customer';
+import {
+  getCustomer,
+  lockCustomer,
+  putCustomerPool,
+  receiveCustomer,
+  updateCustomerDealStatus,
+} from '#/api/crm/customer';
 import { getOperateLogPage } from '#/api/crm/operateLog';
 import { BizTypeEnum } from '#/api/crm/permission';
 import { useDescription } from '#/components/description';
@@ -102,22 +108,43 @@ function handleEdit() {
 
 /** 转移客户 */
 function handleTransfer() {
-  transferModalApi.setData({ id: customerId.value }).open();
+  transferModalApi.setData({
+    bizType: BizTypeEnum.CRM_CUSTOMER,
+    id: customerId.value,
+  }).open();
 }
 
 /** 锁定客户 */
-function handleLock() {
-  transferModalApi.setData({ id: customerId.value }).open();
+async function handleLock() {
+  try {
+    await lockCustomer(customerId.value, true);
+    message.success($t('ui.actionMessage.operationSuccess'));
+    await loadCustomerDetail();
+  } catch {
+    // 错误提示已由 request 拦截器统一处理
+  }
 }
 
 /** 解锁客户 */
-function handleUnlock() {
-  transferModalApi.setData({ id: customerId.value }).open();
+async function handleUnlock() {
+  try {
+    await lockCustomer(customerId.value, false);
+    message.success($t('ui.actionMessage.operationSuccess'));
+    await loadCustomerDetail();
+  } catch {
+    // 错误提示已由 request 拦截器统一处理
+  }
 }
 
 /** 领取客户 */
-function handleReceive() {
-  transferModalApi.setData({ id: customerId.value }).open();
+async function handleReceive() {
+  try {
+    await receiveCustomer([customerId.value]);
+    message.success($t('ui.actionMessage.operationSuccess'));
+    await loadCustomerDetail();
+  } catch {
+    // 错误提示已由 request 拦截器统一处理
+  }
 }
 
 /** 分配客户 */
@@ -126,38 +153,41 @@ function handleDistributeForm() {
 }
 
 /** 客户放入公海 */
-function handlePutPool() {
-  transferModalApi.setData({ id: customerId.value }).open();
+async function handlePutPool() {
+  try {
+    await putCustomerPool(customerId.value);
+    message.success($t('ui.actionMessage.operationSuccess'));
+    await loadCustomerDetail();
+  } catch {
+    // 错误提示已由 request 拦截器统一处理
+  }
 }
 
 /** 更新成交状态操作 */
-async function handleUpdateDealStatus(): Promise<boolean | undefined> {
-  return new Promise((resolve, reject) => {
-    const dealStatus = !customer.value.dealStatus;
-    const dealStatusText = dealStatus
-      ? $t('crm.customer.message.dealYes')
-      : $t('crm.customer.message.dealNo');
-    confirm({
+async function handleUpdateDealStatus(): Promise<boolean> {
+  const dealStatus = !customer.value.dealStatus;
+  const dealStatusText = dealStatus
+    ? $t('crm.customer.message.dealYes')
+    : $t('crm.customer.message.dealNo');
+  try {
+    await confirm({
       content: $t('crm.customer.message.updateDealStatusConfirm', [
         dealStatusText,
       ]),
-    })
-      .then(async () => {
-        const res = await updateCustomerDealStatus(
-          customerId.value,
-          dealStatus,
-        );
-        if (res) {
-          message.success($t('crm.customer.message.updateDealStatusSuccess'));
-          resolve(true);
-        } else {
-          reject(new Error($t('crm.customer.message.updateDealStatusFailed')));
-        }
-      })
-      .catch(() => {
-        reject(new Error($t('common.cancel')));
-      });
-  });
+    });
+  } catch {
+    // 用户取消，不做任何处理
+    return false;
+  }
+  try {
+    await updateCustomerDealStatus(customerId.value, dealStatus);
+    message.success($t('crm.customer.message.updateDealStatusSuccess'));
+    await loadCustomerDetail();
+    return true;
+  } catch {
+    // 错误提示已由 request 拦截器统一处理
+    return false;
+  }
 }
 
 // 加载数据
@@ -186,6 +216,7 @@ onMounted(() => {
           v-if="permissionListRef?.validateOwnerUser"
           type="primary"
           @click="handleTransfer"
+          v-access:code="['crm:customer:update']"
         >
           {{ $t('crm.customer.action.transfer') }}
         </Button>
@@ -198,12 +229,14 @@ onMounted(() => {
         <Button
           v-if="customer.lockStatus && permissionListRef?.validateOwnerUser"
           @click="handleUnlock"
+          v-access:code="['crm:customer:update']"
         >
           {{ $t('crm.customer.action.unlock') }}
         </Button>
         <Button
           v-if="!customer.lockStatus && permissionListRef?.validateOwnerUser"
           @click="handleLock"
+          v-access:code="['crm:customer:update']"
         >
           {{ $t('crm.customer.action.lock') }}
         </Button>
@@ -211,6 +244,7 @@ onMounted(() => {
           v-if="!customer.ownerUserId"
           type="primary"
           @click="handleReceive"
+          v-access:code="['crm:customer:receive']"
         >
           {{ $t('crm.customer.action.receive') }}
         </Button>
@@ -218,12 +252,14 @@ onMounted(() => {
           v-if="!customer.ownerUserId"
           type="primary"
           @click="handleDistributeForm"
+          v-access:code="['crm:customer:distribute']"
         >
           {{ $t('crm.customer.action.distribute') }}
         </Button>
         <Button
           v-if="customer.ownerUserId && permissionListRef?.validateOwnerUser"
           @click="handlePutPool"
+          v-access:code="['crm:customer:update']"
         >
           {{ $t('crm.customer.action.putPool') }}
         </Button>

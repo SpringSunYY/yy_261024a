@@ -91,7 +91,10 @@ function handleEdit() {
 
 /** 转移线索 */
 function handleTransfer() {
-  transferModalApi.setData({ bizType: BizTypeEnum.CRM_BUSINESS }).open();
+  transferModalApi.setData({
+    bizType: BizTypeEnum.CRM_BUSINESS,
+    id: businessId.value,
+  }).open();
 }
 
 /** 更新商机状态操作 */

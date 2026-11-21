@@ -91,7 +91,10 @@ function handleEdit() {
 
 /** 转移 */
 function handleTransfer() {
-  transferModalApi.setData({ bizType: BizTypeEnum.CRM_CONTRACT }).open();
+  transferModalApi.setData({
+    bizType: BizTypeEnum.CRM_CONTRACT,
+    id: contractId.value,
+  }).open();
 }
 
 // 加载数据

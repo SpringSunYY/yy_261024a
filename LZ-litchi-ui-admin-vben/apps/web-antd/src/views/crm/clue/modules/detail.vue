@@ -5,7 +5,12 @@ import type { SystemOperateLogApi } from '#/api/system/operate-log';
 import { computed, defineAsyncComponent, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import { confirm, Page, useVbenModal } from '@vben/common-ui';
+import {
+  confirm,
+  Page,
+  useVbenModal,
+  useVbenModelDrawer,
+} from '@vben/common-ui';
 import { useTabs } from '@vben/hooks';
 import { ArrowLeft } from '@vben/icons';
 
@@ -52,7 +57,7 @@ const [Description] = useDescription({
   schema: useDetailSchema(),
 });
 
-const [FormModal, formModalApi] = useVbenModal({
+const [FormModal, formModalApi] = useVbenModelDrawer({
   connectedComponent: ClueForm,
   destroyOnClose: true,
 });
@@ -89,28 +94,33 @@ function handleEdit() {
 
 /** 转移线索 */
 function handleTransfer() {
-  transferModalApi.setData({ bizType: BizTypeEnum.CRM_CLUE }).open();
+  transferModalApi.setData({
+    bizType: BizTypeEnum.CRM_CLUE,
+    id: clueId.value,
+  }).open();
 }
 
 /** 转化为客户 */
-async function handleTransform(): Promise<boolean | undefined> {
-  return new Promise((resolve, reject) => {
-    confirm({
+async function handleTransform(): Promise<boolean> {
+  try {
+    await confirm({
       content: $t('crm.clue.message.transformConfirm'),
-    })
-      .then(async () => {
-        const res = await transformClue(clueId.value);
-        if (res) {
-          message.success($t('crm.clue.message.transformSuccess'));
-          resolve(true);
-        } else {
-          reject(new Error($t('crm.clue.message.transformFailed')));
-        }
-      })
-      .catch(() => {
-        reject(new Error('cancel'));
-      });
-  });
+    });
+  } catch {
+    // 用户取消，不做任何处理
+    return false;
+  }
+  try {
+    const res = await transformClue(clueId.value);
+    if (!res) {
+      message.error($t('crm.clue.message.transformFailed'));
+      return false;
+    }
+    message.success($t('crm.clue.message.transformSuccess'));
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 // 加载数据

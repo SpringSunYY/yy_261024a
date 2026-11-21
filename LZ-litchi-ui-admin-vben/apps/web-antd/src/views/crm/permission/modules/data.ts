@@ -68,6 +68,14 @@ export function useTransferFormSchema(): VbenFormSchema[] {
       rules: 'required',
     },
     {
+      fieldName: 'bizType',
+      component: 'Input',
+      dependencies: {
+        triggerFields: [''],
+        show: () => false,
+      },
+    },
+    {
       fieldName: 'toBizTypes',
       label: $t('crm.permission.field.toBizTypes'),
       component: 'CheckboxGroup',
@@ -86,6 +94,16 @@ export function useTransferFormSchema(): VbenFormSchema[] {
             value: BizTypeEnum.CRM_CONTRACT,
           },
         ],
+      },
+      dependencies: {
+        // 只有转移【客户】时，才支持同时转移联系人/商机/合同
+        triggerFields: ['bizType'],
+        show: (values) => values.bizType === BizTypeEnum.CRM_CUSTOMER,
+        trigger(values) {
+          if (values.bizType !== BizTypeEnum.CRM_CUSTOMER) {
+            values.toBizTypes = undefined;
+          }
+        },
       },
     },
   ];

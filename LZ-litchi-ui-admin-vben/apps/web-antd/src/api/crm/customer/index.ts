@@ -107,7 +107,9 @@ export function lockCustomer(id: number, lockStatus: boolean) {
 
 /** 领取公海客户 */
 export function receiveCustomer(ids: number[]) {
-  return requestClient.put('/crm/customer/receive', { ids: ids.join(',') });
+  return requestClient.put('/crm/customer/receive', undefined, {
+    params: { ids: ids.join(',') },
+  });
 }
 
 /** 分配公海给对应负责人 */
@@ -122,9 +124,8 @@ export function putCustomerPool(id: number) {
 
 /** 更新客户的成交状态 */
 export function updateCustomerDealStatus(id: number, dealStatus: boolean) {
-  return requestClient.put('/crm/customer/update-deal-status', {
-    id,
-    dealStatus,
+  return requestClient.put('/crm/customer/update-deal-status', undefined, {
+    params: { id, dealStatus },
   });
 }
 

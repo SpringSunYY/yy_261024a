@@ -50,29 +50,34 @@ const [Modal, modalApi] = useVbenModal({
     try {
       switch (bizType.value) {
         case BizTypeEnum.CRM_BUSINESS: {
-          return await transferBusiness(data);
+          await transferBusiness(data);
+          break;
         }
         case BizTypeEnum.CRM_CLUE: {
-          return await transferClue(data);
+          await transferClue(data);
+          break;
         }
         case BizTypeEnum.CRM_CONTACT: {
-          return await transferContact(data);
+          await transferContact(data);
+          break;
         }
         case BizTypeEnum.CRM_CONTRACT: {
-          return await transferContract(data);
+          await transferContract(data);
+          break;
         }
         case BizTypeEnum.CRM_CUSTOMER: {
-          return await transferCustomer(data);
+          await transferCustomer(data);
+          break;
         }
         default: {
           message.error($t('crm.permission.message.noTransferApi'));
-          throw new Error($t('crm.permission.message.noTransferApi'));
+          return;
         }
       }
-    } finally {
       await modalApi.close();
       emit('success');
       message.success($t('ui.actionMessage.operationSuccess'));
+    } finally {
       modalApi.unlock();
     }
   },
@@ -81,12 +86,23 @@ const [Modal, modalApi] = useVbenModal({
       formApi.resetForm();
       return;
     }
-    const data = modalApi.getData<{ bizType: number }>();
-    if (!data || !data.bizType) {
+    const data = modalApi.getData<{ bizType: number; id: number }>();
+    if (!data) {
       return;
     }
-    bizType.value = data.bizType;
-    formApi.setFieldValue('id', data.bizType);
+    if (data.bizType) {
+      bizType.value = data.bizType;
+    }
+    // 一次性设置 bizType、id
+    // 注意：不能拆成多次 setFieldValue，因为表单未挂载时每次调用都会去等待挂载，
+    // 而 StateHandler 只保存一个等待中的回调，后一次会覆盖前一次，导致前面的值设置丢失
+    await formApi.setValues(
+      {
+        bizType: data.bizType,
+        id: data.id,
+      },
+      false,
+    );
   },
 });
 </script>

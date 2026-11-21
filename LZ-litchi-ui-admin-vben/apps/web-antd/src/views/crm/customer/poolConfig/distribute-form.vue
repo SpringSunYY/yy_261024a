@@ -34,10 +34,8 @@ const [Form, formApi] = useVbenForm({
       component: 'ApiSelect',
       componentProps: {
         api: () => getSimpleUserList(),
-        fieldNames: {
-          label: 'nickname',
-          value: 'id',
-        },
+        labelField: 'nickname',
+        valueField: 'id',
       },
       rules: 'required',
     },
