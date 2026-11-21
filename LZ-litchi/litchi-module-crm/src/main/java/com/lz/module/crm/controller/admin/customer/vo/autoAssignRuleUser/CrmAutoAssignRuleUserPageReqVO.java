@@ -1,4 +1,4 @@
-package com.lz.module.crm.controller.admin.autoAssignRule.vo.autoAssignRuleUser;
+package com.lz.module.crm.controller.admin.customer.vo.autoAssignRuleUser;
 
 import lombok.*;
 import java.util.*;

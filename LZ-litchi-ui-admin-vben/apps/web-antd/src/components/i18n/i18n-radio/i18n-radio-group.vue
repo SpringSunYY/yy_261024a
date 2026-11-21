@@ -13,6 +13,8 @@ const props = withDefaults(defineProps<I18nRadioGroupProps>(), {
   modelValue: undefined,
   options: () => [],
   disabled: false,
+  buttonStyle: 'outline',
+  optionType: 'default',
 });
 
 const emit = defineEmits<{
@@ -38,7 +40,13 @@ const i18nOptions = computed(() =>
 );
 
 function handleChange(e: any) {
-  const value = (e.target as HTMLInputElement).value;
+  // antd Radio 的事件值是字符串，需要还原为 options 中原始的值类型（number / boolean），
+  // 否则数字类型的值（如状态 0/1）会因为类型不一致导致「选中态不回显 / 选不中」
+  const rawValue = (e.target as HTMLInputElement).value;
+  const matched = props.options.find(
+    (item) => String(item.value) === String(rawValue),
+  );
+  const value = matched ? matched.value : rawValue;
   emit('update:modelValue', value);
   emit('change', value);
 }
@@ -47,7 +55,9 @@ function handleChange(e: any) {
 <template>
   <RadioGroup
     :value="modelValue"
+    :button-style="buttonStyle"
     :disabled="props.disabled"
+    :option-type="optionType"
     @change="handleChange"
   >
     <Radio

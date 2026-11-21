@@ -434,6 +434,46 @@
       "or": "or"
     }
   },
+  "autoAssignRule": {
+    "autoAssignRule": "auto assign rule",
+    "menu": "auto assign rule",
+    "list": "auto assign rule",
+    "field": {
+      "ruleTitle": "auto assign rule settings",
+      "id": "id",
+      "isEnabled": "auto assign",
+      "triggerActions": "trigger actions",
+      "scopeType": "scope type",
+      "scopeConditions": "scope conditions",
+      "scopeSource": "customer source",
+      "scopeIndustry": "customer industry",
+      "scopeLevel": "customer level",
+      "allocationMethod": "allocation method",
+      "isRoundRobin": "round robin",
+      "isPutPool": "put into pool",
+      "isPutPoolQuota": "put into pool quota",
+      "currentCursorIndex": "current cursor index",
+      "currentAssigneeId": "current assignee",
+      "currentRemainQuota": "current remaining quota",
+      "createTime": "create time"
+    }
+  },
+  "autoAssignRuleUser": {
+    "autoAssignRuleUser": "rule user detail",
+    "field": {
+      "id": "id",
+      "ruleId": "rule",
+      "userId": "employee",
+      "assignValue": "assign value",
+      "status": "status",
+      "sortOrder": "sort"
+    },
+    "message": {
+      "saveRuleFirst": "please save the auto assign rule first",
+      "sortNeedMore": "at least two rule user details are required for sorting",
+      "saveBeforeSort": "there are unsaved rule user details, please save before sorting"
+    }
+  },
   "customerLimitConfig": {
     "customerLimitConfig": "customer limit config",
     "menu": "customer limit config",

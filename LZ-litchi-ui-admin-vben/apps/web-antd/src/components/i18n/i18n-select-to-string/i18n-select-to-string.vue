@@ -39,9 +39,10 @@ const selectedValues = ref<string[]>([]);
 watch(
   () => props.modelValue,
   (val) => {
+    // 外部可能传入数字（如后端返回的字典值），统一转成字符串处理
     selectedValues.value =
-      val && typeof val === 'string'
-        ? val
+      val !== undefined && val !== null && val !== ''
+        ? String(val)
             .split(props.separator)
             .map((v) => v.trim())
             .filter(Boolean)

@@ -7,7 +7,7 @@ import { Checkbox } from 'ant-design-vue';
 
 import { $t } from '#/locales';
 
-defineOptions({ name: 'I18nCheckboxGroup' });
+defineOptions({ name: 'I18nCheckboxGroup', inheritAttrs: false });
 
 const props = withDefaults(defineProps<I18nCheckboxGroupProps>(), {
   modelValue: () => [],
@@ -20,7 +20,14 @@ const emit = defineEmits<{
   'update:modelValue': [value: string[]];
 }>();
 
-const i18nOptions = computed(() =>
+/**
+ * Checkbox.Group 的选项
+ *
+ * <p>必须通过 options 属性渲染，不能用默认插槽：
+ * 插槽内容在父组件的渲染上下文中创建，Checkbox 拿不到 Checkbox.Group 提供的上下文，
+ * 导致 checked 状态永远为 undefined（无法回显选中）。
+ */
+const groupOptions = computed(() =>
   props.options.map((item) => {
     let label = item.label;
     if (item.i18n) {
@@ -29,29 +36,36 @@ const i18nOptions = computed(() =>
         label = translated;
       }
     }
-    return { ...item, label };
+    return {
+      label,
+      value: String(item.value),
+    };
   }),
 );
 
-function handleChange(e: any) {
-  const values = (e.target.value as (boolean | number | string)[]).map(String);
-  emit('update:modelValue', values);
-  emit('change', values);
+/**
+ * 选中的值
+ *
+ * <p>Checkbox 的值统一为字符串，这里把外部传入的值也统一转成字符串，
+ * 避免数字与字符串比较不相等，导致回填时无法选中。
+ */
+const checkedValues = computed(() => (props.modelValue ?? []).map(String));
+
+function handleChange(values: any) {
+  // ant-design-vue 的 Checkbox.Group change 事件直接回传选中的值数组
+  const raw = Array.isArray(values) ? values : values?.target?.value;
+  const list = Array.isArray(raw) ? raw : [];
+  const normalized = list.map(String);
+  emit('update:modelValue', normalized);
+  emit('change', normalized);
 }
 </script>
 
 <template>
   <Checkbox.Group
-    :value="modelValue"
+    :value="checkedValues"
     :disabled="props.disabled"
+    :options="groupOptions"
     @change="handleChange"
-  >
-    <Checkbox
-      v-for="item in i18nOptions"
-      :key="String(item.value)"
-      :value="String(item.value)"
-    >
-      {{ item.label }}
-    </Checkbox>
-  </Checkbox.Group>
+  />
 </template>

@@ -1,4 +1,4 @@
-package com.lz.module.crm.controller.admin.autoAssignRule.vo.autoAssignRule;
+package com.lz.module.crm.controller.admin.customer.vo.autoAssignRule;
 
 import lombok.*;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,6 +27,8 @@ public class CrmAutoAssignRulePageReqVO extends PageParam {
 
     /**
     * 触发动作
+    *
+    * <p>数据库中以 JSON 数组字符串存储，分页查询时不支持按该字段过滤
     */
     @Schema(description = "触发动作")
     private String triggerActions;

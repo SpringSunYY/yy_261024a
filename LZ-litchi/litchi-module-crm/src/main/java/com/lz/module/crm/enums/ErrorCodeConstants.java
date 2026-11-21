@@ -127,4 +127,8 @@ public interface ErrorCodeConstants {
 
     // ========== CRM 自动分配规则 1-020-016-000 ==========
     ErrorCode AUTO_ASSIGN_RULE_NOT_EXISTS = new ErrorCode(1_003_000_001, "crm.autoAssignRule.back.notExists", "CRM 自动分配规则不存在");
+    ErrorCode AUTO_ASSIGN_RULE_USER_DUPLICATE = new ErrorCode(1_020_016_001, "crm.autoAssignRuleUser.back.userDuplicate", "员工【{}】在规则人员明细中重复出现，同一个员工只能配置一条规则");
+    ErrorCode AUTO_ASSIGN_RULE_ASSIGNEE_NOT_EXISTS = new ErrorCode(1_020_016_002, "crm.autoAssignRule.back.assigneeNotExists", "当前分配员工【{}】不在规则人员明细中");
+    ErrorCode AUTO_ASSIGN_RULE_QUOTA_EXCEED = new ErrorCode(1_020_016_003, "crm.autoAssignRule.back.quotaExceed", "当前分配员工额度【{}】不能大于该员工的分配数值【{}】");
+    ErrorCode AUTO_ASSIGN_RULE_USER_NOT_EXISTS = new ErrorCode(1_020_016_004, "crm.autoAssignRuleUser.back.notExists", "CRM 规则人员明细不存在");
 }

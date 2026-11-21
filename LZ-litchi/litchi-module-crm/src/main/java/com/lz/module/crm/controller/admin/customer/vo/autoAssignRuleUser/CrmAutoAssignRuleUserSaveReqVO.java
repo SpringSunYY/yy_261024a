@@ -1,8 +1,8 @@
-package com.lz.module.crm.controller.admin.autoAssignRule.vo.autoAssignRuleUser;
+package com.lz.module.crm.controller.admin.customer.vo.autoAssignRuleUser;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
-import java.util.*;
+
 import com.lz.framework.common.validation.i18n.I18nNotEmpty;
 import com.lz.framework.common.validation.i18n.I18nNotNull;
 import jakarta.validation.constraints.*;
@@ -21,13 +21,6 @@ public class CrmAutoAssignRuleUserSaveReqVO {
      */
     @Schema(description = "编号", requiredMode = Schema.RequiredMode.REQUIRED, example = "17286")
     private Long id;
-
-    /**
-     * 规则
-     */
-    @Schema(description = "规则", requiredMode = Schema.RequiredMode.REQUIRED, example = "22428")
-    @I18nNotNull(i18nKey = "crm.autoAssignRuleUser.back.ruleId.notNull", message = "规则不能为空")
-    private Long ruleId;
 
     /**
      * 员工
@@ -51,10 +44,9 @@ public class CrmAutoAssignRuleUserSaveReqVO {
     private Integer status;
 
     /**
-     * 排序号
+     * 排序号（由后端按列表顺序统一重排，前端可不传）
      */
-    @Schema(description = "排序号", requiredMode = Schema.RequiredMode.REQUIRED)
-    @I18nNotNull(i18nKey = "crm.autoAssignRuleUser.back.sortOrder.notNull", message = "排序号不能为空")
+    @Schema(description = "排序号", example = "1")
     private Integer sortOrder;
 
 }

@@ -1,4 +1,4 @@
-package com.lz.module.crm.dal.dataobject.autoAssignRule;
+package com.lz.module.crm.dal.dataobject.customer;
 
 import lombok.*;
 import com.baomidou.mybatisplus.annotation.*;

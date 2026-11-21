@@ -1,12 +1,12 @@
-package com.lz.module.crm.controller.admin.autoAssignRule.vo.autoAssignRule;
+package com.lz.module.crm.controller.admin.customer.vo.autoAssignRule;
 
 import com.lz.framework.common.validation.i18n.I18nNotEmpty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
-import java.util.*;
 
 import com.lz.framework.common.validation.i18n.I18nNotNull;
-import com.lz.module.crm.dal.dataobject.autoAssignRule.CrmAutoAssignRuleUserDO;
+
+import java.util.List;
 
 /**
  * CRM 自动分配规则新增/修改 Request VO
@@ -32,10 +32,12 @@ public class CrmAutoAssignRuleSaveReqVO {
 
     /**
      * 触发动作
+     *
+     * <p>多个触发动作，数据库中以 JSON 数组字符串存储
      */
-    @Schema(description = "触发动作", requiredMode = Schema.RequiredMode.REQUIRED)
+    @Schema(description = "触发动作", requiredMode = Schema.RequiredMode.REQUIRED, example = "[1,2]")
     @I18nNotEmpty(i18nKey = "crm.autoAssignRule.back.triggerActions.notNull", message = "触发动作不能为空")
-    private String triggerActions;
+    private List<Integer> triggerActions;
 
     /**
      * 适用范围
@@ -45,10 +47,28 @@ public class CrmAutoAssignRuleSaveReqVO {
     private Integer scopeType;
 
     /**
-     * 具体条件
+     * 具体条件 - 客户来源编号列表
+     *
+     * <p>适用范围为「满足条件」时生效，由后端组装成具体条件后存储
      */
-    @Schema(description = "具体条件")
-    private String scopeConditions;
+    @Schema(description = "客户来源编号列表", example = "[1,2]")
+    private List<Long> sourceIds;
+
+    /**
+     * 具体条件 - 客户所属行业编号列表
+     *
+     * <p>适用范围为「满足条件」时生效，由后端组装成具体条件后存储
+     */
+    @Schema(description = "客户所属行业编号列表", example = "[1,2]")
+    private List<Long> industryIds;
+
+    /**
+     * 具体条件 - 客户级别编号列表
+     *
+     * <p>适用范围为「满足条件」时生效，由后端组装成具体条件后存储
+     */
+    @Schema(description = "客户级别编号列表", example = "[1,2]")
+    private List<Long> levelIds;
 
     /**
      * 分配方案
@@ -96,11 +116,5 @@ public class CrmAutoAssignRuleSaveReqVO {
     @Schema(description = "当前分配员工额度", requiredMode = Schema.RequiredMode.REQUIRED)
     @I18nNotNull(i18nKey = "crm.autoAssignRule.back.currentRemainQuota.notNull", message = "当前分配员工额度不能为空")
     private Integer currentRemainQuota;
-
-    /**
-    * CRM  规则人员明细列表
-    */
-    @Schema(description = "CRM  规则人员明细列表")
-    private List<CrmAutoAssignRuleUserDO> autoAssignRuleUsers;
 
 }

@@ -1300,3 +1300,87 @@ VALUES ('CRM 客户来源-导入数据为空', 'crm.back.import.dataEmpty', @LOC
 DELETE FROM infra_i18n_message WHERE message_key = 'crm.back.import.dataEmpty' AND locale = @LOCALE_ZH_CN;
 INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
 VALUES ('CRM 客户来源-导入数据为空', 'crm.back.import.dataEmpty', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'CRM 客户来源导入数据不能为空！', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- =============================================
+-- CRM 自动分配规则 1-020-016-000
+-- =============================================
+
+-- 1. CRM 自动分配规则-不存在
+
+DELETE FROM infra_i18n_key WHERE message_key = 'crm.autoAssignRule.back.notExists';
+INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 自动分配规则-不存在', 'crm.autoAssignRule.back.notExists', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 1. CRM 自动分配规则-不存在 - en-US
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.autoAssignRule.back.notExists' AND locale = @LOCALE_EN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 自动分配规则-不存在', 'crm.autoAssignRule.back.notExists', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'CRM auto assign rule not exists', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 1. CRM 自动分配规则-不存在 - zh-CN
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.autoAssignRule.back.notExists' AND locale = @LOCALE_ZH_CN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 自动分配规则-不存在', 'crm.autoAssignRule.back.notExists', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'CRM 自动分配规则不存在', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 2. CRM 规则人员明细-员工重复
+
+DELETE FROM infra_i18n_key WHERE message_key = 'crm.autoAssignRuleUser.back.userDuplicate';
+INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 规则人员明细-员工重复', 'crm.autoAssignRuleUser.back.userDuplicate', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 2. CRM 规则人员明细-员工重复 - en-US
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.autoAssignRuleUser.back.userDuplicate' AND locale = @LOCALE_EN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 规则人员明细-员工重复', 'crm.autoAssignRuleUser.back.userDuplicate', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'employee [{}] is duplicated in the rule user list, each employee can only have one rule', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 2. CRM 规则人员明细-员工重复 - zh-CN
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.autoAssignRuleUser.back.userDuplicate' AND locale = @LOCALE_ZH_CN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 规则人员明细-员工重复', 'crm.autoAssignRuleUser.back.userDuplicate', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '员工【{}】在规则人员明细中重复出现，同一个员工只能配置一条规则', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 3. CRM 自动分配规则-当前分配员工不存在
+
+DELETE FROM infra_i18n_key WHERE message_key = 'crm.autoAssignRule.back.assigneeNotExists';
+INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 自动分配规则-当前分配员工不存在', 'crm.autoAssignRule.back.assigneeNotExists', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 3. CRM 自动分配规则-当前分配员工不存在 - en-US
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.autoAssignRule.back.assigneeNotExists' AND locale = @LOCALE_EN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 自动分配规则-当前分配员工不存在', 'crm.autoAssignRule.back.assigneeNotExists', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'current assignee [{}] is not in the rule user list', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 3. CRM 自动分配规则-当前分配员工不存在 - zh-CN
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.autoAssignRule.back.assigneeNotExists' AND locale = @LOCALE_ZH_CN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 自动分配规则-当前分配员工不存在', 'crm.autoAssignRule.back.assigneeNotExists', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '当前分配员工【{}】不在规则人员明细中', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 4. CRM 自动分配规则-额度超出
+
+DELETE FROM infra_i18n_key WHERE message_key = 'crm.autoAssignRule.back.quotaExceed';
+INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 自动分配规则-额度超出', 'crm.autoAssignRule.back.quotaExceed', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 4. CRM 自动分配规则-额度超出 - en-US
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.autoAssignRule.back.quotaExceed' AND locale = @LOCALE_EN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 自动分配规则-额度超出', 'crm.autoAssignRule.back.quotaExceed', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'current remaining quota [{}] cannot be greater than the assign value [{}] of the assignee', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 4. CRM 自动分配规则-额度超出 - zh-CN
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.autoAssignRule.back.quotaExceed' AND locale = @LOCALE_ZH_CN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 自动分配规则-额度超出', 'crm.autoAssignRule.back.quotaExceed', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '当前分配员工额度【{}】不能大于该员工的分配数值【{}】', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 5. CRM 规则人员明细-不存在
+
+DELETE FROM infra_i18n_key WHERE message_key = 'crm.autoAssignRuleUser.back.notExists';
+INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 规则人员明细-不存在', 'crm.autoAssignRuleUser.back.notExists', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 5. CRM 规则人员明细-不存在 - en-US
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.autoAssignRuleUser.back.notExists' AND locale = @LOCALE_EN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 规则人员明细-不存在', 'crm.autoAssignRuleUser.back.notExists', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'CRM rule user detail not exists', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 5. CRM 规则人员明细-不存在 - zh-CN
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.autoAssignRuleUser.back.notExists' AND locale = @LOCALE_ZH_CN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('CRM 规则人员明细-不存在', 'crm.autoAssignRuleUser.back.notExists', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'CRM 规则人员明细不存在', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);

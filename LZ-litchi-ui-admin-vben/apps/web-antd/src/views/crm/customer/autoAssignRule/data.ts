@@ -1,15 +1,28 @@
 import type { VbenFormSchema } from '#/adapter/form';
-import type { OnActionClickFn, VxeTableGridOptions } from '#/adapter/vxe-table';
-import type { AutoAssignRuleApi } from '#/api/crm/customer/autoAssignRule';
 
-import { useAccess } from '@vben/access';
 import { $t } from '@vben/locales';
+import { handleTree } from '@vben/utils';
 
-import { DICT_TYPE, getDictOptions, getRangePickerDefaultProps } from '#/utils';
+import { getCustomerSourceList } from '#/api/crm/customer/source';
+import { CommonStatusEnum, DICT_TYPE, getDictOptions } from '#/utils';
+import {
+  CrmAutoAssignRuleAllocationMethod,
+  CrmAutoAssignRuleIsRoundRobin,
+  CrmAutoAssignRuleScopeType,
+} from '#/utils/constants/crm';
 
-const { hasAccessByCodes } = useAccess();
+/** 适用范围 = 满足条件 */
+const SCOPE_TYPE_CONDITION = CrmAutoAssignRuleScopeType.SCOPE_TYPE_2;
 
-/** 新增/修改的表单 */
+/**
+ * CRM 自动分配规则 - 配置表单（全局只有一条规则）
+ *
+ * <p>布局：一行两列。适用范围为「满足条件」时，才展示具体条件的 3 个多选字段；
+ * 是否放入公海为「开启」时，才展示放入公海额度。
+ *
+ * <p>「当前分配员工」与「当前分配员工额度」由 index.vue 的插槽渲染，
+ * 需要根据规则人员明细动态绑定选项与上限。
+ */
 export function useFormSchema(): VbenFormSchema[] {
   return [
     {
@@ -31,19 +44,21 @@ export function useFormSchema(): VbenFormSchema[] {
         buttonStyle: 'solid',
         optionType: 'button',
       },
+      defaultValue: CommonStatusEnum.ENABLE,
     },
-    /** 触发动作 */
+    /** 触发动作（多选，数据库中以 JSON 数组存储） */
     {
       fieldName: 'triggerActions',
       label: $t('crm.autoAssignRule.field.triggerActions'),
       rules: 'required',
-      component: 'I18nSelectToString',
+      component: 'I18nCheckboxGroup',
       componentProps: {
         options: getDictOptions(
           DICT_TYPE.CRM_AUTO_ASSIGN_RULE_TRIGGER_ACTIONS,
-          'string',
+          'number',
         ),
       },
+      defaultValue: [],
     },
     /** 适用范围 */
     {
@@ -59,465 +74,183 @@ export function useFormSchema(): VbenFormSchema[] {
         buttonStyle: 'solid',
         optionType: 'button',
       },
+      defaultValue: CrmAutoAssignRuleScopeType.SCOPE_TYPE_1,
     },
-    /** 具体条件 */
+    /** 客户来源（多选，仅「满足条件」时显示） */
     {
-      fieldName: 'scopeConditions',
-      label: $t('crm.autoAssignRule.field.scopeConditions'),
-      component: 'Input',
-      componentProps: {
-        placeholder: $t('ui.placeholder.input', [
-          $t('crm.autoAssignRule.field.scopeConditions'),
-        ]),
-      },
-    },
-    /** 分配方案 */
-    {
-      fieldName: 'allocationMethod',
-      label: $t('crm.autoAssignRule.field.allocationMethod'),
-      rules: 'required',
-      component: 'I18nRadioGroup',
-      componentProps: {
-        options: getDictOptions(
-          DICT_TYPE.CRM_AUTO_ASSIGN_RULE_ALLOCATION_METHOD,
-          'number',
-        ),
-        buttonStyle: 'solid',
-        optionType: 'button',
-      },
-    },
-    /** 循环分配 */
-    {
-      fieldName: 'isRoundRobin',
-      label: $t('crm.autoAssignRule.field.isRoundRobin'),
-      rules: 'required',
-      component: 'I18nRadioGroup',
-      componentProps: {
-        options: getDictOptions(
-          DICT_TYPE.CRM_AUTO_ASSIGN_RULE_IS_ROUND_ROBIN,
-          'number',
-        ),
-        buttonStyle: 'solid',
-        optionType: 'button',
-      },
-    },
-    /** 是否放入公海 */
-    {
-      fieldName: 'isPutPool',
-      label: $t('crm.autoAssignRule.field.isPutPool'),
-      rules: 'required',
-      component: 'I18nSelect',
-      componentProps: {
-        options: getDictOptions(DICT_TYPE.COMMON_STATUS, 'number'),
-        placeholder: $t('ui.placeholder.select', [
-          $t('crm.autoAssignRule.field.isPutPool'),
-        ]),
-      },
-    },
-    /** 放入公海额度 */
-    {
-      fieldName: 'isPutPoolQuota',
-      label: $t('crm.autoAssignRule.field.isPutPoolQuota'),
-      component: 'InputNumber',
-      componentProps: {
-        min: 0,
-        controlsPosition: 'right',
-        placeholder: $t('ui.placeholder.input', [
-          $t('crm.autoAssignRule.field.isPutPoolQuota'),
-        ]),
-      },
-    },
-    /** 当前分配游标索引 */
-    {
-      fieldName: 'currentCursorIndex',
-      label: $t('crm.autoAssignRule.field.currentCursorIndex'),
-      rules: 'required',
-      component: 'InputNumber',
-      componentProps: {
-        min: 0,
-        controlsPosition: 'right',
-        placeholder: $t('ui.placeholder.input', [
-          $t('crm.autoAssignRule.field.currentCursorIndex'),
-        ]),
-      },
-    },
-    /** 当前分配员工 */
-    {
-      fieldName: 'currentAssigneeId',
-      label: $t('crm.autoAssignRule.field.currentAssigneeId'),
-      component: 'InputNumber',
-      componentProps: {
-        min: 0,
-        controlsPosition: 'right',
-        placeholder: $t('ui.placeholder.input', [
-          $t('crm.autoAssignRule.field.currentAssigneeId'),
-        ]),
-      },
-    },
-    /** 当前分配员工额度 */
-    {
-      fieldName: 'currentRemainQuota',
-      label: $t('crm.autoAssignRule.field.currentRemainQuota'),
-      rules: 'required',
-      component: 'InputNumber',
-      componentProps: {
-        min: 0,
-        controlsPosition: 'right',
-        placeholder: $t('ui.placeholder.input', [
-          $t('crm.autoAssignRule.field.currentRemainQuota'),
-        ]),
-      },
-    },
-  ];
-}
-
-/** 列表的搜索表单 */
-export function useGridFormSchema(): VbenFormSchema[] {
-  return [
-    /** 自动分配 */
-    {
-      fieldName: 'isEnabled',
-      label: $t('crm.autoAssignRule.field.isEnabled'),
-      component: 'I18nSelect',
+      fieldName: 'sourceIds',
+      label: $t('crm.autoAssignRule.field.scopeSource'),
+      component: 'ApiTreeSelect',
       componentProps: {
         allowClear: true,
-        options: getDictOptions(DICT_TYPE.COMMON_STATUS, 'number'),
-        placeholder: $t('ui.placeholder.select', [
-          $t('crm.autoAssignRule.field.isEnabled'),
-        ]),
-      },
-    },
-    /** 触发动作 */
-    {
-      fieldName: 'triggerActions',
-      label: $t('crm.autoAssignRule.field.triggerActions'),
-      component: 'I18nCheckbox',
-      componentProps: {
-        allowClear: true,
-        options: getDictOptions(
-          DICT_TYPE.CRM_AUTO_ASSIGN_RULE_TRIGGER_ACTIONS,
-          'number',
-        ),
-      },
-    },
-    /** 适用范围 */
-    {
-      fieldName: 'scopeType',
-      label: $t('crm.autoAssignRule.field.scopeType'),
-      component: 'I18nSelect',
-      componentProps: {
-        allowClear: true,
-        options: getDictOptions(
-          DICT_TYPE.CRM_AUTO_ASSIGN_RULE_SCOPE_TYPE,
-          'number',
-        ),
-        placeholder: $t('ui.placeholder.select', [
-          $t('crm.autoAssignRule.field.scopeType'),
-        ]),
-      },
-    },
-    /** 具体条件 */
-    {
-      fieldName: 'scopeConditions',
-      label: $t('crm.autoAssignRule.field.scopeConditions'),
-      component: 'Input',
-      componentProps: {
-        allowClear: true,
-        placeholder: $t('ui.placeholder.input', [
-          $t('crm.autoAssignRule.field.scopeConditions'),
-        ]),
-      },
-    },
-    /** 分配方案 */
-    {
-      fieldName: 'allocationMethod',
-      label: $t('crm.autoAssignRule.field.allocationMethod'),
-      component: 'I18nSelect',
-      componentProps: {
-        allowClear: true,
-        options: getDictOptions(
-          DICT_TYPE.CRM_AUTO_ASSIGN_RULE_ALLOCATION_METHOD,
-          'number',
-        ),
-        placeholder: $t('ui.placeholder.select', [
-          $t('crm.autoAssignRule.field.allocationMethod'),
-        ]),
-      },
-    },
-    /** 循环分配 */
-    {
-      fieldName: 'isRoundRobin',
-      label: $t('crm.autoAssignRule.field.isRoundRobin'),
-      component: 'I18nSelect',
-      componentProps: {
-        allowClear: true,
-        options: getDictOptions(
-          DICT_TYPE.CRM_AUTO_ASSIGN_RULE_IS_ROUND_ROBIN,
-          'number',
-        ),
-        placeholder: $t('ui.placeholder.select', [
-          $t('crm.autoAssignRule.field.isRoundRobin'),
-        ]),
-      },
-    },
-    /** 是否放入公海 */
-    {
-      fieldName: 'isPutPool',
-      label: $t('crm.autoAssignRule.field.isPutPool'),
-      component: 'I18nSelect',
-      componentProps: {
-        allowClear: true,
-        options: getDictOptions(DICT_TYPE.COMMON_STATUS, 'number'),
-        placeholder: $t('ui.placeholder.select', [
-          $t('crm.autoAssignRule.field.isPutPool'),
-        ]),
-      },
-    },
-    /** 放入公海额度 */
-    {
-      fieldName: 'isPutPoolQuota',
-      label: $t('crm.autoAssignRule.field.isPutPoolQuota'),
-      component: 'InputNumber',
-      componentProps: {
-        allowClear: true,
-        min: 0,
-        controlsPosition: 'right',
-        placeholder: $t('ui.placeholder.input', [
-          $t('crm.autoAssignRule.field.isPutPoolQuota'),
-        ]),
-      },
-    },
-    /** 当前分配游标索引 */
-    {
-      fieldName: 'currentCursorIndex',
-      label: $t('crm.autoAssignRule.field.currentCursorIndex'),
-      component: 'InputNumber',
-      componentProps: {
-        allowClear: true,
-        min: 0,
-        controlsPosition: 'right',
-        placeholder: $t('ui.placeholder.input', [
-          $t('crm.autoAssignRule.field.currentCursorIndex'),
-        ]),
-      },
-    },
-    /** 当前分配员工 */
-    {
-      fieldName: 'currentAssigneeId',
-      label: $t('crm.autoAssignRule.field.currentAssigneeId'),
-      component: 'InputNumber',
-      componentProps: {
-        allowClear: true,
-        min: 0,
-        controlsPosition: 'right',
-        placeholder: $t('ui.placeholder.input', [
-          $t('crm.autoAssignRule.field.currentAssigneeId'),
-        ]),
-      },
-    },
-    /** 当前分配员工额度 */
-    {
-      fieldName: 'currentRemainQuota',
-      label: $t('crm.autoAssignRule.field.currentRemainQuota'),
-      component: 'InputNumber',
-      componentProps: {
-        allowClear: true,
-        min: 0,
-        controlsPosition: 'right',
-        placeholder: $t('ui.placeholder.input', [
-          $t('crm.autoAssignRule.field.currentRemainQuota'),
-        ]),
-      },
-    },
-    /** 创建时间 */
-    {
-      fieldName: 'createTime',
-      label: $t('crm.autoAssignRule.field.createTime'),
-      component: 'RangePicker',
-      componentProps: {
-        ...getRangePickerDefaultProps(),
-        allowClear: true,
-      },
-    },
-  ];
-}
-
-/** 列表的字段 */
-export function useGridColumns(): VxeTableGridOptions<AutoAssignRuleApi.AutoAssignRule>['columns'] {
-  return [
-    { type: 'checkbox', width: 40 },
-    /** 编号 */
-    {
-      field: 'id',
-      title: $t('crm.autoAssignRule.field.id'),
-      minWidth: 120,
-    },
-    /** 自动分配 */
-    {
-      field: 'isEnabled',
-      title: $t('crm.autoAssignRule.field.isEnabled'),
-      minWidth: 120,
-      cellRender: {
-        name: 'CellI18nDict',
-        props: { type: DICT_TYPE.COMMON_STATUS },
-      },
-    },
-    /** 触发动作 */
-    {
-      field: 'triggerActions',
-      title: $t('crm.autoAssignRule.field.triggerActions'),
-      minWidth: 120,
-      cellRender: {
-        name: 'CellI18nDict',
-        props: { type: DICT_TYPE.CRM_AUTO_ASSIGN_RULE_TRIGGER_ACTIONS },
-      },
-    },
-    /** 适用范围 */
-    {
-      field: 'scopeType',
-      title: $t('crm.autoAssignRule.field.scopeType'),
-      minWidth: 120,
-      cellRender: {
-        name: 'CellI18nDict',
-        props: { type: DICT_TYPE.CRM_AUTO_ASSIGN_RULE_SCOPE_TYPE },
-      },
-    },
-    /** 具体条件 */
-    {
-      field: 'scopeConditions',
-      title: $t('crm.autoAssignRule.field.scopeConditions'),
-      minWidth: 120,
-    },
-    /** 分配方案 */
-    {
-      field: 'allocationMethod',
-      title: $t('crm.autoAssignRule.field.allocationMethod'),
-      minWidth: 120,
-      cellRender: {
-        name: 'CellI18nDict',
-        props: { type: DICT_TYPE.CRM_AUTO_ASSIGN_RULE_ALLOCATION_METHOD },
-      },
-    },
-    /** 循环分配 */
-    {
-      field: 'isRoundRobin',
-      title: $t('crm.autoAssignRule.field.isRoundRobin'),
-      minWidth: 120,
-      cellRender: {
-        name: 'CellI18nDict',
-        props: { type: DICT_TYPE.CRM_AUTO_ASSIGN_RULE_ALLOCATION_METHOD },
-      },
-    },
-    /** 是否放入公海 */
-    {
-      field: 'isPutPool',
-      title: $t('crm.autoAssignRule.field.isPutPool'),
-      minWidth: 120,
-      cellRender: {
-        name: 'CellI18nDict',
-        props: { type: DICT_TYPE.COMMON_STATUS },
-      },
-    },
-    /** 放入公海额度 */
-    {
-      field: 'isPutPoolQuota',
-      title: $t('crm.autoAssignRule.field.isPutPoolQuota'),
-      minWidth: 120,
-    },
-    /** 当前分配游标索引 */
-    {
-      field: 'currentCursorIndex',
-      title: $t('crm.autoAssignRule.field.currentCursorIndex'),
-      minWidth: 120,
-    },
-    /** 当前分配员工 */
-    {
-      field: 'currentAssigneeId',
-      title: $t('crm.autoAssignRule.field.currentAssigneeId'),
-      minWidth: 120,
-    },
-    /** 当前分配员工额度 */
-    {
-      field: 'currentRemainQuota',
-      title: $t('crm.autoAssignRule.field.currentRemainQuota'),
-      minWidth: 120,
-    },
-    /** 创建时间 */
-    {
-      field: 'createTime',
-      title: $t('crm.autoAssignRule.field.createTime'),
-      minWidth: 120,
-      sortable: true,
-      formatter: 'formatDateTime',
-    },
-    {
-      title: $t('common.operation'),
-      width: 200,
-      fixed: 'right',
-      slots: { default: 'actions' },
-    },
-  ];
-}
-
-// ==================== 子表（CRM  规则人员明细） ====================
-
-/** 新增/修改列表的字段 */
-export function useAutoAssignRuleUserGridEditColumns(
-  onActionClick?: OnActionClickFn<AutoAssignRuleApi.AutoAssignRuleUser>,
-): VxeTableGridOptions<AutoAssignRuleApi.AutoAssignRuleUser>['columns'] {
-  return [
-    /** 员工 */
-    {
-      field: 'userId',
-      title: $t('crm.autoAssignRuleUser.field.userId'),
-      minWidth: 120,
-      slots: { default: 'userId' },
-    },
-    /** 分配数值 */
-    {
-      field: 'assignValue',
-      title: $t('crm.autoAssignRuleUser.field.assignValue'),
-      minWidth: 120,
-      slots: { default: 'assignValue' },
-    },
-    /** 状态 */
-    {
-      field: 'status',
-      title: $t('crm.autoAssignRuleUser.field.status'),
-      minWidth: 120,
-      slots: { default: 'status' },
-      params: {
-        options: getDictOptions(DICT_TYPE.COMMON_STATUS, 'number'),
-      },
-    },
-    /** 排序号 */
-    {
-      field: 'sortOrder',
-      title: $t('crm.autoAssignRuleUser.field.sortOrder'),
-      minWidth: 120,
-      slots: { default: 'sortOrder' },
-    },
-    {
-      title: $t('common.operation'),
-      width: 200,
-      cellRender: {
-        attrs: {
-          nameField: 'id',
-          nameTitle: '学生',
-          onClick: onActionClick,
+        api: async () => {
+          const data = await getCustomerSourceList({});
+          return handleTree(data);
         },
-        name: 'CellOperation',
-        options: [
-          {
-            code: 'edit',
-            show: hasAccessByCodes(['crm:auto-assign-rule:update']),
-          },
-          {
-            code: 'delete',
-            show: hasAccessByCodes(['crm:auto-assign-rule:create']),
-          },
-        ],
+        labelField: 'name',
+        valueField: 'id',
+        childrenField: 'children',
+        multiple: true,
+        treeCheckable: true,
+        showCheckedStrategy: 'SHOW_PARENT',
+        treeDefaultExpandAll: true,
+        placeholder: $t('ui.placeholder.select', [
+          $t('crm.autoAssignRule.field.scopeSource'),
+        ]),
       },
+      defaultValue: [],
+      dependencies: {
+        triggerFields: ['scopeType'],
+        // 切换适用范围时保留原有的条件值，不做清空
+        show: (values) => values.scopeType === SCOPE_TYPE_CONDITION,
+      },
+    },
+    /** 所属行业（多选，仅「满足条件」时显示） */
+    {
+      fieldName: 'industryIds',
+      label: $t('crm.autoAssignRule.field.scopeIndustry'),
+      component: 'I18nCheckboxGroup',
+      componentProps: {
+        options: getDictOptions(DICT_TYPE.CRM_CUSTOMER_INDUSTRY, 'number'),
+      },
+      defaultValue: [],
+      dependencies: {
+        triggerFields: ['scopeType'],
+        show: (values) => values.scopeType === SCOPE_TYPE_CONDITION,
+      },
+    },
+    /** 客户级别（多选，仅「满足条件」时显示） */
+    {
+      fieldName: 'levelIds',
+      label: $t('crm.autoAssignRule.field.scopeLevel'),
+      component: 'I18nCheckboxGroup',
+      componentProps: {
+        options: getDictOptions(DICT_TYPE.CRM_CUSTOMER_LEVEL, 'number'),
+      },
+      defaultValue: [],
+      dependencies: {
+        triggerFields: ['scopeType'],
+        show: (values) => values.scopeType === SCOPE_TYPE_CONDITION,
+      },
+    },
+    /** 分配方案 */
+    {
+      fieldName: 'allocationMethod',
+      label: $t('crm.autoAssignRule.field.allocationMethod'),
+      rules: 'required',
+      component: 'I18nRadioGroup',
+      componentProps: {
+        options: getDictOptions(
+          DICT_TYPE.CRM_AUTO_ASSIGN_RULE_ALLOCATION_METHOD,
+          'number',
+        ),
+        buttonStyle: 'solid',
+        optionType: 'button',
+      },
+      defaultValue: CrmAutoAssignRuleAllocationMethod.ALLOCATION_METHOD_1,
+    },
+    /** 循环分配 */
+    {
+      fieldName: 'isRoundRobin',
+      label: $t('crm.autoAssignRule.field.isRoundRobin'),
+      rules: 'required',
+      component: 'I18nRadioGroup',
+      componentProps: {
+        options: getDictOptions(
+          DICT_TYPE.CRM_AUTO_ASSIGN_RULE_IS_ROUND_ROBIN,
+          'number',
+        ),
+        buttonStyle: 'solid',
+        optionType: 'button',
+      },
+      defaultValue: CrmAutoAssignRuleIsRoundRobin.IS_ROUND_ROBIN_1,
+    },
+    /** 是否放入公海 */
+    {
+      fieldName: 'isPutPool',
+      label: $t('crm.autoAssignRule.field.isPutPool'),
+      rules: 'required',
+      component: 'I18nRadioGroup',
+      componentProps: {
+        options: getDictOptions(DICT_TYPE.COMMON_STATUS, 'number'),
+        buttonStyle: 'solid',
+        optionType: 'button',
+      },
+      defaultValue: CommonStatusEnum.ENABLE,
+    },
+    /** 放入公海额度（仅「是否放入公海 = 开启」时显示） */
+    {
+      fieldName: 'isPutPoolQuota',
+      label: $t('crm.autoAssignRule.field.isPutPoolQuota'),
+      rules: 'required',
+      component: 'InputNumber',
+      componentProps: {
+        min: 1,
+        defaultValue: 3,
+        controlsPosition: 'right',
+        placeholder: $t('ui.placeholder.input', [
+          $t('crm.autoAssignRule.field.isPutPoolQuota'),
+        ]),
+      },
+      defaultValue: undefined,
+      dependencies: {
+        triggerFields: ['isPutPool'],
+        // 切换时保留原有的额度值，不做清空
+        show: (values) => values.isPutPool === CommonStatusEnum.ENABLE,
+      },
+    },
+    /**
+     * 当前分配员工
+     *
+     * <p>实际渲染由 index.vue 的插槽完成（需要动态绑定规则人员明细里的员工），
+     * 这里的配置仅作为插槽未生效时的兜底。
+     */
+    {
+      fieldName: 'currentAssigneeId',
+      label: $t('crm.autoAssignRule.field.currentAssigneeId'),
+      component: 'Select',
+      componentProps: {
+        options: [],
+        allowClear: true,
+        placeholder: $t('ui.placeholder.select', [
+          $t('crm.autoAssignRule.field.currentAssigneeId'),
+        ]),
+      },
+      defaultValue: undefined,
+    },
+    /**
+     * 当前分配员工额度
+     *
+     * <p>实际渲染由 index.vue 的插槽完成（需要动态绑定 max = 当前分配员工的分配数值），
+     * 这里的配置仅作为插槽未生效时的兜底。
+     */
+    {
+      fieldName: 'currentRemainQuota',
+      label: $t('crm.autoAssignRule.field.currentRemainQuota'),
+      component: 'InputNumber',
+      componentProps: {
+        min: 0,
+        controlsPosition: 'right',
+        placeholder: $t('ui.placeholder.input', [
+          $t('crm.autoAssignRule.field.currentRemainQuota'),
+        ]),
+      },
+      defaultValue: 0,
+    },
+    /** 当前分配游标索引（只读，由后端根据当前分配员工的顺序计算，从 1 开始） */
+    {
+      fieldName: 'currentCursorIndex',
+      label: $t('crm.autoAssignRule.field.currentCursorIndex'),
+      component: 'InputNumber',
+      componentProps: {
+        min: 0,
+        disabled: true,
+        controlsPosition: 'right',
+        placeholder: $t('ui.placeholder.input', [
+          $t('crm.autoAssignRule.field.currentCursorIndex'),
+        ]),
+      },
+      defaultValue: 0,
     },
   ];
 }

@@ -434,6 +434,46 @@
       "or": "或"
     }
   },
+  "autoAssignRule": {
+    "autoAssignRule": "自动分配规则",
+    "menu": "自动分配规则",
+    "list": "自动分配规则",
+    "field": {
+      "ruleTitle": "自动分配规则设置",
+      "id": "编号",
+      "isEnabled": "自动分配",
+      "triggerActions": "触发动作",
+      "scopeType": "适用范围",
+      "scopeConditions": "具体条件",
+      "scopeSource": "客户来源",
+      "scopeIndustry": "所属行业",
+      "scopeLevel": "客户级别",
+      "allocationMethod": "分配方案",
+      "isRoundRobin": "循环分配",
+      "isPutPool": "是否放入公海",
+      "isPutPoolQuota": "放入公海额度",
+      "currentCursorIndex": "当前分配游标索引",
+      "currentAssigneeId": "当前分配员工",
+      "currentRemainQuota": "当前分配员工额度",
+      "createTime": "创建时间"
+    }
+  },
+  "autoAssignRuleUser": {
+    "autoAssignRuleUser": "规则人员明细",
+    "field": {
+      "id": "编号",
+      "ruleId": "规则",
+      "userId": "员工",
+      "assignValue": "分配数值",
+      "status": "状态",
+      "sortOrder": "排序"
+    },
+    "message": {
+      "saveRuleFirst": "请先保存自动分配规则",
+      "sortNeedMore": "至少需要两条规则人员明细才能排序",
+      "saveBeforeSort": "存在未保存的规则人员明细，请先保存后再排序"
+    }
+  },
   "customerLimitConfig": {
     "customerLimitConfig": "客户限制配置",
     "menu": "客户限制配置",

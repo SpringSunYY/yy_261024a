@@ -1,4 +1,4 @@
-package com.lz.module.crm.controller.admin.autoAssignRule.vo.autoAssignRuleUser;
+package com.lz.module.crm.controller.admin.customer.vo.autoAssignRuleUser;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;

@@ -1,225 +1,236 @@
 <script lang="ts" setup>
-import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { AutoAssignRuleApi } from '#/api/crm/customer/autoAssignRule';
 
-import { ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
-import { Page, useVbenModelDrawer } from '@vben/common-ui';
-import { downloadFileFromBlobPart, isEmpty } from '@vben/utils';
+import { Page } from '@vben/common-ui';
 
-import { message } from 'ant-design-vue';
+import { Button, Card, InputNumber, message, Select } from 'ant-design-vue';
 
-import { ACTION_ICON, TableAction, useVbenVxeGrid } from '#/adapter/vxe-table';
+import { useVbenForm } from '#/adapter/form';
 import {
-  deleteAutoAssignRule,
-  deleteAutoAssignRuleList,
-  exportAutoAssignRule,
-  getAutoAssignRulePage,
+  getAutoAssignRule,
+  getAutoAssignRuleUserListByRuleId,
+  saveAutoAssignRule,
 } from '#/api/crm/customer/autoAssignRule';
+import { getSimpleUserList } from '#/api/system/user';
 import { $t } from '#/locales';
-import { pickSort } from '#/utils';
+import { CrmAutoAssignRuleAllocationMethod } from '#/utils/constants/crm';
 
-import { useGridColumns, useGridFormSchema } from './data';
-import Form from './modules/form.vue';
+import { useFormSchema } from './data';
+import AutoAssignRuleUserForm from './modules/auto-assign-rule-user-form.vue';
 
-const [FormModalDrawer, formModalDrawerApi] = useVbenModelDrawer({
-  connectedComponent: Form,
-  destroyOnClose: true,
-  type: 'modal',
+/** 规则数据（全局只有一条） */
+const ruleData = ref<AutoAssignRuleApi.AutoAssignRule>({});
+/** 子表组件实例 */
+const ruleUserFormRef = ref<InstanceType<typeof AutoAssignRuleUserForm>>();
+/** 「当前分配员工」的下拉选项（顺序与规则人员明细一致） */
+const assigneeOptions = ref<
+  { assignValue: number; label: string; value: number }[]
+>([]);
+/** 当前分配员工的分配数值（即「当前分配员工额度」的最大值） */
+const currentAssigneeQuotaMax = ref<number | undefined>(undefined);
+/** 分配方案（平均分配时，「当前分配员工额度」只读） */
+const allocationMethod = ref<number | undefined>(undefined);
+
+const [Form, formApi] = useVbenForm({
+  commonConfig: {
+    componentProps: {
+      class: 'w-full',
+    },
+    labelWidth: 120,
+  },
+  // 一行两列
+  wrapperClass: 'grid-cols-2',
+  layout: 'horizontal',
+  schema: useFormSchema(),
+  showDefaultActions: false,
+  handleValuesChange: (values, changedFields) => {
+    if (changedFields.includes('allocationMethod')) {
+      allocationMethod.value = values.allocationMethod;
+    }
+  },
 });
 
-/** 刷新表格 */
-function onRefresh() {
-  gridApi.query();
+/** 标题 */
+const title = computed(() => $t('crm.autoAssignRule.field.ruleTitle'));
+
+/**
+ * 加载「当前分配员工」的下拉选项
+ *
+ * <p>只允许从规则人员明细中选择，选项的顺序与明细的顺序一致。
+ *
+ * <p>同时会同步「当前分配游标索引」：人员明细的顺序变化后（新增、删除、拖动排序），
+ * 当前分配员工在明细中的位置也会变化。
+ */
+async function loadAssigneeOptions() {
+  const ruleId = ruleData.value.id;
+  if (!ruleId) {
+    assigneeOptions.value = [];
+    return;
+  }
+  const [ruleUserList, userList] = await Promise.all([
+    getAutoAssignRuleUserListByRuleId(ruleId),
+    getSimpleUserList(),
+  ]);
+  const userMap = new Map(
+    (userList ?? []).map((user) => [user.id, user.nickname ?? '']),
+  );
+  // 只保留规则人员明细里的员工，并按明细顺序排列
+  assigneeOptions.value = (ruleUserList ?? [])
+    .filter(
+      (ruleUser) => ruleUser.userId !== undefined && ruleUser.userId !== null,
+    )
+    .map((ruleUser) => ({
+      assignValue: ruleUser.assignValue ?? 0,
+      label: userMap.get(ruleUser.userId) ?? String(ruleUser.userId),
+      value: ruleUser.userId as number,
+    }));
+  // 同步额度上限（不改动已保存的额度值）
+  const assignee = assigneeOptions.value.find(
+    (option) => option.value === ruleData.value.currentAssigneeId,
+  );
+  currentAssigneeQuotaMax.value = assignee?.assignValue;
+  // 同步游标索引：当前分配员工在明细中的位置（从 1 开始）
+  syncCursorIndex(ruleData.value.currentAssigneeId);
 }
 
-/** 创建CRM 自动分配规则 */
-function handleCreate() {
-  formModalDrawerApi.setData({}).open();
+/**
+ * 同步「当前分配游标索引」
+ *
+ * <p>游标索引 = 当前分配员工在规则人员明细中的顺序（从 1 开始，与后端一致）。
+ *
+ * @param assigneeId 当前分配员工编号
+ */
+function syncCursorIndex(assigneeId?: null | number) {
+  const index = assigneeOptions.value.findIndex(
+    (option) => option.value === assigneeId,
+  );
+  formApi.setFieldValue('currentCursorIndex', index === -1 ? 0 : index + 1);
 }
 
-/** 编辑CRM 自动分配规则 */
-function handleEdit(row: AutoAssignRuleApi.AutoAssignRule) {
-  formModalDrawerApi.setData(row).open();
+/**
+ * 切换当前分配员工后，同步「当前分配员工额度」与「当前分配游标索引」
+ *
+ * <p>额度直接取当前分配员工的分配数值，同时作为额度的最大值；
+ * 游标索引为该员工在规则人员明细中的顺序（从 1 开始，与后端一致）。
+ *
+ * @param assigneeId 当前分配员工编号
+ */
+function syncAssignee(assigneeId?: null | number) {
+  const index = assigneeOptions.value.findIndex(
+    (option) => option.value === assigneeId,
+  );
+  const assignee = index === -1 ? undefined : assigneeOptions.value[index];
+  currentAssigneeQuotaMax.value = assignee?.assignValue;
+  // 额度直接取当前分配员工的分配数值
+  formApi.setFieldValue('currentRemainQuota', assignee?.assignValue ?? 0);
+  // 游标索引 = 该员工在规则人员明细中的顺序（从 1 开始）
+  syncCursorIndex(assigneeId);
 }
 
-/** 删除CRM 自动分配规则 */
-async function handleDelete(row: AutoAssignRuleApi.AutoAssignRule) {
-  const hideLoading = message.loading({
-    content: $t('ui.actionMessage.deleting', [row.id]),
-    key: 'action_key_msg',
-  });
+/**
+ * 「当前分配员工」下拉框 change 事件
+ *
+ * @param assigneeId 当前分配员工编号
+ */
+function handleAssigneeChange(assigneeId: any) {
+  syncAssignee(assigneeId);
+}
+
+/** 保存规则（存在则更新，不存在则新增） */
+async function onSubmit() {
+  const { valid } = await formApi.validate();
+  if (!valid) {
+    return;
+  }
+  const data = (await formApi.getValues()) as AutoAssignRuleApi.AutoAssignRule;
+  // 带上 id，保证是更新而不是新增
+  data.id = ruleData.value.id;
+  await saveAutoAssignRule(data);
+  message.success($t('ui.actionMessage.operationSuccess'));
+  await getConfigInfo();
+}
+
+/** 加载规则配置 */
+async function getConfigInfo() {
   try {
-    await deleteAutoAssignRule(row.id as number);
-    message.success({
-      content: $t('ui.actionMessage.deleteSuccess', [row.id]),
-      key: 'action_key_msg',
-    });
-    onRefresh();
-  } finally {
-    hideLoading();
+    const res = await getAutoAssignRule();
+    ruleData.value = res ?? {};
+    // filterFields = false：不过滤字段，保证条件字段等都能回填
+    await formApi.setValues(ruleData.value as Record<string, any>, false);
+    allocationMethod.value = ruleData.value.allocationMethod;
+    // 加载「当前分配员工」的选项，并同步额度上限与游标索引
+    await loadAssigneeOptions();
+    // 规则 id 变化后，刷新子表
+    await ruleUserFormRef.value?.refresh();
+  } catch (error) {
+    console.error(error);
   }
 }
 
-/** 批量删除CRM 自动分配规则 */
-async function handleDeleteBatch() {
-  const hideLoading = message.loading({
-    content: $t('ui.actionMessage.deleting'),
-    key: 'action_key_msg',
-  });
-  try {
-    await deleteAutoAssignRuleList(checkedIds.value);
-    message.success({
-      content: $t('ui.actionMessage.deleteSuccess'),
-      key: 'action_key_msg',
-    });
-    onRefresh();
-  } finally {
-    hideLoading();
-  }
-}
-
-const checkedIds = ref<number[]>([]);
-function handleRowCheckboxChange({
-  records,
-}: {
-  records: AutoAssignRuleApi.AutoAssignRule[];
-}) {
-  checkedIds.value = records.map((item) => item.id);
-}
-
-/** 导出CRM 自动分配规则 */
-const exportLoading = ref(false);
-async function handleExport() {
-  try {
-    exportLoading.value = true;
-    message.loading({
-      content: $t('ui.actionMessage.exporting'),
-      key: 'action_key_msg',
-    });
-    const data = await exportAutoAssignRule(await gridApi.formApi.getValues());
-    downloadFileFromBlobPart({
-      fileName: `${$t('crm.autoAssignRule.autoAssignRule')}.xls`,
-      source: data,
-    });
-  } finally {
-    exportLoading.value = false;
-  }
-}
-
-const [Grid, gridApi] = useVbenVxeGrid({
-  formOptions: {
-    schema: useGridFormSchema(),
-  },
-  gridOptions: {
-    columns: useGridColumns(),
-    height: 'auto',
-    pagerConfig: {
-      enabled: true,
-    },
-    proxyConfig: {
-      ajax: {
-        query: async (ctx, formValues) => {
-          const { page } = ctx || {};
-          const { sortBy, sort } = pickSort(ctx);
-          return await getAutoAssignRulePage({
-            pageNo: page.currentPage,
-            pageSize: page.pageSize,
-            ...formValues,
-            ...(sortBy?.length ? { sortBy, sort } : {}),
-          });
-        },
-      },
-    },
-    rowConfig: {
-      keyField: 'id',
-      isHover: true,
-    },
-    toolbarConfig: {
-      refresh: { code: 'query' },
-      search: true,
-    },
-    sortConfig: {
-      remote: true,
-      multiple: true,
-    },
-  } as VxeTableGridOptions<AutoAssignRuleApi.AutoAssignRule>,
-  gridEvents: {
-    checkboxAll: handleRowCheckboxChange,
-    checkboxChange: handleRowCheckboxChange,
-    sortChange: () => gridApi.query(),
-  },
+onMounted(() => {
+  getConfigInfo();
 });
 </script>
 
 <template>
   <Page auto-content-height>
-    <FormModalDrawer @success="onRefresh" />
+    <Card :title="title">
+      <Form class="w-100%">
+        <!--
+          当前分配员工：只能从规则人员明细中选择
+          通过插槽渲染，便于动态绑定选项与 change 事件
+        -->
+        <template #currentAssigneeId="slotProps">
+          <Select
+            v-bind="slotProps"
+            :allow-clear="true"
+            :options="assigneeOptions"
+            class="w-full"
+            :placeholder="
+              $t('ui.placeholder.select', [
+                $t('crm.autoAssignRule.field.currentAssigneeId'),
+              ])
+            "
+            @change="handleAssigneeChange"
+          />
+        </template>
+        <!--
+          当前分配员工额度：最大值 = 当前分配员工的分配数值
+          通过插槽渲染，便于动态绑定 max
+        -->
+        <template #currentRemainQuota="slotProps">
+          <InputNumber
+            v-bind="slotProps"
+            style="width: 100%"
+            :disabled="
+              allocationMethod ===
+              CrmAutoAssignRuleAllocationMethod.ALLOCATION_METHOD_2
+            "
+            :max="currentAssigneeQuotaMax"
+            :min="0"
+            controls-position="right"
+          />
+        </template>
+      </Form>
+      <div class="flex justify-center">
+        <Button
+          type="primary"
+          @click="onSubmit"
+          v-access:code="['crm:auto-assign-rule:update']"
+        >
+          {{ $t('common.save') }}
+        </Button>
+      </div>
+    </Card>
 
-    <Grid :table-title="$t('crm.autoAssignRule.list')">
-      <template #toolbar-tools>
-        <TableAction
-          :actions="[
-            {
-              label: $t('ui.actionTitle.create', [
-                $t('crm.autoAssignRule.autoAssignRule'),
-              ]),
-              type: 'primary',
-              icon: ACTION_ICON.ADD,
-              auth: ['crm:auto-assign-rule:create'],
-              onClick: handleCreate,
-            },
-            {
-              label: $t('ui.actionTitle.export', [
-                $t('crm.autoAssignRule.autoAssignRule'),
-              ]),
-              type: 'primary',
-              icon: ACTION_ICON.DOWNLOAD,
-              auth: ['crm:auto-assign-rule:export'],
-              onClick: handleExport,
-              loading: exportLoading,
-            },
-            {
-              label: $t('ui.actionTitle.deleteBatch', [
-                $t('crm.autoAssignRule.autoAssignRule'),
-              ]),
-              type: 'primary',
-              danger: true,
-              icon: ACTION_ICON.DELETE,
-              disabled: isEmpty(checkedIds),
-              auth: ['crm:auto-assign-rule:delete'],
-              onClick: handleDeleteBatch,
-            },
-          ]"
-        />
-      </template>
-      <template #actions="{ row }">
-        <TableAction
-          :actions="[
-            {
-              label: $t('common.edit'),
-              type: 'link',
-              icon: ACTION_ICON.EDIT,
-              auth: ['crm:auto-assign-rule:update'],
-              onClick: handleEdit.bind(null, row),
-            },
-            {
-              label: $t('common.delete'),
-              type: 'link',
-              danger: true,
-              icon: ACTION_ICON.DELETE,
-              auth: ['crm:auto-assign-rule:delete'],
-              popConfirm: {
-                title: $t('ui.actionMessage.deleteConfirm', [
-                  row.id,
-                  $t('crm.autoAssignRule..autoAssignRuleUser'),
-                ]),
-                confirm: handleDelete.bind(null, row),
-              },
-            },
-          ]"
-        />
-      </template>
-    </Grid>
+    <Card class="mt-4" :title="$t('crm.autoAssignRuleUser.autoAssignRuleUser')">
+      <AutoAssignRuleUserForm
+        ref="ruleUserFormRef"
+        :rule-id="ruleData?.id"
+        @success="loadAssigneeOptions"
+      />
+    </Card>
   </Page>
 </template>

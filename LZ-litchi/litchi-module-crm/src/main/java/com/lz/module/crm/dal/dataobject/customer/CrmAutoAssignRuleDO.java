@@ -1,9 +1,6 @@
-package com.lz.module.crm.dal.dataobject.autoAssignRule;
+package com.lz.module.crm.dal.dataobject.customer;
 
 import lombok.*;
-import java.util.*;
-import java.time.LocalDateTime;
-import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.*;
 import com.lz.framework.mybatis.core.dataobject.BaseDO;
 
@@ -36,13 +33,15 @@ public class CrmAutoAssignRuleDO extends BaseDO {
     /**
      * 触发动作
      *
+     * <p>多个触发动作，以 JSON 数组字符串存储，例如：[1,2,3]
+     *
      * 枚举 {@link TODO crm_auto_assign_rule_trigger_actions 对应的类}
      */
     private String triggerActions;
     /**
      * 适用范围
      *
-     * 枚举 {@link TODO crm_auto_assign_rule_scope_type 对应的类}
+     * 枚举 {@link com.lz.module.crm.enums.customer.CrmAutoAssignRuleScopeTypeEnum}
      */
     private Integer scopeType;
     /**
@@ -52,19 +51,19 @@ public class CrmAutoAssignRuleDO extends BaseDO {
     /**
      * 分配方案
      *
-     * 枚举 {@link TODO crm_auto_assign_rule_allocation_method 对应的类}
+     * 枚举 {@link com.lz.module.crm.enums.customer.CrmAutoAssignRuleAllocationMethodEnum}
      */
     private Integer allocationMethod;
     /**
      * 循环分配
      *
-     * 枚举 {@link TODO crm_auto_assign_rule_allocation_method 对应的类}
+     * 枚举 {@link com.lz.module.crm.enums.customer.CrmAutoAssignRuleAllocationMethodEnum}
      */
     private Integer isRoundRobin;
     /**
      * 是否放入公海
      *
-     * 枚举 {@link TODO common_status 对应的类}
+     * 枚举 {@link CommonStatusEnum}
      */
     private Integer isPutPool;
     /**

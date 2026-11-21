@@ -3,7 +3,8 @@ package com.lz.module.crm.dal.mysql.autoAssignRuleUser;
 import java.util.*;
 
 import com.lz.framework.mybatis.core.mapper.BaseMapperX;
-import com.lz.module.crm.dal.dataobject.autoAssignRule.CrmAutoAssignRuleUserDO;
+import com.lz.framework.mybatis.core.query.LambdaQueryWrapperX;
+import com.lz.module.crm.dal.dataobject.customer.CrmAutoAssignRuleUserDO;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -15,7 +16,10 @@ import org.apache.ibatis.annotations.Mapper;
 public interface CrmAutoAssignRuleUserMapper extends BaseMapperX<CrmAutoAssignRuleUserDO> {
 
     default List<CrmAutoAssignRuleUserDO> selectListByRuleId(Long ruleId) {
-        return selectList(CrmAutoAssignRuleUserDO::getRuleId, ruleId);
+        return selectList(new LambdaQueryWrapperX<CrmAutoAssignRuleUserDO>()
+                .eq(CrmAutoAssignRuleUserDO::getRuleId, ruleId)
+                .orderByAsc(CrmAutoAssignRuleUserDO::getSortOrder)
+                .orderByAsc(CrmAutoAssignRuleUserDO::getId));
     }
 
     default int deleteByRuleId(Long ruleId) {

@@ -1,10 +1,11 @@
-package com.lz.module.crm.controller.admin.autoAssignRule;
+package com.lz.module.crm.controller.admin.customer;
 
-import com.lz.module.crm.controller.admin.autoAssignRule.vo.autoAssignRule.CrmAutoAssignRuleExcelVO;
-import com.lz.module.crm.controller.admin.autoAssignRule.vo.autoAssignRule.CrmAutoAssignRulePageReqVO;
-import com.lz.module.crm.controller.admin.autoAssignRule.vo.autoAssignRule.CrmAutoAssignRuleRespVO;
-import com.lz.module.crm.controller.admin.autoAssignRule.vo.autoAssignRule.CrmAutoAssignRuleSaveReqVO;
-import com.lz.module.crm.controller.admin.autoAssignRule.vo.autoAssignRuleUser.CrmAutoAssignRuleUserRespVO;
+import com.lz.module.crm.controller.admin.customer.vo.autoAssignRule.CrmAutoAssignRuleExcelVO;
+import com.lz.module.crm.controller.admin.customer.vo.autoAssignRule.CrmAutoAssignRulePageReqVO;
+import com.lz.module.crm.controller.admin.customer.vo.autoAssignRule.CrmAutoAssignRuleRespVO;
+import com.lz.module.crm.controller.admin.customer.vo.autoAssignRule.CrmAutoAssignRuleSaveReqVO;
+import com.lz.module.crm.controller.admin.customer.vo.autoAssignRuleUser.CrmAutoAssignRuleUserRespVO;
+import com.lz.module.crm.controller.admin.customer.vo.autoAssignRuleUser.CrmAutoAssignRuleUserSaveReqVO;
 import org.springframework.web.bind.annotation.*;
 import jakarta.annotation.Resource;
 import org.springframework.validation.annotation.Validated;
@@ -29,8 +30,8 @@ import com.lz.framework.excel.core.util.ExcelUtils;
 import com.lz.framework.apilog.core.annotation.ApiAccessLog;
 import static com.lz.framework.apilog.core.enums.OperateTypeEnum.*;
 
-import com.lz.module.crm.dal.dataobject.autoAssignRule.CrmAutoAssignRuleDO;
-import com.lz.module.crm.service.autoAssignRule.CrmAutoAssignRuleService;
+import com.lz.module.crm.dal.dataobject.customer.CrmAutoAssignRuleDO;
+import com.lz.module.crm.service.customer.CrmAutoAssignRuleService;
 
 /**
  * CRM 自动分配规则 Controller
@@ -47,24 +48,13 @@ public class CrmAutoAssignRuleController {
     private CrmAutoAssignRuleService autoAssignRuleService;
 
     /**
-     * 创建CRM 自动分配规则
+     * 保存CRM 自动分配规则（存在则更新，不存在则新增）
      */
-    @PostMapping("/create")
-    @Operation(summary = "创建CRM 自动分配规则")
-    @PreAuthorize("@ss.hasPermission('crm:auto-assign-rule:create')")
-    public CommonResult<Long> createAutoAssignRule(@Valid @RequestBody CrmAutoAssignRuleSaveReqVO createReqVO) {
-        return success(autoAssignRuleService.createAutoAssignRule(createReqVO));
-    }
-
-    /**
-     * 更新CRM 自动分配规则
-     */
-    @PutMapping("/update")
-    @Operation(summary = "更新CRM 自动分配规则")
+    @PutMapping("/save")
+    @Operation(summary = "保存CRM 自动分配规则")
     @PreAuthorize("@ss.hasPermission('crm:auto-assign-rule:update')")
-    public CommonResult<Boolean> updateAutoAssignRule(@Valid @RequestBody CrmAutoAssignRuleSaveReqVO updateReqVO) {
-        autoAssignRuleService.updateAutoAssignRule(updateReqVO);
-        return success(true);
+    public CommonResult<Long> saveAutoAssignRule(@Valid @RequestBody CrmAutoAssignRuleSaveReqVO saveReqVO) {
+        return success(autoAssignRuleService.saveAutoAssignRule(saveReqVO));
     }
 
     /**
@@ -80,27 +70,13 @@ public class CrmAutoAssignRuleController {
     }
 
     /**
-     * 批量删除CRM 自动分配规则
-     */
-    @DeleteMapping("/delete-list")
-    @Parameter(name = "ids", description = "编号", required = true)
-    @Operation(summary = "批量删除CRM 自动分配规则")
-                @PreAuthorize("@ss.hasPermission('crm:auto-assign-rule:delete')")
-    public CommonResult<Boolean> deleteAutoAssignRuleList(@RequestParam("ids") List<Long> ids) {
-        autoAssignRuleService.deleteAutoAssignRuleListByIds(ids);
-        return success(true);
-    }
-
-    /**
-     * 获取CRM 自动分配规则详情
+     * 获取CRM 自动分配规则详情（全局只有一条配置）
      */
     @GetMapping("/get")
     @Operation(summary = "获得CRM 自动分配规则")
-    @Parameter(name = "id", description = "编号", required = true, example = "1024")
     @PreAuthorize("@ss.hasPermission('crm:auto-assign-rule:query')")
-    public CommonResult<CrmAutoAssignRuleRespVO> getAutoAssignRule(@RequestParam("id") Long id) {
-        CrmAutoAssignRuleDO autoAssignRule = autoAssignRuleService.getAutoAssignRule(id);
-        return success(BeanUtils.toBean(autoAssignRule, CrmAutoAssignRuleRespVO.class));
+    public CommonResult<CrmAutoAssignRuleRespVO> getAutoAssignRule() {
+        return success(autoAssignRuleService.getAutoAssignRuleResp());
     }
 
     /**
@@ -110,10 +86,8 @@ public class CrmAutoAssignRuleController {
     @Operation(summary = "获得CRM 自动分配规则分页")
     @PreAuthorize("@ss.hasPermission('crm:auto-assign-rule:query')")
     public CommonResult<PageResult<CrmAutoAssignRuleRespVO>> getAutoAssignRulePage(@Valid CrmAutoAssignRulePageReqVO pageReqVO) {
-        PageResult<CrmAutoAssignRuleDO> pageResult = autoAssignRuleService.getAutoAssignRulePage(pageReqVO);
-        return success(BeanUtils.toBean(pageResult, CrmAutoAssignRuleRespVO.class));
+        return success(autoAssignRuleService.getAutoAssignRuleRespPage(pageReqVO));
     }
-
     /**
      * 导出CRM 自动分配规则 Excel
      */
@@ -142,6 +116,53 @@ public class CrmAutoAssignRuleController {
     @PreAuthorize("@ss.hasPermission('crm:auto-assign-rule:query')")
     public CommonResult<List<CrmAutoAssignRuleUserRespVO>> getAutoAssignRuleUserListByRuleId(@RequestParam("ruleId") Long ruleId) {
         return success(BeanUtils.toBean(autoAssignRuleService.getAutoAssignRuleUserListByRuleId(ruleId), CrmAutoAssignRuleUserRespVO.class));
+    }
+
+    /**
+     * 新增CRM  规则人员明细
+     */
+    @PostMapping("/auto-assign-rule-user/create")
+    @Operation(summary = "新增CRM  规则人员明细")
+    @PreAuthorize("@ss.hasPermission('crm:auto-assign-rule:create')")
+    public CommonResult<Long> createAutoAssignRuleUser(@RequestParam("ruleId") Long ruleId,
+                                                        @Valid @RequestBody CrmAutoAssignRuleUserSaveReqVO saveReqVO) {
+        return success(autoAssignRuleService.createAutoAssignRuleUser(ruleId, saveReqVO));
+    }
+
+    /**
+     * 修改CRM  规则人员明细
+     */
+    @PutMapping("/auto-assign-rule-user/update")
+    @Operation(summary = "修改CRM  规则人员明细")
+    @PreAuthorize("@ss.hasPermission('crm:auto-assign-rule:update')")
+    public CommonResult<Boolean> updateAutoAssignRuleUser(@RequestParam("ruleId") Long ruleId,
+                                                           @Valid @RequestBody CrmAutoAssignRuleUserSaveReqVO saveReqVO) {
+        autoAssignRuleService.updateAutoAssignRuleUser(ruleId, saveReqVO);
+        return success(true);
+    }
+
+    /**
+     * 更新CRM  规则人员明细的排序号（ids 按目标顺序排列）
+     */
+    @PutMapping("/auto-assign-rule-user/update-sort")
+    @Operation(summary = "更新CRM  规则人员明细排序")
+    @PreAuthorize("@ss.hasPermission('crm:auto-assign-rule:update')")
+    public CommonResult<Boolean> updateAutoAssignRuleUserSort(@RequestParam("ruleId") Long ruleId,
+                                                               @Valid @RequestBody List<Long> ids) {
+        autoAssignRuleService.updateAutoAssignRuleUserSort(ruleId, ids);
+        return success(true);
+    }
+
+    /**
+     * 删除CRM  规则人员明细
+     */
+    @DeleteMapping("/auto-assign-rule-user/delete")
+    @Operation(summary = "删除CRM  规则人员明细")
+    @Parameter(name = "id", description = "编号", required = true)
+    @PreAuthorize("@ss.hasPermission('crm:auto-assign-rule:delete')")
+    public CommonResult<Boolean> deleteAutoAssignRuleUser(@RequestParam("id") Long id) {
+        autoAssignRuleService.deleteAutoAssignRuleUser(id);
+        return success(true);
     }
 
 }

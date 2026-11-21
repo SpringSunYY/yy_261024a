@@ -1,4 +1,4 @@
-package com.lz.module.crm.controller.admin.autoAssignRule.vo.autoAssignRule;
+package com.lz.module.crm.controller.admin.customer.vo.autoAssignRule;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.lz.framework.common.validation.i18n.I18nNotEmpty;
 import com.lz.framework.common.validation.i18n.I18nNotNull;
@@ -36,11 +36,11 @@ public class CrmAutoAssignRuleExcelVO {
 
     /**
     * 触发动作
+    *
+    * <p>数据库中以 JSON 数组字符串存储，导出时原样输出
     */
-    @ExcelProperty(value = "触发动作", converter = DictConvert.class)
-    @ExcelColumnSelect(dictType = "crm_auto_assign_rule_trigger_actions", i18n = true)
+    @ExcelProperty("触发动作")
     @ExcelI18n(i18nKey = "crm.autoAssignRule.field.triggerActions")
-    @I18nNotEmpty(i18nKey = "crm.autoAssignRule.back.triggerActions.notNull", message = "触发动作不能为空")
     private String triggerActions;
 
     /**
