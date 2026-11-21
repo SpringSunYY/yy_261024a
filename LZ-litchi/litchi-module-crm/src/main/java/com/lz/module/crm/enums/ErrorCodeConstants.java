@@ -125,4 +125,6 @@ public interface ErrorCodeConstants {
     // ========== 导入通用错误码（可自行配置国际化） ==========
     ErrorCode CUSTOMER_SOURCE_IMPORT_DATA_EMPTY = new ErrorCode(1_020_015_100, "crm.back.import.dataEmpty", "CRM 客户来源导入数据不能为空！");
 
+    // ========== CRM 自动分配规则 1-020-016-000 ==========
+    ErrorCode AUTO_ASSIGN_RULE_NOT_EXISTS = new ErrorCode(1_003_000_001, "crm.autoAssignRule.back.notExists", "CRM 自动分配规则不存在");
 }

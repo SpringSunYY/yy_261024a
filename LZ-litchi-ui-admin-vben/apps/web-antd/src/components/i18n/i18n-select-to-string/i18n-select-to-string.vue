@@ -97,10 +97,13 @@ function handleRadioChange(e: RadioChangeEvent) {
 }
 
 // CheckboxGroup 变化处理 (多选模式)
-function handleCheckboxGroupChange(e: any) {
-  const values = (e.target.value as (boolean | number | string)[]).map(String);
-  selectedValues.value = values;
-  emitChange(values);
+function handleCheckboxGroupChange(values: any) {
+  // ant-design-vue 的 Checkbox.Group change 事件直接回传选中的值数组
+  const raw = Array.isArray(values) ? values : values?.target?.value;
+  const list = Array.isArray(raw) ? raw : [];
+  const normalized = list.map(String);
+  selectedValues.value = normalized;
+  emitChange(normalized);
 }
 </script>
 

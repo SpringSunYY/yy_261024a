@@ -163,8 +163,12 @@ enum DICT_TYPE {
   BPM_TASK_CANDIDATE_STRATEGY = 'bpm_task_candidate_strategy',
   BPM_TASK_STATUS = 'bpm_task_status',
   COMMON_STATUS = 'common_status',
-  // ========== CRM - 客户管理模块 ==========
   CRM_AUDIT_STATUS = 'crm_audit_status', // CRM 审批状态
+  CRM_AUTO_ASSIGN_RULE_ALLOCATION_METHOD = 'crm_auto_assign_rule_allocation_method', // CRM 自动赋值规则分配方式
+  CRM_AUTO_ASSIGN_RULE_IS_ROUND_ROBIN = 'crm_auto_assign_rule_is_round_robin', // CRM 自动赋值规则是否轮询
+  CRM_AUTO_ASSIGN_RULE_SCOPE_TYPE = 'crm_auto_assign_rule_scope_type', // CRM 自动赋值规则适用范围类型
+  // ========== CRM - 客户管理模块 ==========
+  CRM_AUTO_ASSIGN_RULE_TRIGGER_ACTIONS = 'crm_auto_assign_rule_trigger_actions', // CRM 自动赋值规则触发动作
   CRM_BIZ_TYPE = 'crm_biz_type', // CRM 业务类型
   CRM_BUSINESS_END_STATUS_TYPE = 'crm_business_end_status_type', // CRM 商机结束状态类型
   CRM_CUSTOMER_INDUSTRY = 'crm_customer_industry', // CRM 客户所属行业
