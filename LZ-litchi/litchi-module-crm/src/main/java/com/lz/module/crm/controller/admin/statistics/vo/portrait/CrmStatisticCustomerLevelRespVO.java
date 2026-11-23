@@ -8,7 +8,7 @@ import lombok.Data;
 public class CrmStatisticCustomerLevelRespVO {
 
     @Schema(description = "客户级别编号", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
-    private Integer level;
+    private Long level;
 
     @Schema(description = "客户个数", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
     private Integer customerCount;

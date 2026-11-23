@@ -6,7 +6,7 @@ import type { ClassType, Recordable } from '@vben-core/typings';
 
 import type { TreeProps } from './types';
 
-import { onMounted, ref, watchEffect } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 import { ChevronRight, IconifyIcon } from '@vben-core/icons';
 import { cn, get } from '@vben-core/shared/utils';
@@ -72,23 +72,13 @@ function flatten<T = Recordable<any>, P = number | string>(
   return result;
 }
 
-const flattenData = ref<Array<InnerFlattenItem>>([]);
+/** 扁平化的树数据 */
+const flattenData = computed<InnerFlattenItem[]>(() =>
+  flatten(props.treeData, props.childrenField),
+);
+
 const modelValue = defineModel<Arrayable<number | string>>();
 const expanded = ref<Array<number | string>>(props.defaultExpandedKeys ?? []);
-
-const treeValue = ref();
-
-onMounted(() => {
-  watchEffect(() => {
-    flattenData.value = flatten(props.treeData, props.childrenField);
-    updateTreeValue();
-    if (
-      props.defaultExpandedLevel !== undefined &&
-      props.defaultExpandedLevel > 0
-    )
-      expandToLevel(props.defaultExpandedLevel);
-  });
-});
 
 function getItemByValue(value: number | string) {
   return flattenData.value.find(
@@ -96,16 +86,41 @@ function getItemByValue(value: number | string) {
   )?.value;
 }
 
-function updateTreeValue() {
+/**
+ * 树控件的选中值
+ *
+ * <p>把「编号」映射为「树节点对象」。这里使用 computed 而不是手动 watch 同步，
+ * 这样树数据异步加载完成后，选中值会自动重新映射，
+ * 避免出现「第一次打开时回填的勾选态没显示，第二次打开才显示」的问题。
+ *
+ * <p>映射不到的编号会被过滤掉，避免传入 undefined 导致 radix-vue 内部报错。
+ */
+const treeValue = computed(() => {
   const val = modelValue.value;
   if (val === undefined) {
-    treeValue.value = undefined;
-  } else {
-    treeValue.value = Array.isArray(val)
-      ? val.map((v) => getItemByValue(v))
-      : getItemByValue(val);
+    return undefined;
   }
-}
+  if (Array.isArray(val)) {
+    return val
+      .map((v) => getItemByValue(v))
+      .filter((item) => item !== undefined);
+  }
+  return getItemByValue(val);
+});
+
+// 树数据变化后，按需展开到指定层级
+watch(
+  flattenData,
+  () => {
+    if (
+      props.defaultExpandedLevel !== undefined &&
+      props.defaultExpandedLevel > 0
+    ) {
+      expandToLevel(props.defaultExpandedLevel);
+    }
+  },
+  { immediate: true },
+);
 
 function updateModelValue(val: Arrayable<Recordable<any>>) {
   modelValue.value = Array.isArray(val)
@@ -171,7 +186,6 @@ function onSelect(item: FlattenedItem<Recordable<any>>, isSelected: boolean) {
         }
       });
   }
-  updateTreeValue();
   emits('select', item);
 }
 

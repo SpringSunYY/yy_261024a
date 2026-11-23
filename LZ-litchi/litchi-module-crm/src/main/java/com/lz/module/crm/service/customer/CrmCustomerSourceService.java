@@ -69,7 +69,7 @@ public interface CrmCustomerSourceService {
      * @param oldSourceId 旧来源编号 如果有旧编号，校验新编号和旧编号是否一致，如果一致则返回true
      * @return 是否存在
      */
-    void validateCustomerSourceExists(String newSourceId, String oldSourceId);
+    void validateCustomerSourceExists(Long newSourceId, Long oldSourceId);
 
     /**
      * 获得CRM 客户来源的祖先名称
@@ -77,7 +77,7 @@ public interface CrmCustomerSourceService {
      * @param source 来源
      * @return 祖先名称
      */
-    String getCustomerSourceAncestorsName(String source);
+    String getCustomerSourceAncestorsName(Long source);
 
     /**
      * 获得CRM 客户来源的完整树（只包含开启状态的来源）
@@ -104,5 +104,5 @@ public interface CrmCustomerSourceService {
      * @param source 来源编号
      * @return 来源名称
      */
-    String getCustomerSourceName(String source);
+    String getCustomerSourceName(Long source);
 }

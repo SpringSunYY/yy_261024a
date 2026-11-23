@@ -17,41 +17,41 @@ import java.util.Arrays;
  */
 @Getter
 @AllArgsConstructor
-public enum CrmPermissionLevelEnum implements ArrayValuable<Integer> {
+public enum CrmPermissionLevelEnum implements ArrayValuable<Long> {
 
-    OWNER(1, "负责人"),
-    READ(2, "只读"),
-    WRITE(3, "读写");
+    OWNER(1L, "负责人"),
+    READ(2L, "只读"),
+    WRITE(3L, "读写");
 
-    public static final Integer[] ARRAYS = Arrays.stream(values()).map(CrmPermissionLevelEnum::getLevel).toArray(Integer[]::new);
+    public static final Long[] ARRAYS = Arrays.stream(values()).map(CrmPermissionLevelEnum::getLevel).toArray(Long[]::new);
 
     /**
      * 级别
      */
-    private final Integer level;
+    private final Long level;
     /**
      * 级别名称
      */
     private final String name;
 
     @Override
-    public Integer[] array() {
+    public Long[] array() {
         return ARRAYS;
     }
 
-    public static boolean isOwner(Integer level) {
+    public static boolean isOwner(Long level) {
         return ObjUtil.equal(OWNER.level, level);
     }
 
-    public static boolean isRead(Integer level) {
+    public static boolean isRead(Long level) {
         return ObjUtil.equal(READ.level, level);
     }
 
-    public static boolean isWrite(Integer level) {
+    public static boolean isWrite(Long level) {
         return ObjUtil.equal(WRITE.level, level);
     }
 
-    public static String getNameByLevel(Integer level) {
+    public static String getNameByLevel(Long level) {
         CrmPermissionLevelEnum typeEnum = CollUtil.findOne(CollUtil.newArrayList(CrmPermissionLevelEnum.values()),
                 item -> ObjUtil.equal(item.level, level));
         return typeEnum == null ? null : typeEnum.getName();

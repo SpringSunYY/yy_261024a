@@ -34,13 +34,13 @@ public class CrmCustomerPageReqVO extends PageParam {
     private String mobile;
 
     @Schema(description = "所属行业", example = "1")
-    private Integer industryId;
+    private Long industryId;
 
     @Schema(description = "客户等级", example = "1")
-    private Integer level;
+    private Long level;
 
     @Schema(description = "客户来源", example = "1")
-    private String source;
+    private Long source;
 
     @Schema(description = "场景类型", example = "1")
     @InEnum(CrmSceneTypeEnum.class)

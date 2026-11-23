@@ -55,6 +55,9 @@
       "createTime": "创建时间",
       "updateTime": "更新时间"
     },
+    "help": {
+      "ownerUserId": "选择负责人，则客户负责人为所选负责人；不选择，则由系统按自动分配规则自动分配负责人"
+    },
     "action": {
       "updateDealStatus": "更改成交状态",
       "import": "导入客户",

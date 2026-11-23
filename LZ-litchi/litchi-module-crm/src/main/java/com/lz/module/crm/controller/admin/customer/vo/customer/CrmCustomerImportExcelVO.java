@@ -62,17 +62,17 @@ public class CrmCustomerImportExcelVO {
     @DictFormat(CRM_CUSTOMER_INDUSTRY)
     @ExcelColumnSelect(dictType = CRM_CUSTOMER_INDUSTRY, i18n = true)
     @ExcelI18n(i18nKey = "crm.customer.field.industryId")
-    private Integer industryId;
+    private Long industryId;
 
     @ExcelProperty(value = "客户等级", converter = DictConvert.class)
     @DictFormat(CRM_CUSTOMER_LEVEL)
     @ExcelColumnSelect(dictType = CRM_CUSTOMER_LEVEL, i18n = true)
     @ExcelI18n(i18nKey = "crm.customer.field.level")
-    private Integer level;
+    private Long level;
 
     @ExcelProperty("客户来源编号")
     @ExcelI18n(i18nKey = "crm.customer.field.source")
-    private String source;
+    private Long source;
 
     @ExcelProperty("备注")
     @ExcelI18n(i18nKey = "crm.customer.field.remark")

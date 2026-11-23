@@ -64,7 +64,7 @@ public interface CrmPermissionService {
      * @param bizId   数据编号，关联 {@link CrmBizTypeEnum} 对应模块 DO#getId()
      * @param level   数据权限级别，关联 {@link CrmPermissionLevelEnum}
      */
-    void deletePermission(Integer bizType, Long bizId, Integer level);
+    void deletePermission(Integer bizType, Long bizId, Long level);
 
     /**
      * 删除数据权限

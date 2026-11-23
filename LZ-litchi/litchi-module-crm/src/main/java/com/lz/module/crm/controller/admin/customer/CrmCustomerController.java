@@ -150,7 +150,7 @@ public class CrmCustomerController {
                 customerVO.setAreaName(AreaUtils.format(customerVO.getAreaCode()));
             }
             // 2.1 设置客户来源名称（source 保留编号，便于前端还原级联选择）
-            if (StrUtil.isNotEmpty(customerVO.getSource())) {
+            if (customerVO.getSource() != null) {
                 customerVO.setSourceName(customerSourceService.getCustomerSourceAncestorsName(customerVO.getSource()));
             }
             // 2.2 设置创建人、负责人名称
@@ -260,10 +260,10 @@ public class CrmCustomerController {
     public void importTemplate(HttpServletResponse response) throws IOException {
         // 手动创建导出 demo
         List<CrmCustomerImportExcelVO> list = Arrays.asList(
-                CrmCustomerImportExcelVO.builder().name("荔枝").industryId(1).level(1).source("1")
+                CrmCustomerImportExcelVO.builder().name("荔枝").industryId(1L).level(1L).source(1L)
                         .mobile("15601691300").telephone("").qq("").wechat("").email("yunai@iocoder.cn")
                         .areaCode(null).detailAddress("").remark("").build(),
-                CrmCustomerImportExcelVO.builder().name("源码").industryId(1).level(1).source("1")
+                CrmCustomerImportExcelVO.builder().name("源码").industryId(1L).level(1L).source(1L)
                         .mobile("15601691300").telephone("").qq("").wechat("").email("yunai@iocoder.cn")
                         .areaCode(null).detailAddress("").remark("").build()
         );        // 输出

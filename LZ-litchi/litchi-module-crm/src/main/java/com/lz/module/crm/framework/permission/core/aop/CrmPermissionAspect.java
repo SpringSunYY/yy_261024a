@@ -57,7 +57,7 @@ public class CrmPermissionAspect {
         } else {
             bizIds.add(Long.parseLong(object.toString()));
         }
-        Integer permissionLevel = crmPermission.level().getLevel(); // 需要的权限级别
+        Long permissionLevel = crmPermission.level().getLevel(); // 需要的权限级别
 
         // 2. 逐个校验权限
         List<CrmPermissionDO> permissionList = crmPermissionService.getPermissionListByBiz(bizType, bizIds);
@@ -65,7 +65,7 @@ public class CrmPermissionAspect {
         bizIds.forEach(bizId -> validatePermission(bizType, multiMap.get(bizId), permissionLevel));
     }
 
-    private void validatePermission(Integer bizType, List<CrmPermissionDO> bizPermissions, Integer permissionLevel) {
+    private void validatePermission(Integer bizType, List<CrmPermissionDO> bizPermissions, Long permissionLevel) {
         // 1. 如果是超级管理员则直接通过
         if (CrmPermissionUtils.isCrmAdmin()) {
             return;
@@ -118,7 +118,7 @@ public class CrmPermissionAspect {
      * @return 是否有效
      */
     @SuppressWarnings("RedundantIfStatement")
-    private boolean isUserPermissionValid(CrmPermissionDO userPermission, Integer permissionLevel) {
+    private boolean isUserPermissionValid(CrmPermissionDO userPermission, Long permissionLevel) {
         // 2.1 情况一：如果自己是负责人，则默认有所有权限
         if (CrmPermissionLevelEnum.isOwner(userPermission.getLevel())) {
             return true;

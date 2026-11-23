@@ -29,7 +29,7 @@ public class CrmPermissionSaveReqVO {
     @Schema(description = "权限级别", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
     @InEnum(CrmPermissionLevelEnum.class)
     @I18nNotNull(i18nKey = "crm.permission.back.level.notNull", message = "权限级别不能为空")
-    private Integer level;
+    private Long level;
 
     /**
      * 添加客户团队成员时，需要额外有【联系人】【商机】【合同】的 checkbox 选择。

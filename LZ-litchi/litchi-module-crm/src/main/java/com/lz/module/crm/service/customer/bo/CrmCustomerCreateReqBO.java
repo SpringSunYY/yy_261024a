@@ -40,19 +40,19 @@ public class CrmCustomerCreateReqBO {
      *
      * 对应字典 {@link DictTypeConstants#CRM_CUSTOMER_INDUSTRY}
      */
-    private Integer industryId;
+    private Long industryId;
     /**
      * 客户等级
      *
      * 对应字典 {@link DictTypeConstants#CRM_CUSTOMER_LEVEL}
      */
-    private Integer level;
+    private Long level;
     /**
      * 客户来源编号
      *
      * <p>对应 {@link com.lz.module.crm.dal.dataobject.customer.CrmCustomerSourceDO} 的编号
      */
-    private String source;
+    private Long source;
 
     /**
      * 手机

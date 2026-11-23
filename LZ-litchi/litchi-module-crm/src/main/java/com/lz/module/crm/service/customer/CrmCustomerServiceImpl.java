@@ -19,9 +19,11 @@ import com.lz.module.crm.dal.dataobject.contact.CrmContactDO;
 import com.lz.module.crm.dal.dataobject.contract.CrmContractDO;
 import com.lz.module.crm.dal.dataobject.customer.CrmCustomerDO;
 import com.lz.module.crm.dal.dataobject.customer.CrmCustomerPoolConfigDO;
+import com.lz.module.crm.dal.dto.customer.CrmCustomerAssignConditionDto;
 import com.lz.module.crm.dal.mysql.customer.CrmCustomerMapper;
 import com.lz.module.crm.enums.common.CrmBizTypeEnum;
 import com.lz.module.crm.enums.common.CrmSceneTypeEnum;
+import com.lz.module.crm.enums.customer.CrmAutoAssignRuleTriggerActionsEnum;
 import com.lz.module.crm.enums.customer.CrmCustomerLimitConfigApplicableTypeEnum;
 import com.lz.module.crm.enums.permission.CrmPermissionLevelEnum;
 import com.lz.module.crm.framework.permission.core.annotations.CrmPermission;
@@ -90,31 +92,103 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
     @Resource
     private AdminUserApi adminUserApi;
 
+    @Resource
+    private CrmAutoAssignRuleService autoAssignRuleService;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     @LogRecord(type = CRM_CUSTOMER_TYPE, subType = CRM_CUSTOMER_CREATE_SUB_TYPE, bizNo = "{{#customer.id}}",
             success = CRM_CUSTOMER_CREATE_SUCCESS)
     public Long createCustomer(CrmCustomerSaveReqVO createReqVO, Long userId) {
         createReqVO.setId(null);
-        // 1. 校验拥有客户是否到达上限
-        validateCustomerExceedOwnerLimit(createReqVO.getOwnerUserId(), 1);
         // 1.1 校验客户来源
         customerSourceService.validateCustomerSourceExists(createReqVO.getSource(), null);
         // 1.2 校验客户名称唯一
         validateCustomerNameUnique(createReqVO.getName(), null);
         // 1.3 校验手机号唯一
         validateCustomerMobileUnique(createReqVO.getMobile(), null);
+        // 1.3 初始化客户负责人
+        initCustomerOwner(createReqVO);
+
         // 2. 插入客户
-        CrmCustomerDO customer = initCustomer(createReqVO, userId);
+        CrmCustomerDO customer = initCustomer(createReqVO, createReqVO.getOwnerUserId());
         customerMapper.insert(customer);
 
         // 3. 创建数据权限
         permissionService.createPermission(new CrmPermissionCreateReqBO().setBizType(CrmBizTypeEnum.CRM_CUSTOMER.getType())
-                .setBizId(customer.getId()).setUserId(userId).setLevel(CrmPermissionLevelEnum.OWNER.getLevel())); // 设置当前操作的人为负责人
+                .setBizId(customer.getId()).setUserId(customer.getOwnerUserId()).setLevel(CrmPermissionLevelEnum.OWNER.getLevel())); // 设置客户负责人为权限负责人
 
         // 4. 记录操作日志上下文
         LogRecordContext.putVariable("customer", customer);
         return customer.getId();
+    }
+
+    /**
+     * 初始化客户负责人（管理后台 - CRM 客户新增/修改 Request VO）
+     *
+     * @param createReqVO 创建信息
+     */
+    private void initCustomerOwner(CrmCustomerSaveReqVO createReqVO) {
+        createReqVO.setOwnerUserId(resolveOwnerUserId(createReqVO.getOwnerUserId(), createReqVO.getSource(),
+                createReqVO.getIndustryId(), createReqVO.getLevel()));
+    }
+
+    /**
+     * 初始化客户负责人（内部 - 客户创建 Create Req BO）
+     *
+     * @param createReqBO 创建信息
+     */
+    private void initCustomerOwner(CrmCustomerCreateReqBO createReqBO) {
+        createReqBO.setOwnerUserId(resolveOwnerUserId(createReqBO.getOwnerUserId(), createReqBO.getSource(),
+                createReqBO.getIndustryId(), createReqBO.getLevel()));
+    }
+
+    /**
+     * 解析客户负责人
+     *
+     * <p>1. 前端指定了负责人：直接校验其拥有的客户数是否达到上限，达到上限则直接报错，不做自动分配；
+     * <p>2. 前端未指定负责人：走自动分配规则获取负责人，并校验其拥有的客户数是否达到上限，
+     *    达到上限则跳过该负责人，继续获取下一个负责人，直到找到可用的负责人为止；
+     * <p>3. 若所有可分配的负责人均已达到上限（或没有可分配的负责人），则报错「没有可分配的负责人」。
+     *
+     * @param ownerUserId 前端指定的负责人编号，为空时走自动分配
+     * @param source      客户来源编号
+     * @param industryId  所属行业编号
+     * @param level       客户等级
+     * @return 负责人编号
+     */
+    private Long resolveOwnerUserId(Long ownerUserId, Long source, Long industryId, Long level) {
+        // 1. 前端指定了负责人，直接校验上限
+        if (ObjUtil.isNotEmpty(ownerUserId)) {
+            validateCustomerExceedOwnerLimit(ownerUserId, 1);
+            return ownerUserId;
+        }
+        // 2. 前端未指定负责人，走自动分配
+        // 2.1 拿到可分配的负责人总数，作为循环的最大次数
+        Long ownerCount = autoAssignRuleService.getAssignableOwnerUserTotal();
+        if (ownerCount == null || ownerCount <= 0) {
+            throw exception(CUSTOMER_NO_ASSIGNABLE_OWNER);
+        }
+        CrmCustomerAssignConditionDto condition = new CrmCustomerAssignConditionDto(source, industryId, level);
+        String triggerAction = CrmAutoAssignRuleTriggerActionsEnum.TRIGGER_ACTIONS_1.getStatus().toString();
+        Long ruleId = autoAssignRuleService.getAutoAssignRuleId();
+        // 2.2 循环获取负责人：每次获取到的负责人都校验上限，达到上限则跳过该负责人，继续获取下一个
+        for (int i = 0; i < ownerCount; i++) {
+            Long nextOwnerUserId = autoAssignRuleService.getNextOwnerUserId(triggerAction, condition);
+            // 没有可用的负责人（规则未启用 / 不满足触发条件 / 候选人员已耗尽）
+            if (nextOwnerUserId == null) {
+                break;
+            }
+            // 该负责人拥有的客户数未达到上限，直接使用
+            if (!isCustomerExceedOwnerLimit(nextOwnerUserId, 1)) {
+                return nextOwnerUserId;
+            }
+            // 达到上限，则跳过该负责人，把规则推进到下一个负责人，使下一次获取负责人时取到下一个员工
+            log.info("[resolveOwnerUserId][负责人({})拥有的客户数已达到上限，自动分配下一个负责人]", nextOwnerUserId);
+            autoAssignRuleService.skipCurrentAssignee(ruleId, nextOwnerUserId);
+        }
+        // 3. 所有可分配的负责人都已达到上限
+        throw exception(CUSTOMER_NO_ASSIGNABLE_OWNER);
     }
 
     /**
@@ -293,13 +367,15 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
         validateCustomerNameUnique(createReqBO.getName(), null);
         // 1.2 校验手机号唯一
         validateCustomerMobileUnique(createReqBO.getMobile(), null);
+        // 1.3 初始化客户负责人
+        initCustomerOwner(createReqBO);
         // 2. 插入客户
-        CrmCustomerDO customer = initCustomer(createReqBO, userId);
+        CrmCustomerDO customer = initCustomer(createReqBO, createReqBO.getOwnerUserId());
         customerMapper.insert(customer);
 
         // 2. 创建数据权限
         permissionService.createPermission(new CrmPermissionCreateReqBO().setBizType(CrmBizTypeEnum.CRM_CUSTOMER.getType())
-                .setBizId(customer.getId()).setUserId(userId).setLevel(CrmPermissionLevelEnum.OWNER.getLevel())); // 设置当前操作的人为负责人
+                .setBizId(customer.getId()).setUserId(customer.getOwnerUserId()).setLevel(CrmPermissionLevelEnum.OWNER.getLevel())); // 设置客户负责人为权限负责人
 
         // 3. 记录操作日志上下文
         LogRecordContext.putVariable("customer", customer);
@@ -569,7 +645,7 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
     /**
      * 校验客户名称是否唯一
      *
-     * @param name 客户名称
+     * @param name      客户名称
      * @param excludeId 需要排除的客户编号（修改场景，排除自身），为空时不排除
      */
     private void validateCustomerNameUnique(String name, Long excludeId) {
@@ -584,7 +660,7 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
     /**
      * 校验客户手机号是否唯一
      *
-     * @param mobile 手机号
+     * @param mobile    手机号
      * @param excludeId 需要排除的客户编号（修改场景，排除自身），为空时不排除
      */
     private void validateCustomerMobileUnique(String mobile, Long excludeId) {
@@ -669,19 +745,14 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
     /**
      * 校验用户拥有的客户数量，是否到达上限
      *
+     * <p>达到上限时抛出异常，异常信息区分「用户维度」与「部门维度」。
+     *
      * @param userId   用户编号
      * @param newCount 附加数量
      */
     private void validateCustomerExceedOwnerLimit(Long userId, int newCount) {
-        CrmCustomerLimitConfigSimpVO simpVO = customerLimitConfigService.getCustomerLimitConfigListByUserId(
-                CUSTOMER_OWNER_LIMIT.getType(), userId);
-        if (ObjectUtils.isNull(simpVO)) {
-            return;
-        }
-        Long ownerCount = customerMapper.selectCountByDealStatusAndOwnerUserId(null, userId);
-        Long dealOwnerCount = customerMapper.selectCountByDealStatusAndOwnerUserId(true, userId);
-        long nowCount = simpVO.getDealCountEnabled() != null && simpVO.getDealCountEnabled() ? ownerCount : ownerCount - dealOwnerCount;
-        if (nowCount + newCount > simpVO.getMaxCount()) {
+        if (isCustomerExceedOwnerLimit(userId, newCount)) {
+            CrmCustomerLimitConfigSimpVO simpVO = getOwnerLimitConfig(userId);
             //判断是部门还是用户
             if (Objects.equals(simpVO.getApplicableType(),
                     CrmCustomerLimitConfigApplicableTypeEnum.CUSTOMER_LIMIT_CONFIG_APPLICABLE_TYPE_2.getValue())) {
@@ -690,6 +761,39 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
                 throw exception(CUSTOMER_OWNER_EXCEED_LIMIT_DEPT, simpVO.getUserName(), simpVO.getDeptName(), simpVO.getMaxCount(), simpVO.getName(), simpVO.getId());
             }
         }
+    }
+
+    /**
+     * 判断用户拥有的客户数量，是否到达上限（不抛异常，用于自动分配时的逐个试探）
+     *
+     * @param userId   用户编号
+     * @param newCount 附加数量
+     * @return 是否达到上限
+     */
+    private boolean isCustomerExceedOwnerLimit(Long userId, int newCount) {
+        CrmCustomerLimitConfigSimpVO simpVO = getOwnerLimitConfig(userId);
+        if (simpVO == null) {
+            return false;
+        }
+        Long ownerCount = customerMapper.selectCountByDealStatusAndOwnerUserId(null, userId);
+        Long dealOwnerCount = customerMapper.selectCountByDealStatusAndOwnerUserId(true, userId);
+        long nowCount = simpVO.getDealCountEnabled() != null && simpVO.getDealCountEnabled() ? ownerCount : ownerCount - dealOwnerCount;
+        return nowCount + newCount > simpVO.getMaxCount();
+    }
+
+    /**
+     * 获得用户的「客户拥有数量上限」配置
+     *
+     * @param userId 用户编号
+     * @return 上限配置；未配置或未配置最大数量时，返回 null
+     */
+    private CrmCustomerLimitConfigSimpVO getOwnerLimitConfig(Long userId) {
+        CrmCustomerLimitConfigSimpVO simpVO = customerLimitConfigService.getCustomerLimitConfigListByUserId(
+                CUSTOMER_OWNER_LIMIT.getType(), userId);
+        if (ObjectUtils.isNull(simpVO) || simpVO.getMaxCount() == null) {
+            return null;
+        }
+        return simpVO;
     }
 
     /**

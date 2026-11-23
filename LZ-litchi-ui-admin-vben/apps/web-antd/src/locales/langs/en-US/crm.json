@@ -55,6 +55,9 @@
       "createTime": "create time",
       "updateTime": "update time"
     },
+    "help": {
+      "ownerUserId": "If an owner is selected, the customer owner will be the selected one; if not selected, the system will automatically assign an owner according to the auto-assignment rule"
+    },
     "action": {
       "updateDealStatus": "change deal status",
       "import": "import customer",

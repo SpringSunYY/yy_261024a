@@ -3,29 +3,33 @@ package com.lz.module.crm.service.customer;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.lz.framework.common.enums.CommonStatusEnum;
+import com.lz.framework.common.pojo.PageResult;
+import com.lz.framework.common.util.json.JsonUtils;
+import com.lz.framework.common.util.object.BeanUtils;
 import com.lz.module.crm.controller.admin.customer.vo.autoAssignRule.CrmAutoAssignRulePageReqVO;
 import com.lz.module.crm.controller.admin.customer.vo.autoAssignRule.CrmAutoAssignRuleRespVO;
 import com.lz.module.crm.controller.admin.customer.vo.autoAssignRule.CrmAutoAssignRuleSaveReqVO;
 import com.lz.module.crm.controller.admin.customer.vo.autoAssignRuleUser.CrmAutoAssignRuleUserSaveReqVO;
+import com.lz.module.crm.dal.dataobject.customer.CrmAutoAssignRuleDO;
+import com.lz.module.crm.dal.dataobject.customer.CrmAutoAssignRuleUserDO;
+import com.lz.module.crm.dal.dto.customer.CrmAutoAssignRuleScopeConditionDTO;
+import com.lz.module.crm.dal.dto.customer.CrmCustomerAssignConditionDto;
+import com.lz.module.crm.dal.mysql.autoAssignRuleUser.CrmAutoAssignRuleUserMapper;
+import com.lz.module.crm.dal.mysql.customer.CrmAutoAssignRuleMapper;
+import com.lz.module.crm.enums.customer.CrmAutoAssignRuleAllocationMethodEnum;
+import com.lz.module.crm.enums.customer.CrmAutoAssignRuleIsRoundRobinEnum;
+import com.lz.module.crm.enums.customer.CrmAutoAssignRuleScopeTypeEnum;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import jakarta.annotation.Resource;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
-import com.lz.module.crm.dal.dataobject.customer.CrmAutoAssignRuleDO;
-import com.lz.module.crm.controller.admin.customer.vo.autoAssignRule.CrmAutoAssignRuleScopeConditionDTO;
-import com.lz.module.crm.dal.dataobject.customer.CrmAutoAssignRuleUserDO;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.lz.framework.common.pojo.PageResult;
-import com.lz.framework.common.util.json.JsonUtils;
-import com.lz.framework.common.util.object.BeanUtils;
-
-import com.lz.module.crm.dal.mysql.customer.CrmAutoAssignRuleMapper;
-import com.lz.module.crm.dal.mysql.autoAssignRuleUser.CrmAutoAssignRuleUserMapper;
 
 import static com.lz.framework.common.exception.util.ServiceExceptionUtil.exception;
 import static com.lz.module.crm.enums.ErrorCodeConstants.*;
@@ -89,7 +93,7 @@ public class CrmAutoAssignRuleServiceImpl implements CrmAutoAssignRuleService {
      * <p>2. 依据该员工在明细中的顺序，更新当前分配游标索引（从 1 开始，与列表展示的顺序一致）；
      * <p>3. 校验当前分配员工额度不能大于该员工的分配数值。
      *
-     * @param rule 待保存的规则
+     * @param rule   待保存的规则
      * @param dbRule 数据库中的规则（新增时为 null）
      */
     private void fillCurrentAssignee(CrmAutoAssignRuleDO rule, CrmAutoAssignRuleDO dbRule) {
@@ -179,7 +183,7 @@ public class CrmAutoAssignRuleServiceImpl implements CrmAutoAssignRuleService {
     /**
      * 获得当前分配员工在规则人员明细中的游标索引（从 1 开始）
      *
-     * @param ruleId 规则编号
+     * @param ruleId     规则编号
      * @param assigneeId 当前分配员工编号
      * @return 游标索引；未指定当前分配员工或该员工不在明细中时，返回 0
      */
@@ -365,8 +369,8 @@ public class CrmAutoAssignRuleServiceImpl implements CrmAutoAssignRuleService {
     /**
      * 校验：同一个员工只能有一条规则人员明细
      *
-     * @param ruleId 规则
-     * @param userId 员工
+     * @param ruleId    规则
+     * @param userId    员工
      * @param excludeId 需要排除的明细编号（修改场景，即自身）
      */
     private void validateAutoAssignRuleUserUnique(Long ruleId, Long userId, Long excludeId) {
@@ -386,7 +390,7 @@ public class CrmAutoAssignRuleServiceImpl implements CrmAutoAssignRuleService {
      * 校验规则人员明细存在
      *
      * @param ruleId 规则
-     * @param id 编号
+     * @param id     编号
      * @return 规则人员明细
      */
     private CrmAutoAssignRuleUserDO validateAutoAssignRuleUserExists(Long ruleId, Long id) {
@@ -408,6 +412,231 @@ public class CrmAutoAssignRuleServiceImpl implements CrmAutoAssignRuleService {
                 .max(Comparator.comparingInt(Integer::intValue))
                 .orElse(0);
         return maxSortOrder + 1;
+    }
+
+
+    @Override
+    public Long getNextOwnerUserId(String triggerAction, CrmCustomerAssignConditionDto condition) {
+        //首先获得规则
+        CrmAutoAssignRuleDO rule = this.getAutoAssignRule();
+        //校验规则是否启用
+        if (rule == null
+                || !rule.getIsEnabled().equals(CommonStatusEnum.ENABLE.getStatus())) {
+            return null;
+        }
+        //判断是否要执行该规则
+        if (!rule.getTriggerActions().contains(triggerAction)) {
+            return null;
+        }
+        //判断是否是可以走规则
+        boolean canExecute = false;
+        //如果是全部条件,就不需要判断
+        if (rule.getScopeType().equals(CrmAutoAssignRuleScopeTypeEnum.SCOPE_TYPE_1.getStatus())) {
+            canExecute = true;
+        } else {
+            canExecute = getCanExecuteByCondition(condition, rule);
+        }
+        if (!canExecute) {
+            return null;
+        }
+        // 首先拿到规则人员明细列表（按排序号升序，即分配顺序），并过滤掉关闭的用户
+        List<CrmAutoAssignRuleUserDO> userList = autoAssignRuleUserMapper.selectListByRuleId(rule.getId());
+        userList.removeIf(user -> !user.getStatus().equals(CommonStatusEnum.ENABLE.getStatus()));
+        // 没有候选用户了
+        if (CollUtil.isEmpty(userList)) {
+            return null;
+        }
+        // 【按数量分配】
+        if (isAllocationByQuantity(rule)) {
+            // 当前分配员工在候选列表中的位置
+            int currentIndex = indexOfUser(userList, rule.getCurrentAssigneeId());
+            // 当前分配员工还有剩余额度，就分配给他，额度减 1
+            if (rule.getCurrentRemainQuota() != null && rule.getCurrentRemainQuota() > 0 && currentIndex >= 0) {
+                return updateRuleAssignee(rule.getId(), rule.getCurrentAssigneeId(), rule.getCurrentCursorIndex(),
+                        rule.getCurrentRemainQuota() - 1);
+            }
+            // 当前分配员工的额度已用完（或还没指定分配员工），取下一个员工分配给他
+            // 下一个员工本次已经分配出去一次，所以他的剩余额度 = 分配数值 - 1
+            CrmAutoAssignRuleUserDO nextUser = getNextUser(userList, rule, currentIndex);
+            if (nextUser == null) {
+                return null;
+            }
+            return updateRuleAssignee(rule.getId(), nextUser.getUserId(), nextUser.getSortOrder(),
+                    getRemainQuota(nextUser, true));
+        }
+        // 【平均分配】：先拿「当前分配员工」作为负责人，再把规则推进到下一个员工
+        int currentIndex = indexOfUser(userList, rule.getCurrentAssigneeId());
+        // 当前分配员工不存在时，默认取第一个员工作为负责人
+        int ownerIndex = currentIndex >= 0 ? currentIndex : 0;
+        Long ownerUserId = userList.get(ownerIndex).getUserId();
+        // 推进规则到下一个员工（下一个员工本次还没有被分配，所以额度为他的完整分配数值）
+        CrmAutoAssignRuleUserDO nextUser = getNextUser(userList, rule, ownerIndex);
+        if (nextUser == null) {
+            return ownerUserId;
+        }
+        updateRuleAssignee(rule.getId(), nextUser.getUserId(), nextUser.getSortOrder(),
+                getRemainQuota(nextUser, false));
+        return ownerUserId;
+    }
+
+    /**
+     * 是否是「按数量分配」
+     */
+    private boolean isAllocationByQuantity(CrmAutoAssignRuleDO rule) {
+        return rule.getAllocationMethod() != null
+                && rule.getAllocationMethod().equals(CrmAutoAssignRuleAllocationMethodEnum.ALLOCATION_METHOD_1.getStatus());
+    }
+
+    /**
+     * 获得员工在列表中的位置
+     *
+     * @param userList 候选员工列表
+     * @param userId   员工编号
+     * @return 位置；不存在时返回 -1
+     */
+    private int indexOfUser(List<CrmAutoAssignRuleUserDO> userList, Long userId) {
+        if (userId == null) {
+            return -1;
+        }
+        for (int i = 0; i < userList.size(); i++) {
+            // currentAssigneeId 存的是员工编号 userId，不是明细主键 id
+            if (ObjectUtil.equal(userList.get(i).getUserId(), userId)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * 按「循环分配 / 随机分配」的方式，获得下一个员工
+     *
+     * @param userList    候选员工列表（已过滤掉关闭的用户，按排序号升序）
+     * @param rule        规则
+     * @param currentIndex 当前分配员工在列表中的位置；为 -1 时表示当前分配员工不存在
+     * @return 下一个员工；没有候选员工时返回 null
+     */
+    private CrmAutoAssignRuleUserDO getNextUser(List<CrmAutoAssignRuleUserDO> userList, CrmAutoAssignRuleDO rule,
+                                                 int currentIndex) {
+        if (CollUtil.isEmpty(userList)) {
+            return null;
+        }
+        // 【随机分配】：从候选员工中随机取一个
+        if (rule.getIsRoundRobin() != null
+                && rule.getIsRoundRobin().equals(CrmAutoAssignRuleIsRoundRobinEnum.IS_ROUND_ROBIN_2.getStatus())) {
+            return userList.get(new Random().nextInt(userList.size()));
+        }
+        // 【循环分配】：取「当前分配员工」的下一个；当前分配员工不存在时，取第一个员工
+        int nextIndex = currentIndex >= 0 ? (currentIndex + 1) % userList.size() : 0;
+        return userList.get(nextIndex);
+    }
+
+    /**
+     * 获得员工分配出去后的剩余额度
+     *
+     * @param user       员工
+     * @param allocated  该员工本次是否已经分配出去一次
+     * @return 剩余额度
+     */
+    private Integer getRemainQuota(CrmAutoAssignRuleUserDO user, boolean allocated) {
+        int assignValue = user.getAssignValue() != null ? user.getAssignValue() : 1;
+        // 已经分配出去一次，额度需要减去这次
+        return allocated ? assignValue - 1 : assignValue;
+    }
+
+    /**
+     * 更新规则的「当前分配员工」与「当前分配员工额度」
+     *
+     * @param ruleId          规则编号
+     * @param assigneeId      当前分配员工
+     * @param cursorIndex     当前分配游标索引
+     * @param remainQuota     当前分配员工额度（已经是扣减后的值）
+     * @return 当前分配员工
+     */
+    private Long updateRuleAssignee(Long ruleId, Long assigneeId, Integer cursorIndex, Integer remainQuota) {
+        CrmAutoAssignRuleDO rule = autoAssignRuleMapper.selectById(ruleId);
+        if (rule == null) {
+            return null;
+        }
+        rule.setCurrentAssigneeId(assigneeId);
+        rule.setCurrentCursorIndex(cursorIndex);
+        rule.setCurrentRemainQuota(remainQuota);
+        autoAssignRuleMapper.updateById(rule);
+        return assigneeId;
+    }
+
+    ;
+
+    /**
+     * 根据条件判断规则是否可以执行
+     *
+     * @param condition 条件
+     * @param rule      规则
+     * @return 是否可以执行
+     */
+    private boolean getCanExecuteByCondition(CrmCustomerAssignConditionDto condition, CrmAutoAssignRuleDO rule) {
+        //从规则条件中获取具体条件
+        CrmAutoAssignRuleScopeConditionDTO scopeCondition = parseScopeConditions(rule.getScopeConditions());
+        //如果规则条件为空，则返回false
+        if (scopeCondition == null) {
+            return false;
+        }
+        //判断客户来源是否在规则条件中
+        if (scopeCondition.getSourceIds() != null && scopeCondition.getSourceIds().contains(condition.getSource())) {
+            return true;
+        }
+        //判断客户行业是否在规则条件中
+        if (scopeCondition.getIndustryIds() != null && scopeCondition.getIndustryIds().contains(condition.getIndustryId())) {
+            return true;
+        }
+        //判断客户级别是否在规则条件中
+        if (scopeCondition.getLevelIds() != null && scopeCondition.getLevelIds().contains(condition.getLevelId())) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public Long getAutoAssignRuleId() {
+        CrmAutoAssignRuleDO rule = this.getAutoAssignRule();
+        return rule != null ? rule.getId() : null;
+    }
+
+    @Override
+    public void skipCurrentAssignee(Long ruleId, Long rejectedUserId) {
+        CrmAutoAssignRuleDO rule = autoAssignRuleMapper.selectById(ruleId);
+        if (rule == null) {
+            return;
+        }
+        // 拿到规则人员明细列表（按排序号升序，即循环分配的顺序）
+        List<CrmAutoAssignRuleUserDO> userList = autoAssignRuleUserMapper.selectListByRuleId(ruleId);
+        // 过滤掉关闭的用户
+        userList.removeIf(user -> !user.getStatus().equals(CommonStatusEnum.ENABLE.getStatus()));
+        // 没有可用的员工
+        if (CollUtil.isEmpty(userList)) {
+            return;
+        }
+        // 找到被跳过员工在列表中的位置
+        int rejectedIndex = indexOfUser(userList, rejectedUserId);
+        // 跳过该员工，分配给下一个员工；如果该员工不存在，则默认分配给第一个员工
+        int nextIndex = rejectedIndex >= 0 ? (rejectedIndex + 1) % userList.size() : 0;
+        CrmAutoAssignRuleUserDO nextUser = userList.get(nextIndex);
+        // 更新规则的当前分配员工、游标索引，以及该员工的剩余额度（他本次还没有被分配，所以额度为完整的分配数值）
+        rule.setCurrentAssigneeId(nextUser.getUserId());
+        rule.setCurrentCursorIndex(nextUser.getSortOrder());
+        rule.setCurrentRemainQuota(getRemainQuota(nextUser, false));
+        autoAssignRuleMapper.updateById(rule);
+    }
+
+    @Override
+    public Long getAssignableOwnerUserTotal() {
+        // 只统计「当前规则」下启用中的人员明细，与 getNextOwnerUserId 的候选范围保持一致
+        CrmAutoAssignRuleDO rule = this.getAutoAssignRule();
+        if (rule == null) {
+            return 0L;
+        }
+        return autoAssignRuleUserMapper.selectCount(new LambdaQueryWrapper<CrmAutoAssignRuleUserDO>()
+                .eq(CrmAutoAssignRuleUserDO::getRuleId, rule.getId())
+                .eq(CrmAutoAssignRuleUserDO::getStatus, CommonStatusEnum.ENABLE.getStatus()));
     }
 
 }

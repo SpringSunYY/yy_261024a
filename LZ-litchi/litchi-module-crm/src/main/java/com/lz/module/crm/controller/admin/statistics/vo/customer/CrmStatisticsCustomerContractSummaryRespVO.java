@@ -24,7 +24,7 @@ public class CrmStatisticsCustomerContractSummaryRespVO {
     private BigDecimal receivablePrice;
 
     @Schema(description = "客户行业编号", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
-    private Integer industryId;
+    private Long industryId;
 
     @Schema(description = "客户来源编号", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
     private Integer source;

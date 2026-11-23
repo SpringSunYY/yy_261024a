@@ -101,7 +101,7 @@ public class CrmStatisticsPortraitServiceImpl implements CrmStatisticsPortraitSe
         List<CrmStatisticCustomerSourceRespVO> list = portraitMapper.selectCustomerSourceListGroupBySource(reqVO);
         // 3. 设置客户来源名称（source 保留编号）
         for (CrmStatisticCustomerSourceRespVO item : list) {
-            if (StrUtil.isNotEmpty(item.getSource())) {
+            if (ObjUtil.isNotNull(item.getSource())) {
                 item.setSourceName(customerSourceService.getCustomerSourceName(item.getSource()));
             }
         }

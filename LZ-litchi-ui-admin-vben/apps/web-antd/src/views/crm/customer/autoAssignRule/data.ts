@@ -1,9 +1,7 @@
 import type { VbenFormSchema } from '#/adapter/form';
 
 import { $t } from '@vben/locales';
-import { handleTree } from '@vben/utils';
 
-import { getCustomerSourceList } from '#/api/crm/customer/source';
 import { CommonStatusEnum, DICT_TYPE, getDictOptions } from '#/utils';
 import {
   CrmAutoAssignRuleAllocationMethod,
@@ -76,29 +74,16 @@ export function useFormSchema(): VbenFormSchema[] {
       },
       defaultValue: CrmAutoAssignRuleScopeType.SCOPE_TYPE_1,
     },
-    /** 客户来源（多选，仅「满足条件」时显示） */
+    /**
+     * 客户来源（多选，仅「满足条件」时显示）
+     *
+     * <p>实际渲染由 index.vue 的插槽完成（树形勾选面板），
+     * 这里的配置仅作为插槽未生效时的兜底。
+     */
     {
       fieldName: 'sourceIds',
       label: $t('crm.autoAssignRule.field.scopeSource'),
-      component: 'ApiTreeSelect',
-      componentProps: {
-        allowClear: true,
-        api: async () => {
-          const data = await getCustomerSourceList({});
-          return handleTree(data);
-        },
-        labelField: 'name',
-        valueField: 'id',
-        childrenField: 'children',
-        multiple: true,
-        treeCheckable: true,
-        showCheckedStrategy: 'SHOW_PARENT',
-        treeDefaultExpandAll: true,
-        placeholder: $t('ui.placeholder.select', [
-          $t('crm.autoAssignRule.field.scopeSource'),
-        ]),
-      },
-      defaultValue: [],
+      component: 'Input',
       dependencies: {
         triggerFields: ['scopeType'],
         // 切换适用范围时保留原有的条件值，不做清空

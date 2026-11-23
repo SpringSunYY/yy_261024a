@@ -31,13 +31,13 @@ public class CrmCluePageReqVO extends PageParam {
     private Integer sceneType; // 场景类型，为 null 时则表示全部
 
     @Schema(description = "所属行业", example = "1")
-    private Integer industryId;
+    private Long industryId;
 
     @Schema(description = "客户等级", example = "1")
-    private Integer level;
+    private Long level;
 
     @Schema(description = "客户来源编号", example = "1")
-    private String source;
+    private Long source;
 
     @Schema(description = "跟进状态", example = "true")
     private Boolean followUpStatus;

@@ -12,7 +12,7 @@ import com.lz.module.crm.controller.admin.customer.vo.source.CrmCustomerSourceRe
 import com.lz.module.crm.controller.admin.customer.vo.source.CrmCustomerSourceSaveReqVO;
 import com.lz.module.crm.dal.dataobject.customer.CrmCustomerSourceDO;
 import com.lz.module.crm.dal.mysql.customer.CrmCustomerSourceMapper;
-import com.lz.module.crm.enums.CrmRedisKeyConstants;
+import com.lz.module.crm.dal.redis.CrmRedisKeyConstants;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -304,37 +304,30 @@ public class CrmCustomerSourceServiceImpl implements CrmCustomerSourceService {
 
     @Override
     @Cacheable(cacheNames = CrmRedisKeyConstants.CUSTOMER_SOURCE_NAME, key = "#source",
-            condition = "#source != null && !#source.isEmpty()")
-    public String getCustomerSourceName(String source) {
-        if (StrUtil.isEmpty(source)) {
-            return source;
+            condition = "#source != null")
+    public String getCustomerSourceName(Long source) {
+        if (source == null) {
+            return String.valueOf(source);
         }
-        Long sourceId = null;
-        try {
-            sourceId = Long.valueOf(source);
-        } catch (NumberFormatException e) {
-            log.error("CRM 客户来源编号解析异常:{}", e.getMessage());
-            return source;
-        }
-        CrmCustomerSourceDO customerSource = customerSourceMapper.selectById(sourceId);
+        CrmCustomerSourceDO customerSource = customerSourceMapper.selectById(source);
         if (customerSource == null) {
-            return source;
+            return String.valueOf(source);
         }
         return customerSource.getName();
     }
 
     @Override
-    public void validateCustomerSourceExists(String newSourceId, String oldSourceId) {
+    public void validateCustomerSourceExists(Long newSourceId, Long oldSourceId) {
         // 如果新的id为空直接返回true
-        if (StrUtil.isEmpty(newSourceId)) {
+        if (newSourceId == null) {
             return;
         }
         // 如果旧的id不为空且等于新的id，返回true
-        if (StrUtil.isNotEmpty(oldSourceId) && oldSourceId.equals(newSourceId)) {
+        if (oldSourceId != null && oldSourceId.equals(newSourceId)) {
             return;
         }
         try {
-            if (customerSourceMapper.selectById(Long.valueOf(newSourceId)) == null) {
+            if (customerSourceMapper.selectById(newSourceId) == null) {
                 throw exception(CUSTOMER_SOURCE_NOT_EXISTS);
             }
         } catch (NumberFormatException e) {
@@ -345,21 +338,21 @@ public class CrmCustomerSourceServiceImpl implements CrmCustomerSourceService {
 
     @Override
     @Cacheable(cacheNames = CrmRedisKeyConstants.CUSTOMER_SOURCE_ANCESTOR_NAME, key = "#source")
-    public String getCustomerSourceAncestorsName(String source) {
-        if (StrUtil.isEmpty(source)) {
-            return source;
+    public String getCustomerSourceAncestorsName(Long source) {
+        if (source == null) {
+            return String.valueOf(source);
         }
         Long sourceId = null;
         try {
             sourceId = Long.valueOf(source);
         } catch (NumberFormatException e) {
             log.error("CRM 客户来源编号解析异常:{}", e.getMessage());
-            return source;
+            return String.valueOf(source);
         }
         //查询到自己
         CrmCustomerSourceDO customerSource = customerSourceMapper.selectById(sourceId);
         if (customerSource == null) {
-            return source;
+            return String.valueOf(source);
         }
         //查询到所有父级
         List<CrmCustomerSourceDO> parentCustomerSourceList = getParentCustomerSourceList(sourceId);

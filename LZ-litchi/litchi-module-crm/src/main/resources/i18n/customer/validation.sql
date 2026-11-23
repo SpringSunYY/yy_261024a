@@ -32,17 +32,6 @@ DELETE FROM infra_i18n_message WHERE message_key = 'crm.customer.back.name.notEm
 INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
 VALUES ('客户-客户名称不能为空', 'crm.customer.back.name.notEmpty', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '客户名称不能为空', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
 
--- 2. 客户-负责人的用户编号不能为空
-DELETE FROM infra_i18n_key WHERE message_key = 'crm.customer.back.ownerUserId.notNull';
-INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
-VALUES ('客户-负责人的用户编号不能为空', 'crm.customer.back.ownerUserId.notNull', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
-DELETE FROM infra_i18n_message WHERE message_key = 'crm.customer.back.ownerUserId.notNull' AND locale = @LOCALE_EN;
-INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
-VALUES ('客户-负责人的用户编号不能为空', 'crm.customer.back.ownerUserId.notNull', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'customer owner cannot be empty', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
-DELETE FROM infra_i18n_message WHERE message_key = 'crm.customer.back.ownerUserId.notNull' AND locale = @LOCALE_ZH_CN;
-INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
-VALUES ('客户-负责人的用户编号不能为空', 'crm.customer.back.ownerUserId.notNull', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '负责人的用户编号不能为空', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
-
 -- 3. 客户-QQ长度不能超过20个字符
 DELETE FROM infra_i18n_key WHERE message_key = 'crm.customer.back.qq.length';
 INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)

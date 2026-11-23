@@ -143,7 +143,7 @@ public class CrmClueController {
             // 2.1 设置客户名称
             MapUtils.findAndThen(customerMap, clueVO.getCustomerId(), customer -> clueVO.setCustomerName(customer.getName()));
             // 2.2 设置客户来源名称（source 保留编号，便于前端还原级联选择）
-            if (StrUtil.isNotEmpty(clueVO.getSource())) {
+            if (clueVO.getSource() != null) {
                 clueVO.setSourceName(customerSourceService.getCustomerSourceName(clueVO.getSource()));
             }
             // 2.3 设置创建人、负责人名称

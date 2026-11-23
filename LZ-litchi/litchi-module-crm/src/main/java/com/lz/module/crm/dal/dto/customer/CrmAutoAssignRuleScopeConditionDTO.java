@@ -1,4 +1,4 @@
-package com.lz.module.crm.controller.admin.customer.vo.autoAssignRule;
+package com.lz.module.crm.dal.dto.customer;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -22,23 +22,18 @@ public class CrmAutoAssignRuleScopeConditionDTO {
     /**
      * 客户来源编号列表
      *
-     * <p>为空表示不限制客户来源
      */
     @Schema(description = "客户来源编号列表", example = "[1,2]")
     private List<Long> sourceIds;
 
     /**
      * 客户所属行业编号列表
-     *
-     * <p>为空表示不限制所属行业
      */
     @Schema(description = "客户所属行业编号列表", example = "[1,2]")
     private List<Long> industryIds;
 
     /**
      * 客户级别编号列表
-     *
-     * <p>为空表示不限制客户级别
      */
     @Schema(description = "客户级别编号列表", example = "[1,2]")
     private List<Long> levelIds;

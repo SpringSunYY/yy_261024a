@@ -4,6 +4,7 @@ import type { AutoAssignRuleApi } from '#/api/crm/customer/autoAssignRule';
 import { computed, onMounted, ref } from 'vue';
 
 import { Page } from '@vben/common-ui';
+import { IconifyIcon } from '@vben/icons';
 
 import { Button, Card, InputNumber, message, Select } from 'ant-design-vue';
 
@@ -19,6 +20,7 @@ import { CrmAutoAssignRuleAllocationMethod } from '#/utils/constants/crm';
 
 import { useFormSchema } from './data';
 import AutoAssignRuleUserForm from './modules/auto-assign-rule-user-form.vue';
+import CustomerSourceTreeSelect from './modules/customer-source-tree-select.vue';
 
 /** 规则数据（全局只有一条） */
 const ruleData = ref<AutoAssignRuleApi.AutoAssignRule>({});
@@ -138,6 +140,21 @@ function handleAssigneeChange(assigneeId: any) {
   syncAssignee(assigneeId);
 }
 
+/** 「客户来源」当前选中的来源编号 */
+const sourceIdsValue = ref<number[]>([]);
+
+/**
+ * 「客户来源」勾选变化
+ *
+ * <p>树形面板里的勾选结果同步到表单字段
+ *
+ * @param ids 选中的来源编号列表
+ */
+function handleSourceIdsChange(ids: number[]) {
+  sourceIdsValue.value = ids;
+  formApi.setFieldValue('sourceIds', ids);
+}
+
 /** 保存规则（存在则更新，不存在则新增） */
 async function onSubmit() {
   const { valid } = await formApi.validate();
@@ -160,6 +177,8 @@ async function getConfigInfo() {
     // filterFields = false：不过滤字段，保证条件字段等都能回填
     await formApi.setValues(ruleData.value as Record<string, any>, false);
     allocationMethod.value = ruleData.value.allocationMethod;
+    // 同步「客户来源」树形面板的选中值
+    sourceIdsValue.value = ruleData.value.sourceIds ?? [];
     // 加载「当前分配员工」的选项，并同步额度上限与游标索引
     await loadAssigneeOptions();
     // 规则 id 变化后，刷新子表
@@ -167,6 +186,12 @@ async function getConfigInfo() {
   } catch (error) {
     console.error(error);
   }
+}
+
+/** 刷新：重新加载规则配置与规则人员明细 */
+async function onRefresh() {
+  await getConfigInfo();
+  message.success($t('ui.actionMessage.operationSuccess'));
 }
 
 onMounted(() => {
@@ -178,6 +203,22 @@ onMounted(() => {
   <Page auto-content-height>
     <Card :title="title">
       <Form class="w-100%">
+        <!--
+          客户来源：树形勾选面板
+          通过插槽渲染，便于使用 VbenTree 树形多选
+        -->
+        <template #sourceIds="slotProps">
+          <CustomerSourceTreeSelect
+            :value="sourceIdsValue"
+            :disabled="slotProps.disabled"
+            :placeholder="
+              $t('ui.placeholder.select', [
+                $t('crm.autoAssignRule.field.scopeSource'),
+              ])
+            "
+            @update:value="handleSourceIdsChange"
+          />
+        </template>
         <!--
           当前分配员工：只能从规则人员明细中选择
           通过插槽渲染，便于动态绑定选项与 change 事件
@@ -214,7 +255,13 @@ onMounted(() => {
           />
         </template>
       </Form>
-      <div class="flex justify-center">
+      <div class="flex justify-center gap-2">
+        <Button @click="onRefresh">
+          <template #icon>
+            <IconifyIcon icon="lucide:refresh-cw" />
+          </template>
+          {{ $t('common.refresh') }}
+        </Button>
         <Button
           type="primary"
           @click="onSubmit"

@@ -30,6 +30,6 @@ public class CrmContactTransferReqVO {
      * 关联 {@link CrmPermissionLevelEnum}
      */
     @Schema(description = "老负责人加入团队后的权限级别", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
-    private Integer oldOwnerPermissionLevel;
+    private Long oldOwnerPermissionLevel;
 
 }

@@ -37,8 +37,7 @@ public class CrmCustomerSaveReqVO {
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)
     private LocalDateTime contactNextTime;
 
-    @Schema(description = "负责人的用户编号", requiredMode = Schema.RequiredMode.REQUIRED, example = "13563")
-    @I18nNotNull(i18nKey = "crm.customer.back.ownerUserId.notNull", message = "负责人的用户编号不能为空")
+    @Schema(description = "负责人的用户编号，为空时由系统自动分配", example = "13563")
     private Long ownerUserId;
 
     @Schema(description = "手机", example = "18000000000")
@@ -78,16 +77,16 @@ public class CrmCustomerSaveReqVO {
     @Schema(description = "所属行业", example = "1")
     @DiffLogField(name = "所属行业", function = CrmCustomerIndustryParseFunction.NAME)
     @DictFormat(CRM_CUSTOMER_INDUSTRY)
-    private Integer industryId;
+    private Long industryId;
 
     @Schema(description = "客户等级", example = "2")
     @DiffLogField(name = "客户等级", function = CrmCustomerLevelParseFunction.NAME)
     @InEnum(CrmCustomerLevelEnum.class)
-    private Integer level;
+    private Long level;
 
     @Schema(description = "客户来源", example = "3")
     @DiffLogField(name = "客户来源", function = CrmCustomerSourceIdParseFunction.NAME)
-    private String source;
+    private Long source;
 
     @Schema(description = "备注", example = "随便")
     @DiffLogField(name = "备注")

@@ -20,6 +20,6 @@ public class CrmClueTransferReqVO {
 
     @Schema(description = "老负责人加入团队后的权限级别", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
     @InEnum(value = CrmPermissionLevelEnum.class)
-    private Integer oldOwnerPermissionLevel; // 老负责人加入团队后的权限级别。如果 null 说明移除
+    private Long oldOwnerPermissionLevel; // 老负责人加入团队后的权限级别。如果 null 说明移除
 
 }

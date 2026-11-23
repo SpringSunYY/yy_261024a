@@ -86,16 +86,16 @@ public class CrmClueSaveReqVO {
     @Schema(description = "所属行业", example = "1")
     @DiffLogField(name = "所属行业", function = CrmCustomerIndustryParseFunction.NAME)
     @DictFormat(CRM_CUSTOMER_INDUSTRY)
-    private Integer industryId;
+    private Long industryId;
 
     @Schema(description = "客户等级", example = "2")
     @DiffLogField(name = "客户等级", function = CrmCustomerLevelParseFunction.NAME)
     @InEnum(CrmCustomerLevelEnum.class)
-    private Integer level;
+    private Long level;
 
     @Schema(description = "客户来源编号", example = "3")
     @DiffLogField(name = "客户来源", function = CrmCustomerSourceIdParseFunction.NAME)
-    private String source;
+    private Long source;
 
     @Schema(description = "客户描述", example = "任意文字")
     @DiffLogField(name = "客户描述")

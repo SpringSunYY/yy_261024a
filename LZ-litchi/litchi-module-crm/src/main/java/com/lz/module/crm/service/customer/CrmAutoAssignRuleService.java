@@ -1,16 +1,17 @@
 package com.lz.module.crm.service.customer;
 
-import java.util.*;
-
+import com.lz.framework.common.pojo.PageResult;
 import com.lz.module.crm.controller.admin.customer.vo.autoAssignRule.CrmAutoAssignRulePageReqVO;
 import com.lz.module.crm.controller.admin.customer.vo.autoAssignRule.CrmAutoAssignRuleRespVO;
 import com.lz.module.crm.controller.admin.customer.vo.autoAssignRule.CrmAutoAssignRuleSaveReqVO;
-import com.lz.module.crm.controller.admin.customer.vo.autoAssignRule.CrmAutoAssignRuleScopeConditionDTO;
 import com.lz.module.crm.controller.admin.customer.vo.autoAssignRuleUser.CrmAutoAssignRuleUserSaveReqVO;
-import jakarta.validation.*;
 import com.lz.module.crm.dal.dataobject.customer.CrmAutoAssignRuleDO;
 import com.lz.module.crm.dal.dataobject.customer.CrmAutoAssignRuleUserDO;
-import com.lz.framework.common.pojo.PageResult;
+import com.lz.module.crm.dal.dto.customer.CrmAutoAssignRuleScopeConditionDTO;
+import com.lz.module.crm.dal.dto.customer.CrmCustomerAssignConditionDto;
+import jakarta.validation.Valid;
+
+import java.util.List;
 
 /**
  * CRM 自动分配规则 Service 接口
@@ -110,7 +111,7 @@ public interface CrmAutoAssignRuleService {
     /**
      * 新增CRM  规则人员明细
      *
-     * @param ruleId 规则
+     * @param ruleId    规则
      * @param saveReqVO 保存信息
      * @return 编号
      */
@@ -119,7 +120,7 @@ public interface CrmAutoAssignRuleService {
     /**
      * 修改CRM  规则人员明细
      *
-     * @param ruleId 规则
+     * @param ruleId    规则
      * @param saveReqVO 保存信息
      */
     void updateAutoAssignRuleUser(Long ruleId, @Valid CrmAutoAssignRuleUserSaveReqVO saveReqVO);
@@ -128,7 +129,7 @@ public interface CrmAutoAssignRuleService {
      * 更新CRM  规则人员明细的排序号
      *
      * @param ruleId 规则
-     * @param ids 规则人员明细编号列表，按目标顺序排列
+     * @param ids    规则人员明细编号列表，按目标顺序排列
      */
     void updateAutoAssignRuleUserSort(Long ruleId, @Valid List<Long> ids);
 
@@ -139,4 +140,40 @@ public interface CrmAutoAssignRuleService {
      */
     void deleteAutoAssignRuleUser(Long id);
 
+
+    /**
+     * 获得下一个负责人
+     *
+     * @param triggerAction  触发动作
+     * @param condition 具体条件
+     * @return 负责人编号
+     */
+    Long getNextOwnerUserId(String triggerAction, CrmCustomerAssignConditionDto condition);
+
+    /**
+     * 获得可分配负责人总数
+     * @return 可分配负责人总数
+     */
+    Long getAssignableOwnerUserTotal();
+
+    /**
+     * 跳过某个员工，将规则的当前分配员工更新为下一个员工
+     *
+     * <p>用于自动分配场景下：分配到的员工拥有的客户数已达到上限，需要跳过该员工，
+     * 把规则的当前分配员工更新为下一个员工（按规则人员明细的排序号顺序循环），
+     * 并把该员工（下一个员工）的剩余额度重置为他的完整分配数值。
+     *
+     * <p>若被跳过的员工不存在于规则人员明细中，则默认分配给第一个员工。
+     *
+     * @param ruleId        规则编号
+     * @param rejectedUserId 被跳过的员工编号
+     */
+    void skipCurrentAssignee(Long ruleId, Long rejectedUserId);
+
+    /**
+     * 获得当前的自动分配规则编号
+     *
+     * @return 规则编号；不存在规则时返回 null
+     */
+    Long getAutoAssignRuleId();
 }

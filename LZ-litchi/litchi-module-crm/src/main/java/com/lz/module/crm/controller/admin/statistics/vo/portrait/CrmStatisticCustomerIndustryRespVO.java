@@ -8,7 +8,7 @@ import lombok.Data;
 public class CrmStatisticCustomerIndustryRespVO {
 
     @Schema(description = "客户行业ID", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
-    private Integer industryId;
+    private Long industryId;
 
     @Schema(description = "客户个数", requiredMode = Schema.RequiredMode.REQUIRED, example = "1")
     private Integer customerCount;

@@ -38,6 +38,6 @@ public class CrmPermissionCreateReqBO {
      */
     @NotNull(message = "权限级别不能为空")
     @InEnum(CrmPermissionLevelEnum.class)
-    private Integer level;
+    private Long level;
 
 }

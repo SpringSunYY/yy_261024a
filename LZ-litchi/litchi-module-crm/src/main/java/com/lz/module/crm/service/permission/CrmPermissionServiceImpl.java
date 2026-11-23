@@ -246,7 +246,7 @@ public class CrmPermissionServiceImpl implements CrmPermissionService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deletePermission(Integer bizType, Long bizId, Integer level) {
+    public void deletePermission(Integer bizType, Long bizId, Long level) {
         // 校验存在
         List<CrmPermissionDO> permissions = permissionMapper.selectListByBizTypeAndBizIdAndLevel(
                 bizType, bizId, level);

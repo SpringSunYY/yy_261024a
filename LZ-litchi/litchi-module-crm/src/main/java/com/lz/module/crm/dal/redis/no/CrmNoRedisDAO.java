@@ -2,7 +2,7 @@ package com.lz.module.crm.dal.redis.no;
 
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
-import com.lz.module.crm.dal.redis.RedisKeyConstants;
+import com.lz.module.crm.dal.redis.CrmRedisKeyConstants;
 import jakarta.annotation.Resource;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Repository;
@@ -42,7 +42,7 @@ public class CrmNoRedisDAO {
     public String generate(String prefix) {
         // 递增序号
         String noPrefix = prefix + DateUtil.format(LocalDateTime.now(), DatePattern.PURE_DATE_PATTERN);
-        String key = RedisKeyConstants.NO + noPrefix;
+        String key = CrmRedisKeyConstants.NO + noPrefix;
         Long no = stringRedisTemplate.opsForValue().increment(key);
         // 设置过期时间
         stringRedisTemplate.expire(key, Duration.ofDays(1L));

@@ -38,7 +38,7 @@ public class CrmCustomerSourceIdParseFunction implements IParseFunction {
         if (StrUtil.isEmptyIfStr(value)) {
             return "";
         }
-        return customerSourceService.getCustomerSourceName(value.toString());
+        return customerSourceService.getCustomerSourceName(Long.valueOf(value.toString()));
     }
 
 }

@@ -33,7 +33,7 @@ public class CrmPermissionRespVO {
     @Schema(description = "权限级别", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
     @InEnum(CrmPermissionLevelEnum.class)
     @I18nNotNull(i18nKey = "crm.permission.back.level.notNull", message = "权限级别不能为空")
-    private Integer level;
+    private Long level;
 
     @Schema(description = "用户昵称", requiredMode = Schema.RequiredMode.REQUIRED, example = "YY")
     private String nickname;

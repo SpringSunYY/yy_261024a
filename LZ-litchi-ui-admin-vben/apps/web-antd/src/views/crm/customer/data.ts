@@ -35,6 +35,10 @@ export function useFormSchema(): VbenFormSchema[] {
       component: 'ApiSelect',
       componentProps: {
         api: () => getSimpleUserList(),
+        allowClear: true,
+        placeholder: $t('ui.placeholder.select', [
+          $t('crm.customer.field.ownerUserId'),
+        ]),
         fieldNames: {
           label: 'nickname',
           value: 'id',
@@ -44,7 +48,7 @@ export function useFormSchema(): VbenFormSchema[] {
         triggerFields: ['id'],
         disabled: ({ id }) => id !== null && id !== undefined,
       },
-      rules: 'required',
+      help: $t('crm.customer.help.ownerUserId'),
     },
     {
       fieldName: 'telephone',

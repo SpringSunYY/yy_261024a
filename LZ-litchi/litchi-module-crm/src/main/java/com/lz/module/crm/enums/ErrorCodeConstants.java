@@ -70,6 +70,7 @@ public interface ErrorCodeConstants {
     ErrorCode CUSTOMER_NAME_EXISTS = new ErrorCode(1_020_006_014, "crm.customer.back.nameExists", "已存在名为【{}】的客户！");
     ErrorCode CUSTOMER_UPDATE_DEAL_STATUS_FAIL = new ErrorCode(1_020_006_015, "crm.customer.back.dealStatusEquals", "更新客户的成交状态失败，原因：已经是该状态，无需更新");
     ErrorCode CUSTOMER_MOBILE_EXISTS = new ErrorCode(1_020_006_016, "crm.customer.back.mobileExists", "已存在手机号为【{}】的客户！");
+    ErrorCode CUSTOMER_NO_ASSIGNABLE_OWNER = new ErrorCode(1_020_006_017, "crm.customer.back.noAssignableOwner", "客户创建失败，没有可分配的负责人，请检查自动分配规则人员明细及客户拥有数量上限配置！");
 
     // ========== 权限管理 1-020-007-000 ==========
     ErrorCode CRM_PERMISSION_NOT_EXISTS = new ErrorCode(1_020_007_000, "crm.permission.back.notExists", "数据权限不存在");

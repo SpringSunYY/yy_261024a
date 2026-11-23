@@ -54,6 +54,6 @@ public class CrmPermissionDO extends BaseDO {
      *
      * 关联 {@link CrmPermissionLevelEnum}
      */
-    private Integer level;
+    private Long level;
 
 }

@@ -24,6 +24,6 @@ public class CrmContractTransferReqVO {
 
     @Schema(description = "老负责人加入团队后的权限级别", requiredMode = Schema.RequiredMode.REQUIRED, example = "2")
     @InEnum(value = CrmPermissionLevelEnum.class)
-    private Integer oldOwnerPermissionLevel;
+    private Long oldOwnerPermissionLevel;
 
 }

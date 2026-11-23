@@ -48,6 +48,6 @@ public class CrmPermissionTransferReqBO {
      *
      * 关联 {@link CrmPermissionLevelEnum}
      */
-    private Integer oldOwnerPermissionLevel;
+    private Long oldOwnerPermissionLevel;
 
 }
