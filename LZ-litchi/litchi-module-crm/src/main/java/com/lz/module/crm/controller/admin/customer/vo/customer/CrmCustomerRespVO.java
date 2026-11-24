@@ -6,6 +6,8 @@ import com.lz.module.infra.enums.DictTypeConstants;
 import com.alibaba.excel.annotation.ExcelIgnoreUnannotated;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.lz.module.crm.framework.excel.core.AreaExcelColumnSelectFunction;
+import com.lz.module.crm.framework.excel.core.CustomerSourceConvert;
+import com.lz.module.crm.framework.excel.core.CustomerSourceExcelColumnSelectFunction;
 import com.lz.framework.excel.core.convert.AreaConvert;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
@@ -127,14 +129,13 @@ public class CrmCustomerRespVO {
     private Long level;
 
     @Schema(description = "客户来源编号", requiredMode = Schema.RequiredMode.REQUIRED, example = "13563")
-    @ExcelProperty("客户来源编号")
+    @ExcelProperty(value = "客户来源", converter = CustomerSourceConvert.class)
+    @ExcelColumnSelect(functionName = CustomerSourceExcelColumnSelectFunction.NAME, i18n = true)
     @ExcelI18n(i18nKey = "crm.customer.field.source")
     private Long source;
 
-    @Schema(description = "客户来源名称", example = "13563")
-    @ExcelProperty("客户来源名称")
-    @ExcelI18n(i18nKey = "crm.customer.field.source")
-    @ExcelType(ExcelDirection.ONLY_EXPORT)
+    @Schema(description = "客户来源名称", example = "官网/广告投放")
+    // 导出时已由 source 列（客户来源路径）体现，此处不再重复导出，避免两列内容相同
     private String sourceName;
 
     @Schema(description = "备注", example = "25682")

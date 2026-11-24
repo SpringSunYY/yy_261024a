@@ -6,6 +6,8 @@ import com.lz.framework.excel.core.annotations.ExcelI18n;
 import com.lz.framework.excel.core.convert.AreaConvert;
 import com.lz.framework.excel.core.convert.DictConvert;
 import com.lz.module.crm.framework.excel.core.AreaExcelColumnSelectFunction;
+import com.lz.module.crm.framework.excel.core.CustomerSourceConvert;
+import com.lz.module.crm.framework.excel.core.CustomerSourceExcelColumnSelectFunction;
 import com.alibaba.excel.annotation.ExcelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -70,7 +72,8 @@ public class CrmCustomerImportExcelVO {
     @ExcelI18n(i18nKey = "crm.customer.field.level")
     private Long level;
 
-    @ExcelProperty("客户来源编号")
+    @ExcelProperty(value = "客户来源", converter = CustomerSourceConvert.class)
+    @ExcelColumnSelect(functionName = CustomerSourceExcelColumnSelectFunction.NAME, i18n = true)
     @ExcelI18n(i18nKey = "crm.customer.field.source")
     private Long source;
 

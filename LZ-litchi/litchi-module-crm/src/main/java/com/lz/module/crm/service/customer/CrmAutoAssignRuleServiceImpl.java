@@ -1,6 +1,7 @@
 package com.lz.module.crm.service.customer;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -421,17 +422,21 @@ public class CrmAutoAssignRuleServiceImpl implements CrmAutoAssignRuleService {
         CrmAutoAssignRuleDO rule = this.getAutoAssignRule();
         //校验规则是否启用
         if (rule == null
-                || !rule.getIsEnabled().equals(CommonStatusEnum.ENABLE.getStatus())) {
+                || !Objects.equals(rule.getIsEnabled(), CommonStatusEnum.ENABLE.getStatus())) {
             return null;
         }
         //判断是否要执行该规则
-        if (!rule.getTriggerActions().contains(triggerAction)) {
+        // 注意：triggerActions 以 JSON 数组字符串存储（如 "[1,3]"），不能直接用 contains 判断，
+        // 否则会出现 "1" 命中 "[11]" 之类的误判，这里统一解析成列表后再判断
+        List<Integer> triggerActions = parseTriggerActions(rule.getTriggerActions());
+        if (CollUtil.isEmpty(triggerActions)
+                || !triggerActions.contains(NumberUtil.parseInt(triggerAction, -1))) {
             return null;
         }
         //判断是否是可以走规则
         boolean canExecute = false;
         //如果是全部条件,就不需要判断
-        if (rule.getScopeType().equals(CrmAutoAssignRuleScopeTypeEnum.SCOPE_TYPE_1.getStatus())) {
+        if (Objects.equals(rule.getScopeType(), CrmAutoAssignRuleScopeTypeEnum.SCOPE_TYPE_1.getStatus())) {
             canExecute = true;
         } else {
             canExecute = getCanExecuteByCondition(condition, rule);
@@ -441,7 +446,7 @@ public class CrmAutoAssignRuleServiceImpl implements CrmAutoAssignRuleService {
         }
         // 首先拿到规则人员明细列表（按排序号升序，即分配顺序），并过滤掉关闭的用户
         List<CrmAutoAssignRuleUserDO> userList = autoAssignRuleUserMapper.selectListByRuleId(rule.getId());
-        userList.removeIf(user -> !user.getStatus().equals(CommonStatusEnum.ENABLE.getStatus()));
+        userList.removeIf(user -> !Objects.equals(user.getStatus(), CommonStatusEnum.ENABLE.getStatus()));
         // 没有候选用户了
         if (CollUtil.isEmpty(userList)) {
             return null;
@@ -569,6 +574,11 @@ public class CrmAutoAssignRuleServiceImpl implements CrmAutoAssignRuleService {
     /**
      * 根据条件判断规则是否可以执行
      *
+     * <p>三个条件之间为「或」关系：来源、行业、级别只要命中其中一个，即可认为满足条件；
+     * 每个条件内部为「或」关系，即列表中的任一编号命中即可。
+     *
+     * <p>注意：某个条件为 null 或空列表时，表示该条件不参与判断（不限制该维度）。
+     *
      * @param condition 条件
      * @param rule      规则
      * @return 是否可以执行
@@ -581,15 +591,18 @@ public class CrmAutoAssignRuleServiceImpl implements CrmAutoAssignRuleService {
             return false;
         }
         //判断客户来源是否在规则条件中
-        if (scopeCondition.getSourceIds() != null && scopeCondition.getSourceIds().contains(condition.getSource())) {
+        if (CollUtil.isNotEmpty(scopeCondition.getSourceIds())
+                && scopeCondition.getSourceIds().contains(condition.getSource())) {
             return true;
         }
         //判断客户行业是否在规则条件中
-        if (scopeCondition.getIndustryIds() != null && scopeCondition.getIndustryIds().contains(condition.getIndustryId())) {
+        if (CollUtil.isNotEmpty(scopeCondition.getIndustryIds())
+                && scopeCondition.getIndustryIds().contains(condition.getIndustryId())) {
             return true;
         }
         //判断客户级别是否在规则条件中
-        if (scopeCondition.getLevelIds() != null && scopeCondition.getLevelIds().contains(condition.getLevelId())) {
+        if (CollUtil.isNotEmpty(scopeCondition.getLevelIds())
+                && scopeCondition.getLevelIds().contains(condition.getLevelId())) {
             return true;
         }
         return false;
@@ -610,7 +623,7 @@ public class CrmAutoAssignRuleServiceImpl implements CrmAutoAssignRuleService {
         // 拿到规则人员明细列表（按排序号升序，即循环分配的顺序）
         List<CrmAutoAssignRuleUserDO> userList = autoAssignRuleUserMapper.selectListByRuleId(ruleId);
         // 过滤掉关闭的用户
-        userList.removeIf(user -> !user.getStatus().equals(CommonStatusEnum.ENABLE.getStatus()));
+        userList.removeIf(user -> !Objects.equals(user.getStatus(), CommonStatusEnum.ENABLE.getStatus()));
         // 没有可用的员工
         if (CollUtil.isEmpty(userList)) {
             return;

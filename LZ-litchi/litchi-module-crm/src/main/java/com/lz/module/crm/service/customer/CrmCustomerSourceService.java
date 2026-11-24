@@ -105,4 +105,25 @@ public interface CrmCustomerSourceService {
      * @return 来源名称
      */
     String getCustomerSourceName(Long source);
+
+    /**
+     * 获得CRM 客户来源编号 -> 客户来源路径 的映射
+     *
+     * <p>路径格式为「顶级/子级/自身」，顺序为：顶级 -> 自身。例如 {@code 官网/广告投放}
+     *
+     * <p>用于 Excel 导入导出时，客户来源编号与路径文本的相互转换
+     *
+     * @return 客户来源编号 -> 客户来源路径 的映射
+     */
+    Map<Long, String> getCustomerSourcePathMap();
+
+    /**
+     * 获得CRM 客户来源全量列表（包含关闭状态的来源）
+     *
+     * <p>用于 Excel 导入导出时，构建客户来源编号与路径文本的相互转换
+     *
+     * @return 客户来源列表
+     */
+    List<CrmCustomerSourceDO> getCustomerSourceAllList();
+
 }

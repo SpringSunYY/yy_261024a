@@ -37,9 +37,20 @@ export namespace CrmCustomerApi {
     updateTime: Date; // 更新时间
   }
   export interface CustomerImport {
-    ownerUserId: number;
+    /** 负责人，为空时由系统按自动分配规则自动分配 */
+    ownerUserId?: number;
     file: File;
     updateSupport: boolean;
+  }
+
+  /** 客户导入结果 */
+  export interface CustomerImportResult {
+    /** 新增成功的客户名列表 */
+    createCustomerNames: string[];
+    /** 更新成功的客户名列表 */
+    updateCustomerNames: string[];
+    /** 导入失败的明细，key 为客户名，value 为失败原因 */
+    failureCustomerNames: Record<string, string>;
   }
 }
 
@@ -85,7 +96,10 @@ export function importCustomerTemplate() {
 
 /** 导入客户 */
 export function importCustomer(data: CrmCustomerApi.CustomerImport) {
-  return requestClient.upload('/crm/customer/import', data);
+  return requestClient.upload<CrmCustomerApi.CustomerImportResult>(
+    '/crm/customer/import',
+    data,
+  );
 }
 
 /** 获取客户精简信息列表 */

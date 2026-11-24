@@ -34,4 +34,13 @@ public interface CrmRedisKeyConstants {
      */
     public static final String CUSTOMER_SOURCE_NAME = "customer:source:name#30m";
 
+    /**
+     * 客户来源全量列表（包含关闭状态）
+     *
+     * <p>用于 Excel 导入导出时，构建客户来源编号与路径文本的相互转换
+     *
+     * <p>缓存名后缀为 ttl，单位：d 天、h 小时、m 分钟、s 秒
+     */
+    public static final String CUSTOMER_SOURCE_ALL = "customer:source:all#30m";
+
 }

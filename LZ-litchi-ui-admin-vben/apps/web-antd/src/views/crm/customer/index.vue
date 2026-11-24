@@ -52,12 +52,18 @@ function handleImport() {
 }
 
 /** 导出表格 */
+const exportLoading = ref(false);
 async function handleExport() {
-  const data = await exportCustomer(await gridApi.formApi.getValues());
-  downloadFileFromBlobPart({
-    fileName: `${$t('crm.customer.customer')}.xls`,
-    source: data,
-  });
+  try {
+    exportLoading.value = true;
+    const data = await exportCustomer(await gridApi.formApi.getValues());
+    downloadFileFromBlobPart({
+      fileName: `${$t('crm.customer.customer')}.xls`,
+      source: data,
+    });
+  } finally {
+    exportLoading.value = false;
+  }
 }
 
 /** 创建客户 */
@@ -185,6 +191,7 @@ function onChangeSceneType(key: number | string) {
               icon: ACTION_ICON.DOWNLOAD,
               auth: ['crm:customer:export'],
               onClick: handleExport,
+              loading: exportLoading,
             },
           ]"
         />

@@ -1,10 +1,14 @@
 <script lang="ts" setup>
 import type { FileType } from 'ant-design-vue/es/upload/interface';
 
+import type { CrmCustomerApi } from '#/api/crm/customer';
+
+import { h } from 'vue';
+
 import { useVbenModal, z } from '@vben/common-ui';
 import { downloadFileFromBlobPart } from '@vben/utils';
 
-import { Button, message, Upload } from 'ant-design-vue';
+import { Button, message, Modal as AntModal, Upload } from 'ant-design-vue';
 
 import { useVbenForm } from '#/adapter/form';
 import { importCustomer, importCustomerTemplate } from '#/api/crm/customer';
@@ -31,8 +35,9 @@ const [Form, formApi] = useVbenForm({
           value: 'id',
         },
         class: 'w-full',
+        allowClear: true,
       },
-      rules: 'required',
+      help: $t('crm.customer.message.importOwnerHelp'),
     },
     {
       fieldName: 'file',
@@ -65,19 +70,61 @@ const [Modal, modalApi] = useVbenModal({
     modalApi.lock();
     const data = await formApi.getValues();
     try {
-      await importCustomer({
-        ownerUserId: data.ownerUserId,
+      const result = await importCustomer({
+        // 负责人为空时，由后端按自动分配规则自动分配；这里不传 null，避免被序列化成字符串 "null"
+        ownerUserId: data.ownerUserId ?? undefined,
         file: data.file,
         updateSupport: data.updateSupport,
       });
       await modalApi.close();
       emit('success');
-      message.success($t('ui.actionMessage.operationSuccess'));
+      // 提示导入结果明细
+      showImportResult(result);
     } finally {
       modalApi.unlock();
     }
   },
 });
+
+/**
+ * 提示导入结果明细
+ *
+ * <p>新增 / 更新成功显示数量，失败显示每一行的客户名与失败原因。
+ */
+function showImportResult(result: CrmCustomerApi.CustomerImportResult) {
+  const createCount = result?.createCustomerNames?.length ?? 0;
+  const updateCount = result?.updateCustomerNames?.length ?? 0;
+  const failureList = Object.entries(result?.failureCustomerNames ?? {});
+
+  if (failureList.length === 0) {
+    // 全部成功
+    message.success(
+      $t('crm.customer.message.importSuccess', [createCount, updateCount]),
+    );
+    return;
+  }
+
+  // 存在失败行：把每一行的失败原因列出来
+  AntModal.warning({
+    title: $t('crm.customer.message.importPartialSuccess', [
+      createCount,
+      updateCount,
+      failureList.length,
+    ]),
+    width: 800,
+    content: h(
+      'div',
+      { class: 'max-h-72 overflow-y-auto' },
+      failureList.map(([name, reason]) =>
+        h('div', { class: 'py-1' }, [
+          h('span', { class: 'font-medium' }, name),
+          h('span', { class: 'mx-1' }, '：'),
+          h('span', { class: 'text-error' }, reason),
+        ]),
+      ),
+    ),
+  });
+}
 
 /** 上传前 */
 function beforeUpload(file: FileType) {
@@ -89,7 +136,7 @@ function beforeUpload(file: FileType) {
 async function handleDownload() {
   const data = await importCustomerTemplate();
   downloadFileFromBlobPart({
-    fileName: $t('crm.customer.message.importTemplate'),
+    fileName: `${$t('crm.customer.message.importTemplate')}`,
     source: data,
   });
 }

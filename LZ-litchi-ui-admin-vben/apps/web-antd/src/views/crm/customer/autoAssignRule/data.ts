@@ -79,6 +79,9 @@ export function useFormSchema(): VbenFormSchema[] {
      *
      * <p>实际渲染由 index.vue 的插槽完成（树形勾选面板），
      * 这里的配置仅作为插槽未生效时的兜底。
+     *
+     * <p>与其他条件的关系：来源 / 行业 / 级别三者之间为「或」关系，
+     * 任一命中即视为满足条件；每个条件内部为「或」关系（列表中任一编号命中即可）。
      */
     {
       fieldName: 'sourceIds',

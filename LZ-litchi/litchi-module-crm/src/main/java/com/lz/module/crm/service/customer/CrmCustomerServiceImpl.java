@@ -130,7 +130,8 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
      */
     private void initCustomerOwner(CrmCustomerSaveReqVO createReqVO) {
         createReqVO.setOwnerUserId(resolveOwnerUserId(createReqVO.getOwnerUserId(), createReqVO.getSource(),
-                createReqVO.getIndustryId(), createReqVO.getLevel()));
+                createReqVO.getIndustryId(), createReqVO.getLevel(),
+                CrmAutoAssignRuleTriggerActionsEnum.TRIGGER_ACTIONS_1));
     }
 
     /**
@@ -140,7 +141,8 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
      */
     private void initCustomerOwner(CrmCustomerCreateReqBO createReqBO) {
         createReqBO.setOwnerUserId(resolveOwnerUserId(createReqBO.getOwnerUserId(), createReqBO.getSource(),
-                createReqBO.getIndustryId(), createReqBO.getLevel()));
+                createReqBO.getIndustryId(), createReqBO.getLevel(),
+                CrmAutoAssignRuleTriggerActionsEnum.TRIGGER_ACTIONS_1));
     }
 
     /**
@@ -151,13 +153,15 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
      *    达到上限则跳过该负责人，继续获取下一个负责人，直到找到可用的负责人为止；
      * <p>3. 若所有可分配的负责人均已达到上限（或没有可分配的负责人），则报错「没有可分配的负责人」。
      *
-     * @param ownerUserId 前端指定的负责人编号，为空时走自动分配
-     * @param source      客户来源编号
-     * @param industryId  所属行业编号
-     * @param level       客户等级
+     * @param ownerUserId  前端指定的负责人编号，为空时走自动分配
+     * @param source       客户来源编号
+     * @param industryId   所属行业编号
+     * @param level        客户等级
+     * @param triggerAction 触发动作（新增 / 导入），决定自动分配规则是否命中
      * @return 负责人编号
      */
-    private Long resolveOwnerUserId(Long ownerUserId, Long source, Long industryId, Long level) {
+    private Long resolveOwnerUserId(Long ownerUserId, Long source, Long industryId, Long level,
+                                    CrmAutoAssignRuleTriggerActionsEnum triggerAction) {
         // 1. 前端指定了负责人，直接校验上限
         if (ObjUtil.isNotEmpty(ownerUserId)) {
             validateCustomerExceedOwnerLimit(ownerUserId, 1);
@@ -170,11 +174,11 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
             throw exception(CUSTOMER_NO_ASSIGNABLE_OWNER);
         }
         CrmCustomerAssignConditionDto condition = new CrmCustomerAssignConditionDto(source, industryId, level);
-        String triggerAction = CrmAutoAssignRuleTriggerActionsEnum.TRIGGER_ACTIONS_1.getStatus().toString();
+        String triggerActionCode = triggerAction.getStatus().toString();
         Long ruleId = autoAssignRuleService.getAutoAssignRuleId();
         // 2.2 循环获取负责人：每次获取到的负责人都校验上限，达到上限则跳过该负责人，继续获取下一个
         for (int i = 0; i < ownerCount; i++) {
-            Long nextOwnerUserId = autoAssignRuleService.getNextOwnerUserId(triggerAction, condition);
+            Long nextOwnerUserId = autoAssignRuleService.getNextOwnerUserId(triggerActionCode, condition);
             // 没有可用的负责人（规则未启用 / 不满足触发条件 / 候选人员已耗尽）
             if (nextOwnerUserId == null) {
                 break;
@@ -412,16 +416,27 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
                     respVO.getFailureCustomerNames().put(importCustomer.getName(), ex.getMessage());
                     return;
                 }
-                // 1.1 插入客户信息
-                CrmCustomerDO customer = initCustomer(importCustomer, importReqVO.getOwnerUserId());
+                // 1.1 解析负责人：前端指定了负责人则用指定的（并校验上限），
+                //      未指定则走自动分配规则（触发动作 = 导入），自动分配失败则该行导入失败
+                Long ownerUserId;
+                try {
+                    ownerUserId = resolveOwnerUserId(importReqVO.getOwnerUserId(), importCustomer.getSource(),
+                            importCustomer.getIndustryId(), importCustomer.getLevel(),
+                            CrmAutoAssignRuleTriggerActionsEnum.TRIGGER_ACTIONS_3);
+                } catch (ServiceException ex) {
+                    respVO.getFailureCustomerNames().put(importCustomer.getName(), ex.getMessage());
+                    return;
+                }
+                // 1.2 插入客户信息
+                CrmCustomerDO customer = initCustomer(importCustomer, ownerUserId);
                 customerMapper.insert(customer);
                 respVO.getCreateCustomerNames().add(importCustomer.getName());
-                // 1.2 创建数据权限
-                if (importReqVO.getOwnerUserId() != null) {
+                // 1.3 创建数据权限
+                if (ownerUserId != null) {
                     permissionService.createPermission(new CrmPermissionCreateReqBO().setBizType(CrmBizTypeEnum.CRM_CUSTOMER.getType())
-                            .setBizId(customer.getId()).setUserId(importReqVO.getOwnerUserId()).setLevel(CrmPermissionLevelEnum.OWNER.getLevel()));
+                            .setBizId(customer.getId()).setUserId(ownerUserId).setLevel(CrmPermissionLevelEnum.OWNER.getLevel()));
                 }
-                // 1.3 记录操作日志
+                // 1.4 记录操作日志
                 getSelf().importCustomerLog(customer, false);
                 return;
             }

@@ -3,6 +3,8 @@ package com.lz.module.crm.dal.mysql.customer;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.LocalDateTimeUtil;
 import cn.hutool.core.util.ObjUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.lz.framework.common.pojo.PageResult;
 import com.lz.framework.mybatis.core.mapper.BaseMapperX;
 import com.lz.framework.mybatis.core.query.LambdaQueryWrapperX;
@@ -14,8 +16,6 @@ import com.lz.module.crm.dal.dataobject.customer.CrmCustomerPoolConfigDO;
 import com.lz.module.crm.enums.common.CrmBizTypeEnum;
 import com.lz.module.crm.enums.common.CrmSceneTypeEnum;
 import com.lz.module.crm.util.CrmPermissionUtils;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
@@ -86,13 +86,14 @@ public interface CrmCustomerMapper extends BaseMapperX<CrmCustomerDO> {
     }
 
     default CrmCustomerDO selectByCustomerName(String name) {
-        return selectOne(CrmCustomerDO::getName, name);
+        List<CrmCustomerDO> list = selectList(new LambdaQueryWrapperX<CrmCustomerDO>().eq(CrmCustomerDO::getName, name));
+        return CollUtil.isEmpty(list) ? null : list.getFirst();
     }
 
     /**
      * 获得指定客户名称的客户
      *
-     * @param name 客户名称
+     * @param name      客户名称
      * @param excludeId 需要排除的客户编号（修改场景，排除自身）
      * @return 客户
      */
@@ -106,7 +107,7 @@ public interface CrmCustomerMapper extends BaseMapperX<CrmCustomerDO> {
     /**
      * 获得指定手机号的客户
      *
-     * @param mobile 手机号
+     * @param mobile    手机号
      * @param excludeId 需要排除的客户编号（修改场景，排除自身）
      * @return 客户
      */
@@ -155,10 +156,10 @@ public interface CrmCustomerMapper extends BaseMapperX<CrmCustomerDO> {
         query.and(q -> {
             // 情况一：成交超时提醒
             q.between(CrmCustomerDO::getOwnerTime, startDealRemindTime, endDealRemindTime)
-            // 情况二：跟进超时提醒
-            .or(w -> w.between(CrmCustomerDO::getOwnerTime, startContactRemindTime, endContactRemindTime)
-                    .and(p -> p.between(CrmCustomerDO::getContactLastTime, startContactRemindTime, endContactRemindTime)
-                            .or().isNull(CrmCustomerDO::getContactLastTime)));
+                    // 情况二：跟进超时提醒
+                    .or(w -> w.between(CrmCustomerDO::getOwnerTime, startContactRemindTime, endContactRemindTime)
+                            .and(p -> p.between(CrmCustomerDO::getContactLastTime, startContactRemindTime, endContactRemindTime)
+                                    .or().isNull(CrmCustomerDO::getContactLastTime)));
         });
         return query;
     }
@@ -179,10 +180,10 @@ public interface CrmCustomerMapper extends BaseMapperX<CrmCustomerDO> {
         query.and(q -> {
             // 情况一：成交超时
             q.lt(CrmCustomerDO::getOwnerTime, dealExpireTime)
-            // 情况二：跟进超时
-            .or(w -> w.lt(CrmCustomerDO::getOwnerTime, contactExpireTime)
-                    .and(p -> p.lt(CrmCustomerDO::getContactLastTime, contactExpireTime)
-                            .or().isNull(CrmCustomerDO::getContactLastTime)));
+                    // 情况二：跟进超时
+                    .or(w -> w.lt(CrmCustomerDO::getOwnerTime, contactExpireTime)
+                            .and(p -> p.lt(CrmCustomerDO::getContactLastTime, contactExpireTime)
+                                    .or().isNull(CrmCustomerDO::getContactLastTime)));
         });
         return selectList(query);
     }

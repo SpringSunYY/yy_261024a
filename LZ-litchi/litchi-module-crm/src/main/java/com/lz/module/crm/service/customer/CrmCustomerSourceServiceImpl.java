@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.extra.spring.SpringUtil;
 import com.lz.framework.common.enums.CommonConstants;
 import com.lz.framework.common.enums.CommonStatusEnum;
 import com.lz.framework.common.util.object.BeanUtils;
@@ -13,6 +14,7 @@ import com.lz.module.crm.controller.admin.customer.vo.source.CrmCustomerSourceSa
 import com.lz.module.crm.dal.dataobject.customer.CrmCustomerSourceDO;
 import com.lz.module.crm.dal.mysql.customer.CrmCustomerSourceMapper;
 import com.lz.module.crm.dal.redis.CrmRedisKeyConstants;
+import com.lz.module.crm.framework.excel.core.CustomerSourceConvert;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -42,7 +44,7 @@ public class CrmCustomerSourceServiceImpl implements CrmCustomerSourceService {
 
     @Override
     @CacheEvict(cacheNames = {CrmRedisKeyConstants.CUSTOMER_SOURCE_ANCESTOR_NAME, CrmRedisKeyConstants.CUSTOMER_SOURCE_TREE,
-            CrmRedisKeyConstants.CUSTOMER_SOURCE_NAME}, allEntries = true)
+            CrmRedisKeyConstants.CUSTOMER_SOURCE_NAME, CrmRedisKeyConstants.CUSTOMER_SOURCE_ALL}, allEntries = true)
     public Long createCustomerSource(CrmCustomerSourceSaveReqVO createReqVO) {
         if (createReqVO.getParentId() == null) {
             createReqVO.setParentId(CrmCustomerSourceDO.PARENT_ID_ROOT);
@@ -57,6 +59,8 @@ public class CrmCustomerSourceServiceImpl implements CrmCustomerSourceService {
         // 设置祖级列表：从顶级到直属父级的顺序，例如 “0,100,101”
         customerSource.setAncestors(buildAncestors(customerSource.getParentId()));
         customerSourceMapper.insert(customerSource);
+        // 清除 Excel 转换器的客户来源路径缓存
+        CustomerSourceConvert.clearCache();
 
         // 返回
         return customerSource.getId();
@@ -64,7 +68,7 @@ public class CrmCustomerSourceServiceImpl implements CrmCustomerSourceService {
 
     @Override
     @CacheEvict(cacheNames = {CrmRedisKeyConstants.CUSTOMER_SOURCE_ANCESTOR_NAME, CrmRedisKeyConstants.CUSTOMER_SOURCE_TREE,
-            CrmRedisKeyConstants.CUSTOMER_SOURCE_NAME}, allEntries = true) // allEntries 清空所有缓存，因为名称或父级变更会影响自身及所有子级的祖先名称
+            CrmRedisKeyConstants.CUSTOMER_SOURCE_NAME, CrmRedisKeyConstants.CUSTOMER_SOURCE_ALL}, allEntries = true) // allEntries 清空所有缓存，因为名称或父级变更会影响自身及所有子级的祖先名称
     public void updateCustomerSource(CrmCustomerSourceSaveReqVO updateReqVO) {
         if (updateReqVO.getParentId() == null) {
             updateReqVO.setParentId(CrmCustomerSourceDO.PARENT_ID_ROOT);
@@ -89,12 +93,14 @@ public class CrmCustomerSourceServiceImpl implements CrmCustomerSourceService {
         if (oldCustomerSource != null && !Objects.equals(oldCustomerSource.getParentId(), updateObj.getParentId())) {
             updateChildrenAncestors(updateReqVO.getId(), ancestors);
         }
+        // 清除 Excel 转换器的客户来源路径缓存
+        CustomerSourceConvert.clearCache();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(cacheNames = {CrmRedisKeyConstants.CUSTOMER_SOURCE_ANCESTOR_NAME, CrmRedisKeyConstants.CUSTOMER_SOURCE_TREE,
-            CrmRedisKeyConstants.CUSTOMER_SOURCE_NAME}, allEntries = true) // allEntries 清空所有缓存，因为删除后自身及所有子级的祖先名称缓存都会失效
+            CrmRedisKeyConstants.CUSTOMER_SOURCE_NAME, CrmRedisKeyConstants.CUSTOMER_SOURCE_ALL}, allEntries = true) // allEntries 清空所有缓存，因为删除后自身及所有子级的祖先名称缓存都会失效
     public void deleteCustomerSource(Long id, Boolean isDeleteChildren) {
         // 校验存在
         validateCustomerSourceExists(id);
@@ -111,6 +117,8 @@ public class CrmCustomerSourceServiceImpl implements CrmCustomerSourceService {
         }
         // 删除
         customerSourceMapper.deleteById(id);
+        // 清除 Excel 转换器的客户来源路径缓存
+        CustomerSourceConvert.clearCache();
     }
 
     /**
@@ -349,17 +357,13 @@ public class CrmCustomerSourceServiceImpl implements CrmCustomerSourceService {
             log.error("CRM 客户来源编号解析异常:{}", e.getMessage());
             return String.valueOf(source);
         }
-        //查询到自己
-        CrmCustomerSourceDO customerSource = customerSourceMapper.selectById(sourceId);
-        if (customerSource == null) {
+        // 获得客户来源路径，顺序为：顶级 -> 自身
+        String path = getCustomerSourcePathMap().get(sourceId);
+        if (path == null) {
+            // 查不到客户来源时，降级返回编号
             return String.valueOf(source);
         }
-        //查询到所有父级
-        List<CrmCustomerSourceDO> parentCustomerSourceList = getParentCustomerSourceList(sourceId);
-
-        //把自己拼到父级然后拼接name
-        parentCustomerSourceList.add(customerSource);
-        return parentCustomerSourceList.stream().map(CrmCustomerSourceDO::getName).collect(Collectors.joining(CommonConstants.ANCESTORS_SEPARATOR));
+        return path;
     }
 
     @Override
@@ -370,6 +374,63 @@ public class CrmCustomerSourceServiceImpl implements CrmCustomerSourceService {
                 .eq(CrmCustomerSourceDO::getStatus, CommonStatusEnum.ENABLE.getStatus())
                 .orderByAsc(CrmCustomerSourceDO::getOrderNum)
                 .orderByAsc(CrmCustomerSourceDO::getId));
+    }
+
+    @Override
+    @Cacheable(cacheNames = CrmRedisKeyConstants.CUSTOMER_SOURCE_ALL, key = "'all'")
+    public List<CrmCustomerSourceDO> getCustomerSourceAllList() {
+        // 查询全部客户来源（包含关闭状态，避免已关闭的来源无法导出）
+        return customerSourceMapper.selectList(new LambdaQueryWrapperX<CrmCustomerSourceDO>()
+                .orderByAsc(CrmCustomerSourceDO::getOrderNum)
+                .orderByAsc(CrmCustomerSourceDO::getId));
+    }
+
+    @Override
+    public Map<Long, String> getCustomerSourcePathMap() {
+        // 1. 查询全部客户来源（包含关闭状态，避免已关闭的来源无法导出）
+        // 注意：通过 SpringUtil 获取代理对象调用，确保 @Cacheable 生效（自调用会失效）
+        List<CrmCustomerSourceDO> list = SpringUtil.getBean(CrmCustomerSourceService.class).getCustomerSourceAllList();
+        if (CollUtil.isEmpty(list)) {
+            return Collections.emptyMap();
+        }
+        // 2. 构建编号 -> 自身 的映射
+        Map<Long, CrmCustomerSourceDO> sourceMap = new LinkedHashMap<>(list.size());
+        list.forEach(source -> sourceMap.put(source.getId(), source));
+        // 3. 构建编号 -> 路径 的映射，路径为「顶级/子级/自身」
+        Map<Long, String> pathMap = new LinkedHashMap<>(list.size());
+        for (CrmCustomerSourceDO source : list) {
+            pathMap.put(source.getId(), buildSourcePath(source, sourceMap));
+        }
+        return pathMap;
+    }
+
+    /**
+     * 构建客户来源路径，顺序为：顶级 -> 自身
+     *
+     * <p>例如：{@code 官网/广告投放}
+     *
+     * @param source    客户来源
+     * @param sourceMap 编号 -> 客户来源 的映射
+     * @return 客户来源路径
+     */
+    private String buildSourcePath(CrmCustomerSourceDO source, Map<Long, CrmCustomerSourceDO> sourceMap) {
+        List<String> names = new ArrayList<>();
+        // 向上遍历收集自身与所有祖先，顺序为：自身 -> 顶级
+        CrmCustomerSourceDO current = source;
+        for (int i = 0; i < Short.MAX_VALUE; i++) { // 使用 Short.MAX_VALUE 避免 bug 场景下，存在死循环
+            if (current == null) {
+                break;
+            }
+            names.add(current.getName());
+            Long parentId = current.getParentId();
+            if (parentId == null || CrmCustomerSourceDO.PARENT_ID_ROOT.equals(parentId)) {
+                break;
+            }
+            current = sourceMap.get(parentId);
+        }
+        // 反转成：顶级 -> 自身
+        Collections.reverse(names);
+        return String.join(CustomerSourceConvert.PATH_SEPARATOR, names);
     }
 
     /**

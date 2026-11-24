@@ -258,12 +258,18 @@ public class CrmCustomerController {
     @GetMapping("/get-import-template")
     @Operation(summary = "获得导入客户模板")
     public void importTemplate(HttpServletResponse response) throws IOException {
-        // 手动创建导出 demo
+        // 1. 取第一个客户来源，作为模板示例（导出时会自动转换为「顶级/子级/自身」路径）
+        Long source = null;
+        Map<Long, String> sourcePathMap = customerSourceService.getCustomerSourcePathMap();
+        if (!sourcePathMap.isEmpty()) {
+            source = sourcePathMap.keySet().iterator().next();
+        }
+        // 2. 手动创建导出 demo
         List<CrmCustomerImportExcelVO> list = Arrays.asList(
-                CrmCustomerImportExcelVO.builder().name("荔枝").industryId(1L).level(1L).source(1L)
+                CrmCustomerImportExcelVO.builder().name("荔枝").industryId(1L).level(1L).source(source)
                         .mobile("15601691300").telephone("").qq("").wechat("").email("yunai@iocoder.cn")
                         .areaCode(null).detailAddress("").remark("").build(),
-                CrmCustomerImportExcelVO.builder().name("源码").industryId(1L).level(1L).source(1L)
+                CrmCustomerImportExcelVO.builder().name("源码").industryId(1L).level(1L).source(source)
                         .mobile("15601691300").telephone("").qq("").wechat("").email("yunai@iocoder.cn")
                         .areaCode(null).detailAddress("").remark("").build()
         );        // 输出
