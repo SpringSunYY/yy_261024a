@@ -131,7 +131,7 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
     private void initCustomerOwner(CrmCustomerSaveReqVO createReqVO) {
         createReqVO.setOwnerUserId(resolveOwnerUserId(createReqVO.getOwnerUserId(), createReqVO.getSource(),
                 createReqVO.getIndustryId(), createReqVO.getLevel(),
-                CrmAutoAssignRuleTriggerActionsEnum.TRIGGER_ACTIONS_1));
+                CrmAutoAssignRuleTriggerActionsEnum.TRIGGER_ACTIONS_1, null));
     }
 
     /**
@@ -142,7 +142,7 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
     private void initCustomerOwner(CrmCustomerCreateReqBO createReqBO) {
         createReqBO.setOwnerUserId(resolveOwnerUserId(createReqBO.getOwnerUserId(), createReqBO.getSource(),
                 createReqBO.getIndustryId(), createReqBO.getLevel(),
-                CrmAutoAssignRuleTriggerActionsEnum.TRIGGER_ACTIONS_1));
+                CrmAutoAssignRuleTriggerActionsEnum.TRIGGER_ACTIONS_1, null));
     }
 
     /**
@@ -157,11 +157,13 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
      * @param source       客户来源编号
      * @param industryId   所属行业编号
      * @param level        客户等级
-     * @param triggerAction 触发动作（新增 / 导入），决定自动分配规则是否命中
+     * @param triggerAction 触发动作（新增 / 导入 / 转移），决定自动分配规则是否命中
+     * @param excludeOwnerUserId 需要排除的负责人编号，为空表示不排除
      * @return 负责人编号
      */
     private Long resolveOwnerUserId(Long ownerUserId, Long source, Long industryId, Long level,
-                                    CrmAutoAssignRuleTriggerActionsEnum triggerAction) {
+                                    CrmAutoAssignRuleTriggerActionsEnum triggerAction,
+                                    Long excludeOwnerUserId) {
         // 1. 前端指定了负责人，直接校验上限
         if (ObjUtil.isNotEmpty(ownerUserId)) {
             validateCustomerExceedOwnerLimit(ownerUserId, 1);
@@ -182,6 +184,12 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
             // 没有可用的负责人（规则未启用 / 不满足触发条件 / 候选人员已耗尽）
             if (nextOwnerUserId == null) {
                 break;
+            }
+            // 需要排除的负责人（如转移场景下的当前负责人），跳过他并推进规则
+            if (excludeOwnerUserId != null && Objects.equals(excludeOwnerUserId, nextOwnerUserId)) {
+                log.info("[resolveOwnerUserId][负责人({})为需要排除的负责人，自动分配下一个负责人]", nextOwnerUserId);
+                autoAssignRuleService.skipCurrentAssignee(ruleId, nextOwnerUserId);
+                continue;
             }
             // 该负责人拥有的客户数未达到上限，直接使用
             if (!isCustomerExceedOwnerLimit(nextOwnerUserId, 1)) {
@@ -296,8 +304,15 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
     public void transferCustomer(CrmCustomerTransferReqVO reqVO, Long userId) {
         // 1.1 校验客户是否存在
         CrmCustomerDO customer = validateCustomerExists(reqVO.getId());
-        // 1.2 校验拥有客户是否到达上限
-        validateCustomerExceedOwnerLimit(reqVO.getNewOwnerUserId(), 1);
+        // 1.2 解析新负责人：
+        //      指定了负责人：直接校验其拥有的客户数是否达到上限，达到上限则报错，不做自动分配；
+        //      未指定负责人：走自动分配规则获取负责人（触发动作 = 转移），并校验其上限，
+        //      达到上限则跳过该负责人，继续获取下一个负责人，直到找到可用的负责人为止
+        Long newOwnerUserId = resolveOwnerUserId(reqVO.getNewOwnerUserId(), customer.getSource(),
+                customer.getIndustryId(), customer.getLevel(),
+                CrmAutoAssignRuleTriggerActionsEnum.TRIGGER_ACTIONS_2, customer.getOwnerUserId());
+        // 回填新负责人，供后续的权限转移与关联业务转移使用
+        reqVO.setNewOwnerUserId(newOwnerUserId);
         // 2.1 数据权限转移
         permissionService.transferPermission(new CrmPermissionTransferReqBO(userId, CrmBizTypeEnum.CRM_CUSTOMER.getType(),
                 reqVO.getId(), reqVO.getNewOwnerUserId(), reqVO.getOldOwnerPermissionLevel()));
@@ -422,7 +437,7 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
                 try {
                     ownerUserId = resolveOwnerUserId(importReqVO.getOwnerUserId(), importCustomer.getSource(),
                             importCustomer.getIndustryId(), importCustomer.getLevel(),
-                            CrmAutoAssignRuleTriggerActionsEnum.TRIGGER_ACTIONS_3);
+                            CrmAutoAssignRuleTriggerActionsEnum.TRIGGER_ACTIONS_3, null);
                 } catch (ServiceException ex) {
                     respVO.getFailureCustomerNames().put(importCustomer.getName(), ex.getMessage());
                     return;

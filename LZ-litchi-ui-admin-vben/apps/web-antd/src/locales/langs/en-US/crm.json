@@ -530,7 +530,8 @@
       "ownerCannotQuit": "owner cannot quit team",
       "notTeamMember": "you are not a team member",
       "quitTeamSuccess": "quit team member successfully",
-      "noTransferApi": "no transfer api"
+      "noTransferApi": "no transfer api",
+      "newOwnerUserIdHelp": "Select a new owner, the customer will be transferred to that person; leave it empty, and the system will automatically assign an owner according to the auto-assignment rule (trigger action = transfer)"
     }
   },
   "product": {

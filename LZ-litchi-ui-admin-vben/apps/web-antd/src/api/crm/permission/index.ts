@@ -19,7 +19,12 @@ export namespace CrmPermissionApi {
   /** 数据权限转移请求 */
   export interface TransferReq {
     id: number; // 模块编号
-    newOwnerUserId: number; // 新负责人的用户编号
+    /**
+     * 新负责人的用户编号
+     *
+     * 转移客户时，为空则由系统按自动分配规则自动分配负责人
+     */
+    newOwnerUserId?: number; // 新负责人的用户编号
     oldOwnerPermissionLevel?: number; // 老负责人加入团队后的权限级别
     toBizTypes?: number[]; // 转移客户时，需要额外有【联系人】【商机】【合同】的 checkbox 选择
   }

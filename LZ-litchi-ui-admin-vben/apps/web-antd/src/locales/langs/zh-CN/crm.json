@@ -530,7 +530,8 @@
       "ownerCannotQuit": "负责人不能退出团队",
       "notTeamMember": "你不是团队成员",
       "quitTeamSuccess": "退出团队成员成功",
-      "noTransferApi": "没有转移接口"
+      "noTransferApi": "没有转移接口",
+      "newOwnerUserIdHelp": "选择新负责人，则客户转移给该负责人；不选择，则由系统按自动分配规则自动分配负责人（触发动作 = 转移）"
     }
   },
   "product": {

@@ -17,9 +17,10 @@ public class CrmCustomerTransferReqVO {
 
     /**
      * 新负责人的用户编号
+     *
+     * <p>为空时，由系统按自动分配规则自动分配负责人（触发动作 = 转移）
      */
-    @Schema(description = "新负责人的用户编号", requiredMode = Schema.RequiredMode.REQUIRED, example = "10430")
-    @I18nNotNull(i18nKey = "crm.customer.back.newOwnerUserId.notNull", message = "新负责人的用户编号不能为空")
+    @Schema(description = "新负责人的用户编号，为空时由系统自动分配", example = "10430")
     private Long newOwnerUserId;
 
     /**

@@ -706,12 +706,12 @@ VALUES ('客户-没有可分配的负责人', 'crm.customer.back.noAssignableOwn
 -- 40. 客户-没有可分配的负责人 - en-US
 DELETE FROM infra_i18n_message WHERE message_key = 'crm.customer.back.noAssignableOwner' AND locale = @LOCALE_EN;
 INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
-VALUES ('客户-没有可分配的负责人', 'crm.customer.back.noAssignableOwner', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'Failed to create customer: no assignable owner available. Please check the auto-assignment rule user details and the customer ownership limit configuration.', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+VALUES ('客户-没有可分配的负责人', 'crm.customer.back.noAssignableOwner', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'Operation failed: no assignable owner available. Please check the auto-assignment rule user details and the customer ownership limit configuration.', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
 
 -- 40. 客户-没有可分配的负责人 - zh-CN
 DELETE FROM infra_i18n_message WHERE message_key = 'crm.customer.back.noAssignableOwner' AND locale = @LOCALE_ZH_CN;
 INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
-VALUES ('客户-没有可分配的负责人', 'crm.customer.back.noAssignableOwner', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '客户创建失败，没有可分配的负责人，请检查自动分配规则人员明细及客户拥有数量上限配置！', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+VALUES ('客户-没有可分配的负责人', 'crm.customer.back.noAssignableOwner', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '操作失败，没有可分配的负责人，请检查自动分配规则人员明细及客户拥有数量上限配置！', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
 
 -- =============================================
 -- 权限管理 1-020-007-000

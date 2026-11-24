@@ -1,6 +1,8 @@
 import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 
+import { z } from '@vben/common-ui';
+
 import { BizTypeEnum, PermissionLevelEnum } from '#/api/crm/permission';
 import { getSimpleUserList } from '#/api/system/user';
 import { $t } from '#/locales';
@@ -26,7 +28,21 @@ export function useTransferFormSchema(): VbenFormSchema[] {
         labelField: 'nickname',
         valueField: 'id',
       },
-      rules: 'required',
+      help: $t('crm.permission.message.newOwnerUserIdHelp'),
+      dependencies: {
+        triggerFields: ['bizType'],
+        componentProps: (values) => ({
+          // 转移客户时，允许不指定新负责人，由系统按自动分配规则自动分配（触发动作 = 转移）
+          allowClear: values.bizType === BizTypeEnum.CRM_CUSTOMER,
+        }),
+        rules: (values) => {
+          if (values.bizType === BizTypeEnum.CRM_CUSTOMER) {
+            // 允许不填：为空时由后端按自动分配规则自动分配
+            return z.number().nullish();
+          }
+          return 'required';
+        },
+      },
     },
     {
       fieldName: 'oldOwnerHandler',
