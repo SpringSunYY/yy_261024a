@@ -242,6 +242,31 @@ public class CrmCustomerController {
                 new CrmCustomerRespVO().setId(customer.getId()).setName(customer.getName())));
     }
 
+    @GetMapping("/mobile-exists")
+    @Operation(summary = "根据手机号获得客户", description = "用于手机号唯一性校验，不受数据权限限制，返回负责人名称")
+    @Parameter(name = "mobile", description = "手机号", required = true, example = "15601691300")
+    @Parameter(name = "excludeId", description = "需要排除的客户编号（修改场景，排除自身）", example = "1024")
+    @PreAuthorize("@ss.hasPermission('crm:customer:create')")
+    public CommonResult<CrmCustomerRespVO> getCustomerByMobile(@RequestParam("mobile") String mobile,
+                                                               @RequestParam(value = "excludeId", required = false) Long excludeId) {
+        CrmCustomerDO customer = customerService.getCustomerByMobile(mobile, excludeId);
+        if (customer == null) {
+            return success(null);
+        }
+        return success(buildCustomerDetail(customer));
+    }
+
+    @GetMapping("/duplicate-page")
+    @Operation(summary = "获得客户查重分页", description = "按手机号 / 客户名称查询，不受数据权限限制，所有客户均可查到")
+    @PreAuthorize("@ss.hasPermission('crm:customer:create')")
+    public CommonResult<PageResult<CrmCustomerRespVO>> getDuplicateCustomerPage(@Valid CrmCustomerPageReqVO pageVO) {
+        PageResult<CrmCustomerDO> pageResult = customerService.getDuplicateCustomerPage(pageVO);
+        if (CollUtil.isEmpty(pageResult.getList())) {
+            return success(PageResult.empty(pageResult.getTotal()));
+        }
+        return success(new PageResult<>(buildCustomerDetailList(pageResult.getList()), pageResult.getTotal()));
+    }
+
     @GetMapping("/export-excel")
     @Operation(summary = "导出客户 Excel")
     @PreAuthorize("@ss.hasPermission('crm:customer:export')")

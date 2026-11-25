@@ -28,6 +28,8 @@ export function useFormSchema(): VbenFormSchema[] {
       fieldName: 'mobile',
       label: $t('crm.customer.field.mobile'),
       component: 'Input',
+      // 手机号格式校验（是否唯一由 form.vue 通过插槽异步校验）
+      rules: 'mobile',
     },
     {
       fieldName: 'ownerUserId',
@@ -155,6 +157,26 @@ export function useGridFormSchema(): VbenFormSchema[] {
         ...getRangePickerDefaultProps(),
         allowClear: true,
       },
+    },
+  ];
+}
+
+/**
+ * 客户查重弹窗的搜索表单
+ *
+ * <p>只保留「客户名称」与「手机号码」两个条件，二者至少填写一个（校验在 duplicate-modal.vue 中处理）。
+ */
+export function useDuplicateGridFormSchema(): VbenFormSchema[] {
+  return [
+    {
+      fieldName: 'name',
+      label: $t('crm.customer.field.name'),
+      component: 'Input',
+    },
+    {
+      fieldName: 'mobile',
+      label: $t('crm.customer.field.mobile'),
+      component: 'Input',
     },
   ];
 }

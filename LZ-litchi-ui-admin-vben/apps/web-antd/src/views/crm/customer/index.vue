@@ -23,9 +23,9 @@ import {
 } from '#/api/crm/customer';
 import { $t } from '#/locales';
 import { setPendingExtraTitle } from '#/router/state';
-import { pickSort } from '#/utils';
 
 import { useGridColumns, useGridFormSchema } from './data';
+import DuplicateModal from './modules/duplicate-modal.vue';
 import Form from './modules/form.vue';
 import ImportForm from './modules/import-form.vue';
 
@@ -47,6 +47,17 @@ const [ImportModal, importModalApi] = useVbenModal({
   destroyOnClose: true,
 });
 
+/** 客户查重弹窗 */
+const [CustomerDuplicateModal, duplicateModalApi] = useVbenModal({
+  connectedComponent: DuplicateModal,
+  destroyOnClose: true,
+});
+
+/** 打开客户查重弹窗 */
+function handleDuplicate() {
+  duplicateModalApi.open();
+}
+
 /** 导入客户 */
 function handleImport() {
   importModalApi.open();
@@ -54,6 +65,7 @@ function handleImport() {
 
 /** 导出表格 */
 const exportLoading = ref(false);
+
 async function handleExport() {
   try {
     exportLoading.value = true;
@@ -111,14 +123,12 @@ const [Grid, gridApi] = useVbenVxeGrid({
     keepSource: true,
     proxyConfig: {
       ajax: {
-        query: async ({ page }, ctx, formValues) => {
-          const { sortBy, sort } = pickSort(ctx);
+        query: async ({ page }, formValues) => {
           return await getCustomerPage({
             page: page.currentPage,
             pageSize: page.pageSize,
             sceneType: sceneType.value,
             ...formValues,
-            ...(sortBy?.length ? { sortBy, sort } : {}),
           });
         },
       },
@@ -154,6 +164,7 @@ function onChangeSceneType(key: number | string) {
 
     <FormModalDrawer @success="onRefresh" />
     <ImportModal @success="onRefresh" />
+    <CustomerDuplicateModal />
     <Grid>
       <template #top>
         <Tabs class="border-none" @change="onChangeSceneType">
@@ -180,6 +191,13 @@ function onChangeSceneType(key: number | string) {
               icon: ACTION_ICON.ADD,
               auth: ['crm:customer:create'],
               onClick: handleCreate,
+            },
+            {
+              label: $t('crm.customer.message.duplicate'),
+              type: 'primary',
+              icon: ACTION_ICON.SEARCH,
+              auth: ['crm:customer:create'],
+              onClick: handleDuplicate,
             },
             {
               label: $t('ui.actionTitle.import'),

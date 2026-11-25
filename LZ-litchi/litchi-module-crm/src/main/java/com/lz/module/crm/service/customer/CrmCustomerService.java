@@ -114,6 +114,23 @@ public interface CrmCustomerService {
     PageResult<CrmCustomerDO> getCustomerPage(CrmCustomerPageReqVO pageReqVO, Long userId);
 
     /**
+     * 客户查重分页：按手机号 / 客户名称查询，【不受数据权限限制】
+     *
+     * @param pageReqVO 分页查询
+     * @return 客户分页
+     */
+    PageResult<CrmCustomerDO> getDuplicateCustomerPage(CrmCustomerPageReqVO pageReqVO);
+
+    /**
+     * 根据手机号获得客户（用于手机号唯一性校验），【不受数据权限限制】
+     *
+     * @param mobile    手机号
+     * @param excludeId 需要排除的客户编号（修改场景，排除自身），为空时不排除
+     * @return 客户；不存在时返回 null
+     */
+    CrmCustomerDO getCustomerByMobile(String mobile, Long excludeId);
+
+    /**
      * 获得放入公海提醒的客户分页
      *
      * @param pageVO 分页查询

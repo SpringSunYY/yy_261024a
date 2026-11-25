@@ -4,12 +4,14 @@ import type { CrmCustomerApi } from '#/api/crm/customer';
 import { computed, nextTick, ref } from 'vue';
 
 import { useVbenForm, useVbenModelDrawer } from '@vben/common-ui';
+import { IconifyIcon } from '@vben/icons';
 
-import { message } from 'ant-design-vue';
+import { Input, message } from 'ant-design-vue';
 
 import {
   createCustomer,
   getCustomer,
+  getCustomerByMobile,
   updateCustomer,
 } from '#/api/crm/customer';
 import { $t } from '#/locales';
@@ -57,15 +59,87 @@ const {
   rootLabel: $t('crm.customer.field.source'),
 });
 
+/**
+ * 手机号唯一性校验
+ *
+ * <p>手机号格式已由表单 schema 的 `mobile` 规则校验通过，这里只负责判断手机号是否已存在。
+ * 编辑场景下需要排除自身（excludeId = 当前客户编号）。
+ */
+const mobileChecking = ref(false);
+
+/**
+ * 根据手机号查询已存在的客户
+ *
+ * @param mobile 手机号
+ * @returns 已存在的客户；不存在时返回 null
+ */
+async function fetchCustomerByMobile(mobile: string) {
+  if (!mobile) {
+    return null;
+  }
+  mobileChecking.value = true;
+  try {
+    return (
+      (await getCustomerByMobile(
+        mobile,
+        formData.value?.id ? Number(formData.value.id) : undefined,
+      )) ?? null
+    );
+  } finally {
+    mobileChecking.value = false;
+  }
+}
+
+/**
+ * 手机号输入框失焦时触发校验
+ *
+ * <p>1. 先校验手机号格式（表单规则），格式不通过则不再请求后端；
+ * <p>2. 格式通过后，再校验手机号是否唯一，不唯一时在字段下方展示错误提示。
+ */
+async function handleMobileBlur() {
+  // 1. 触发表单的字段校验（包含手机号格式校验）
+  const result = await formApi.validateField('mobile');
+  if (!result.valid) {
+    return;
+  }
+  // 2. 格式校验通过，进行唯一性校验
+  const values = (await formApi.getValues()) as Record<string, any>;
+  const mobile = values.mobile as string;
+  const exist = await fetchCustomerByMobile(mobile);
+  if (!exist) {
+    // 不存在重复，清除之前的唯一性错误提示
+    formApi.form.setFieldError('mobile', undefined);
+    return;
+  }
+  // 3. 已存在重复，构造错误提示并挂到字段上
+  const msg = $t('crm.customer.message.mobileExists', [
+    mobile,
+    exist.ownerUserName || '-',
+  ]);
+  formApi.form.setFieldError('mobile', msg);
+  message.error(msg);
+}
+
 const [ModalDrawer, formModalDrawerApi] = useVbenModelDrawer({
   async onConfirm() {
     const { valid } = await formApi.validate();
     if (!valid) {
       return;
     }
-    formModalDrawerApi.lock();
-    // 提交表单：source 始终传递最后一级选择的 id
+    // 手机号唯一性校验（手机号格式已由表单的 mobile 规则校验通过）
     const values = (await formApi.getValues()) as Record<string, any>;
+    const exist = await fetchCustomerByMobile(values.mobile as string);
+    if (exist) {
+      // 手机号已存在，提示并阻断提交
+      const msg = $t('crm.customer.message.mobileExists', [
+        values.mobile as string,
+        exist.ownerUserName || '-',
+      ]);
+      formApi.form.setFieldError('mobile', msg);
+      message.error(msg);
+      return;
+    }
+    formModalDrawerApi.lock();
     // 剔除级联选择器的中间字段与只读字段，只保留 source
     const data: Record<string, any> = {};
     Object.keys(values).forEach((key) => {
@@ -134,7 +208,27 @@ const [ModalDrawer, formModalDrawerApi] = useVbenModelDrawer({
 </script>
 
 <template>
-  <ModalDrawer :title="getTitle" class="w-[40%]">
-    <Form class="mx-4" />
+  <ModalDrawer :title="getTitle" class="w-[60%]">
+    <Form class="mx-4">
+      <template #mobile="slotProps">
+        <Input
+          v-bind="slotProps"
+          :placeholder="
+            $t('ui.placeholder.input', [$t('crm.customer.field.mobile')])
+          "
+          :allow-clear="true"
+          class="w-full"
+          @blur="handleMobileBlur"
+        >
+          <template #suffix>
+            <IconifyIcon
+              v-if="mobileChecking"
+              class="animate-spin text-gray-400"
+              icon="lucide:loader"
+            />
+          </template>
+        </Input>
+      </template>
+    </Form>
   </ModalDrawer>
 </template>

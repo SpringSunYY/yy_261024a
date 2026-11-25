@@ -129,6 +129,20 @@ public interface CrmCustomerMapper extends BaseMapperX<CrmCustomerDO> {
         return CollUtil.isEmpty(list) ? null : list.getFirst();
     }
 
+    /**
+     * 客户查重：按手机号 / 客户名称查询，【不受数据权限限制】，查询所有客户
+     *
+     * @param pageReqVO 分页查询
+     * @return 客户分页
+     */
+    default PageResult<CrmCustomerDO> selectDuplicatePage(CrmCustomerPageReqVO pageReqVO) {
+        MPJLambdaWrapperX<CrmCustomerDO> query = new MPJLambdaWrapperX<>();
+        query.selectAll(CrmCustomerDO.class)
+                .likeIfPresent(CrmCustomerDO::getName, pageReqVO.getName())
+                .eqIfPresent(CrmCustomerDO::getMobile, pageReqVO.getMobile());
+        return selectJoinPage(pageReqVO, CrmCustomerDO.class, query);
+    }
+
     default PageResult<CrmCustomerDO> selectPutPoolRemindCustomerPage(CrmCustomerPageReqVO pageReqVO,
                                                                       CrmCustomerPoolConfigDO poolConfig,
                                                                       Long ownerUserId) {

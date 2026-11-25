@@ -103,7 +103,12 @@
       "updateSupport": "是否覆盖",
       "updateSupportHelp": "是否更新已经存在的用户数据",
       "selectExcel": "选择 Excel 文件",
-      "downloadTemplate": "下载导入模板"
+      "downloadTemplate": "下载导入模板",
+      "mobileExists": "手机号码{0}在客户模块已存在，负责人为{1}",
+      "duplicate": "客户查重",
+      "duplicateTitle": "客户查重",
+      "duplicateHelp": "可通过手机号码或客户名称查询所有客户（不限制负责人）",
+      "duplicateConditionRequired": "请至少填写客户名称或手机号码"
     },
     "tabPane": {
       "myResponsible": "我负责的",

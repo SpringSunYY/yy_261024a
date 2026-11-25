@@ -103,7 +103,12 @@
       "updateSupport": "whether to overwrite",
       "updateSupportHelp": "whether to update existing user data",
       "selectExcel": "select excel file",
-      "downloadTemplate": "download import template"
+      "downloadTemplate": "download import template",
+      "mobileExists": "mobile {0} already exists in the customer module, and the owner is {1}",
+      "duplicate": "customer duplicate check",
+      "duplicateTitle": "customer duplicate check",
+      "duplicateHelp": "You can search all customers (regardless of owner) by mobile number or customer name",
+      "duplicateConditionRequired": "Please fill in at least the customer name or the mobile number"
     },
     "tabPane": {
       "myResponsible": "my responsible",

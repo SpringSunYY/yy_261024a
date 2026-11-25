@@ -168,3 +168,19 @@ export function getTodayContactCustomerCount() {
 export function getFollowCustomerCount() {
   return requestClient.get<number>('/crm/customer/follow-count');
 }
+
+/** 根据手机号获得客户（用于手机号唯一性校验），不存在时返回 null */
+export function getCustomerByMobile(mobile: string, excludeId?: number) {
+  return requestClient.get<CrmCustomerApi.Customer | null>(
+    '/crm/customer/mobile-exists',
+    { params: { mobile, excludeId } },
+  );
+}
+
+/** 客户查重分页：按手机号 / 客户名称查询，不受数据权限限制 */
+export function getDuplicateCustomerPage(params: PageParam) {
+  return requestClient.get<PageResult<CrmCustomerApi.Customer>>(
+    '/crm/customer/duplicate-page',
+    { params },
+  );
+}

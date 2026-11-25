@@ -905,6 +905,19 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
     }
 
     @Override
+    public PageResult<CrmCustomerDO> getDuplicateCustomerPage(CrmCustomerPageReqVO pageReqVO) {
+        return customerMapper.selectDuplicatePage(pageReqVO);
+    }
+
+    @Override
+    public CrmCustomerDO getCustomerByMobile(String mobile, Long excludeId) {
+        if (StrUtil.isEmptyIfStr(mobile)) {
+            return null;
+        }
+        return customerMapper.selectByMobile(mobile, excludeId);
+    }
+
+    @Override
     public PageResult<CrmCustomerDO> getPutPoolRemindCustomerPage(CrmCustomerPageReqVO pageVO, Long userId) {
         CrmCustomerPoolConfigDO poolConfig = customerPoolConfigService.getCustomerPoolConfig();
         if (ObjUtil.isNull(poolConfig)
