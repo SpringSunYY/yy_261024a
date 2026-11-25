@@ -61,15 +61,21 @@ public class CrmAutoAssignRuleDO extends BaseDO {
      */
     private Integer isRoundRobin;
     /**
-     * 是否放入公海
-     *
-     * 枚举 {@link CommonStatusEnum}
-     */
-    private Integer isPutPool;
-    /**
      * 放入公海额度
+     *
+     * <p>连续 N 次联系不上客户时，将客户放入公海（负责人保持不变）。
+     * <p>为 0 时表示不放入公海。
      */
-    private Integer isPutPoolQuota;
+    private Integer putPoolQuota;
+
+    /**
+     * 下一个用户额度
+     *
+     * <p>连续 N 次联系不上客户时，将客户转交给下一个用户作为负责人。
+     * <p>为 0 时表示不转交给下一个用户。
+     */
+    private Integer nextUserQuota;
+
     /**
      * 当前分配游标索引
      */
@@ -83,5 +89,30 @@ public class CrmAutoAssignRuleDO extends BaseDO {
      */
     private Integer currentRemainQuota;
 
+    /**
+     * 老负责人处理方式
+     *
+     * <p>true - 老负责人保留在团队中（降级为团队成员，权限级别见 {@link #oldOwnerPermissionLevel}）；
+     * <p>false - 老负责人被移出团队（移除其数据权限）。
+     *
+     * <p>用于「自动转交给下一个用户」时，避免出现一个客户多个负责人的情况。
+     */
+    private Boolean oldOwnerHandler;
+    /**
+     * 老负责人权限级别
+     *
+     * <p>关联 {@link com.lz.module.crm.enums.permission.CrmPermissionLevelEnum}，
+     * 不能是「负责人（OWNER）」。仅在 {@link #oldOwnerHandler} 为 true 时生效。
+     */
+    private Long oldOwnerPermissionLevel;
+    /**
+     * 同时转移的关联业务类型
+     *
+     * <p>多个业务类型，以 JSON 数组字符串存储，例如：[3,4,5]
+     *
+     * <p>关联 {@link com.lz.module.crm.enums.common.CrmBizTypeEnum}：
+     * 联系人（CRM_CONTACT）、商机（CRM_BUSINESS）、合同（CRM_CONTRACT）。
+     */
+    private String toBizTypes;
 
 }

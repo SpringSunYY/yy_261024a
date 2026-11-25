@@ -27,9 +27,20 @@ public class CrmFollowUpRecordSaveReqVO {
     @I18nNotNull(i18nKey = "crm.followUpRecord.back.type.notNull", message = "跟进类型不能为空")
     private Integer type;
 
+    /**
+     * 联系成功
+     */
+    @Schema(description = "联系成功", requiredMode = Schema.RequiredMode.REQUIRED)
+    @I18nNotNull(i18nKey = "crm.followUpRecord.back.isSuccess.notNull", message = "联系成功不能为空")
+    private Integer isSuccess;
+
     @Schema(description = "跟进内容", requiredMode = Schema.RequiredMode.REQUIRED)
     @I18nNotEmpty(i18nKey = "crm.followUpRecord.back.content.notEmpty", message = "跟进内容不能为空")
     private String content;
+
+    @Schema(description = "联系时间", requiredMode = Schema.RequiredMode.REQUIRED)
+    @I18nNotNull(i18nKey = "crm.followUpRecord.back.contactTime.notNull", message = "联系时间不能为空")
+    private LocalDateTime contactTime;
 
     @Schema(description = "下次联系时间", requiredMode = Schema.RequiredMode.REQUIRED)
     @I18nNotNull(i18nKey = "crm.followUpRecord.back.nextTime.notNull", message = "下次联系时间不能为空")

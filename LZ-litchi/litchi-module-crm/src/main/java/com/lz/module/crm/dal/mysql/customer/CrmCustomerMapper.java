@@ -43,20 +43,30 @@ public interface CrmCustomerMapper extends BaseMapperX<CrmCustomerDO> {
                 .eq(CrmCustomerDO::getOwnerUserId, ownerUserId));
     }
 
-    default int updateOwnerUserIdById(Long id, Long ownerUserId) {
+    /**
+     * 更新客户的公海标记
+     *
+     * @param id    客户编号
+     * @param pool  是否为公海数据
+     * @return 影响行数
+     */
+    default int updatePoolById(Long id, Boolean pool) {
         return update(new LambdaUpdateWrapper<CrmCustomerDO>()
                 .eq(CrmCustomerDO::getId, id)
-                .set(CrmCustomerDO::getOwnerUserId, ownerUserId));
+                .set(CrmCustomerDO::getPool, pool));
     }
 
     default PageResult<CrmCustomerDO> selectPage(CrmCustomerPageReqVO pageReqVO, Long ownerUserId) {
         MPJLambdaWrapperX<CrmCustomerDO> query = new MPJLambdaWrapperX<>();
         // 拼接数据权限的查询条件
         if (Boolean.TRUE.equals(pageReqVO.getPool())) {
-            query.isNull(CrmCustomerDO::getOwnerUserId);
+            // 公海数据：pool = true
+            query.eq(CrmCustomerDO::getPool, Boolean.TRUE);
         } else {
             CrmPermissionUtils.appendPermissionCondition(query, CrmBizTypeEnum.CRM_CUSTOMER.getType(),
                     CrmCustomerDO::getId, ownerUserId, pageReqVO.getSceneType());
+            // 非公海数据：pool = false 或 null
+            query.and(w -> w.eq(CrmCustomerDO::getPool, Boolean.FALSE).or().isNull(CrmCustomerDO::getPool));
         }
         // 拼接自身的查询条件
         query.selectAll(CrmCustomerDO.class)
@@ -65,7 +75,8 @@ public interface CrmCustomerMapper extends BaseMapperX<CrmCustomerDO> {
                 .eqIfPresent(CrmCustomerDO::getIndustryId, pageReqVO.getIndustryId())
                 .eqIfPresent(CrmCustomerDO::getLevel, pageReqVO.getLevel())
                 .eqIfPresent(CrmCustomerDO::getSource, pageReqVO.getSource())
-                .eqIfPresent(CrmCustomerDO::getFollowUpStatus, pageReqVO.getFollowUpStatus());
+                .eqIfPresent(CrmCustomerDO::getFollowUpStatus, pageReqVO.getFollowUpStatus())
+                .eqIfPresent(CrmCustomerDO::getCreateTime, pageReqVO.getCreateTime());
 
         // backlog 查询
         if (ObjUtil.isNotNull(pageReqVO.getContactStatus())) {
@@ -174,6 +185,8 @@ public interface CrmCustomerMapper extends BaseMapperX<CrmCustomerDO> {
         query.gt(CrmCustomerDO::getOwnerUserId, 0);
         // 未锁定 + 未成交
         query.eq(CrmCustomerDO::getLockStatus, false).eq(CrmCustomerDO::getDealStatus, false);
+        // 排除已在公海中的客户
+        query.and(w -> w.eq(CrmCustomerDO::getPool, Boolean.FALSE).or().isNull(CrmCustomerDO::getPool));
         // 已经超时
         LocalDateTime dealExpireTime = LocalDateTime.now().minusDays(poolConfig.getDealExpireDays());
         LocalDateTime contactExpireTime = LocalDateTime.now().minusDays(poolConfig.getContactExpireDays());

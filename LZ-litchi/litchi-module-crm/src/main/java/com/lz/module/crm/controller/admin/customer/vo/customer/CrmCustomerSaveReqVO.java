@@ -32,6 +32,12 @@ public class CrmCustomerSaveReqVO {
     @I18nNotEmpty(i18nKey = "crm.customer.back.name.notEmpty", message = "客户名称不能为空")
     private String name;
 
+    /**
+     * 初次成交时间
+     */
+    @Schema(description = "初次成交时间")
+    private LocalDateTime firstTransactionTime;
+
     @Schema(description = "下次联系时间")
     @DiffLogField(name = "下次联系时间")
     @DateTimeFormat(pattern = FORMAT_YEAR_MONTH_DAY_HOUR_MINUTE_SECOND)

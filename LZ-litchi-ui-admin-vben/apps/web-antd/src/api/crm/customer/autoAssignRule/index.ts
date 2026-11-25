@@ -24,8 +24,11 @@ export namespace AutoAssignRuleApi {
     levelIds?: number[]; // 具体条件 - 客户级别编号列表
     allocationMethod?: number; // 分配方案
     isRoundRobin?: number; // 循环分配
-    isPutPool?: number; // 是否放入公海
-    isPutPoolQuota?: number; // 放入公海额度
+    putPoolQuota?: number; // 放入公海额度（0 表示不放入公海）
+    nextUserQuota?: number; // 下一个用户额度（0 表示不转交给下一个用户）
+    oldOwnerHandler?: boolean; // 老负责人处理方式（true = 加入团队，false = 移除）
+    oldOwnerPermissionLevel?: number; // 老负责人权限级别（不能是负责人 OWNER）
+    toBizTypes?: number[]; // 同时转移的关联业务类型（联系人 / 商机 / 合同）
     currentCursorIndex?: number; // 当前分配游标索引
     currentAssigneeId?: number; // 当前分配员工
     currentRemainQuota?: number; // 当前分配员工额度

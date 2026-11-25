@@ -16,6 +16,8 @@ export namespace CrmCustomerApi {
     ownerUserId: number; // 负责人的用户编号
     ownerUserName?: string; // 负责人的用户名称
     ownerUserDept?: string; // 负责人的部门名称
+    /** 是否在公海中；为 true 时负责人相当于该客户的「公海管理员」 */
+    pool?: boolean;
     lockStatus?: boolean;
     dealStatus?: boolean;
     mobile: string; // 手机号
@@ -99,6 +101,7 @@ export function importCustomer(data: CrmCustomerApi.CustomerImport) {
   return requestClient.upload<CrmCustomerApi.CustomerImportResult>(
     '/crm/customer/import',
     data,
+    { timeout: 600_000 },
   );
 }
 
@@ -127,7 +130,7 @@ export function receiveCustomer(ids: number[]) {
 }
 
 /** 分配公海给对应负责人 */
-export function distributeCustomer(ids: number[], ownerUserId: number) {
+export function distributeCustomer(ids: number[], ownerUserId?: number) {
   return requestClient.put('/crm/customer/distribute', { ids, ownerUserId });
 }
 

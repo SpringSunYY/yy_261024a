@@ -22,11 +22,13 @@ public interface CrmAutoAssignRuleMapper extends BaseMapperX<CrmAutoAssignRuleDO
                 .eqIfPresent(CrmAutoAssignRuleDO::getScopeConditions, reqVO.getScopeConditions())
                 .eqIfPresent(CrmAutoAssignRuleDO::getAllocationMethod, reqVO.getAllocationMethod())
                 .eqIfPresent(CrmAutoAssignRuleDO::getIsRoundRobin, reqVO.getIsRoundRobin())
-                .eqIfPresent(CrmAutoAssignRuleDO::getIsPutPool, reqVO.getIsPutPool())
-                .eqIfPresent(CrmAutoAssignRuleDO::getIsPutPoolQuota, reqVO.getIsPutPoolQuota())
+                .eqIfPresent(CrmAutoAssignRuleDO::getPutPoolQuota, reqVO.getPutPoolQuota())
+                .eqIfPresent(CrmAutoAssignRuleDO::getNextUserQuota, reqVO.getNextUserQuota())
                 .eqIfPresent(CrmAutoAssignRuleDO::getCurrentCursorIndex, reqVO.getCurrentCursorIndex())
                 .eqIfPresent(CrmAutoAssignRuleDO::getCurrentAssigneeId, reqVO.getCurrentAssigneeId())
                 .eqIfPresent(CrmAutoAssignRuleDO::getCurrentRemainQuota, reqVO.getCurrentRemainQuota())
+                .eqIfPresent(CrmAutoAssignRuleDO::getOldOwnerHandler, reqVO.getOldOwnerHandler())
+                .eqIfPresent(CrmAutoAssignRuleDO::getOldOwnerPermissionLevel, reqVO.getOldOwnerPermissionLevel())
                 .betweenIfPresent(CrmAutoAssignRuleDO::getCreateTime, reqVO.getCreateTime())
                 .applyOrderDesc(reqVO, CrmAutoAssignRuleDO::getId));
     }

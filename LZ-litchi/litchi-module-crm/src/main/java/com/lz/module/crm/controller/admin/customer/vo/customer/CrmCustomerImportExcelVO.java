@@ -14,6 +14,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDateTime;
 
 import static com.lz.module.crm.enums.DictTypeConstants.*;
 
@@ -76,6 +79,15 @@ public class CrmCustomerImportExcelVO {
     @ExcelColumnSelect(functionName = CustomerSourceExcelColumnSelectFunction.NAME, i18n = true)
     @ExcelI18n(i18nKey = "crm.customer.field.source")
     private Long source;
+
+
+    /**
+     * 初次成交时间
+     */
+    @ExcelProperty(value = "初次成交时间")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @ExcelI18n(i18nKey = "crm.customer.field.firstTransactionTime")
+    private LocalDateTime firstTransactionTime;
 
     @ExcelProperty("备注")
     @ExcelI18n(i18nKey = "crm.customer.field.remark")

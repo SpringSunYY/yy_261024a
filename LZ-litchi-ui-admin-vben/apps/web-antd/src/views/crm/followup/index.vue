@@ -80,6 +80,11 @@ const [Grid, gridApi] = useVbenVxeGrid({
   gridOptions: {
     columns: [
       {
+        field: 'contactTime',
+        title: $t('crm.followUpRecord.field.contactTime'),
+        formatter: 'formatDateTime',
+      },
+      {
         field: 'createTime',
         title: $t('crm.followup.field.createTime'),
         formatter: 'formatDateTime',
@@ -91,6 +96,16 @@ const [Grid, gridApi] = useVbenVxeGrid({
         cellRender: {
           name: 'CellDict',
           props: { type: DICT_TYPE.CRM_FOLLOW_UP_TYPE },
+        },
+      },
+      /** 联系成功 */
+      {
+        field: 'isSuccess',
+        title: $t('crm.followUpRecord.field.isSuccess'),
+        minWidth: 120,
+        cellRender: {
+          name: 'CellI18nDict',
+          props: { type: DICT_TYPE.COMMON_WHETHER },
         },
       },
       { field: 'content', title: $t('crm.followup.field.content') },

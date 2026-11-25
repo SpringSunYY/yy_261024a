@@ -97,6 +97,22 @@ public interface CrmAutoAssignRuleService {
      */
     String serializeTriggerActions(List<Integer> triggerActions);
 
+    /**
+     * 解析规则中的「同时转移的关联业务类型」
+     *
+     * @param toBizTypes 同时转移的关联业务类型的 JSON 数组字符串
+     * @return 关联业务类型列表；解析失败或为空时返回空列表
+     */
+    List<Integer> parseToBizTypes(String toBizTypes);
+
+    /**
+     * 序列化「同时转移的关联业务类型」为 JSON 数组字符串
+     *
+     * @param toBizTypes 关联业务类型列表
+     * @return JSON 数组字符串
+     */
+    String serializeToBizTypes(List<Integer> toBizTypes);
+
 
     // ==================== 子表（CRM  规则人员明细） ====================
 
@@ -149,6 +165,18 @@ public interface CrmAutoAssignRuleService {
      * @return 负责人编号
      */
     Long getNextOwnerUserId(String triggerAction, CrmCustomerAssignConditionDto condition);
+
+    /**
+     * 获得下一个负责人（不校验触发动作）
+     *
+     * <p>用于「连续联系不上，转交给下一个用户」的场景：该场景由规则的
+     * 「下一个用户额度」驱动，而非用户勾选的触发动作，因此这里跳过触发动作的校验，
+     * 但仍然会校验规则是否启用、适用范围条件是否满足。
+     *
+     * @param condition 具体条件
+     * @return 负责人编号；没有可用的负责人时返回 null
+     */
+    Long getNextOwnerUserIdIgnoreTriggerAction(CrmCustomerAssignConditionDto condition);
 
     /**
      * 获得可分配负责人总数

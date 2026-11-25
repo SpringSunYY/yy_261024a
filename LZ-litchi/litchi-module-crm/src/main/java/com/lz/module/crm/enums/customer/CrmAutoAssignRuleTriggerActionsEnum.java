@@ -12,7 +12,8 @@ public enum CrmAutoAssignRuleTriggerActionsEnum implements ArrayValuable<Integer
 
     TRIGGER_ACTIONS_1(1, "新增"),
     TRIGGER_ACTIONS_2(2, "转移"),
-    TRIGGER_ACTIONS_3(3, "导入");
+    TRIGGER_ACTIONS_3(3, "导入"),
+    TRIGGER_ACTIONS_4(4, "公海分配");
 
     public static final Integer[] ARRAYS =
             Arrays.stream(values()).map(CrmAutoAssignRuleTriggerActionsEnum::getStatus).toArray(Integer[]::new);

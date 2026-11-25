@@ -110,6 +110,17 @@ export function useFormSchema(): VbenFormSchema[] {
         valueFormat: 'x',
       },
     },
+    /** 初次成交时间 */
+    {
+      fieldName: 'firstTransactionTime',
+      label: $t('crm.customer.field.firstTransactionTime'),
+      component: 'DatePicker',
+      componentProps: {
+        showTime: true,
+        format: 'YYYY-MM-DD HH:mm:ss',
+        valueFormat: 'x',
+      },
+    },
     {
       fieldName: 'remark',
       label: $t('crm.customer.field.remark'),
@@ -211,6 +222,13 @@ export function useGridColumns(): VxeTableGridOptions['columns'] {
     {
       field: 'contactLastTime',
       title: $t('crm.customer.field.contactLastTime'),
+      formatter: 'formatDateTime',
+    },
+    /** 初次成交时间 */
+    {
+      field: 'firstTransactionTime',
+      title: $t('crm.customer.field.firstTransactionTime'),
+      minWidth: 120,
       formatter: 'formatDateTime',
     },
     {

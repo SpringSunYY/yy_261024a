@@ -78,16 +78,16 @@ public class CrmAutoAssignRuleRespVO {
     private Integer isRoundRobin;
 
     /**
-     * 是否放入公海
-     */
-    @Schema(description = "是否放入公海", requiredMode = Schema.RequiredMode.REQUIRED)
-    private Integer isPutPool;
-
-    /**
      * 放入公海额度
      */
-    @Schema(description = "放入公海额度")
-    private Integer isPutPoolQuota;
+    @Schema(description = "放入公海额度", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Integer putPoolQuota;
+
+    /**
+     * 下一个用户额度
+     */
+    @Schema(description = "下一个用户额度", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Integer nextUserQuota;
 
     /**
      * 当前分配游标索引
@@ -106,6 +106,28 @@ public class CrmAutoAssignRuleRespVO {
      */
     @Schema(description = "当前分配员工额度", requiredMode = Schema.RequiredMode.REQUIRED)
     private Integer currentRemainQuota;
+
+    /**
+     * 老负责人处理方式
+     */
+    @Schema(description = "老负责人处理方式", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Boolean oldOwnerHandler;
+
+    /**
+     * 老负责人权限级别
+     *
+     * <p>关联 {@link com.lz.module.crm.enums.permission.CrmPermissionLevelEnum}
+     */
+    @Schema(description = "老负责人权限级别", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Long oldOwnerPermissionLevel;
+
+    /**
+     * 同时转移的关联业务类型
+     *
+     * <p>数据库中以 JSON 数组字符串存储
+     */
+    @Schema(description = "同时转移的关联业务类型", example = "[3,4,5]")
+    private List<Integer> toBizTypes;
 
     /**
      * 创建时间

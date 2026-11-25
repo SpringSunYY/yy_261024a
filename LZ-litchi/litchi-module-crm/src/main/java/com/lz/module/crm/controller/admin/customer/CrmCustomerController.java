@@ -210,8 +210,8 @@ public class CrmCustomerController {
             return MapUtil.empty();
         }
         list = CollectionUtils.filterList(list, customer -> {
-            // 特殊：如果没负责人，则说明已经在公海，不用计算
-            if (customer.getOwnerUserId() == null) {
+            // 特殊：已在公海中，不用计算
+            if (Boolean.TRUE.equals(customer.getPool())) {
                 return false;
             }
             // 已成交 or 已锁定，不进入公海
@@ -325,7 +325,8 @@ public class CrmCustomerController {
     @Operation(summary = "分配公海给对应负责人")
     @PreAuthorize("@ss.hasPermission('crm:customer:distribute')")
     public CommonResult<Boolean> distributeCustomer(@Valid @RequestBody CrmCustomerDistributeReqVO distributeReqVO) {
-        customerService.receiveCustomer(distributeReqVO.getIds(), distributeReqVO.getOwnerUserId(), Boolean.FALSE);
+        // 负责人为空时，走自动分配规则（触发动作 = 公海分配）
+        customerService.distributeCustomer(distributeReqVO.getIds(), distributeReqVO.getOwnerUserId());
         return success(true);
     }
 

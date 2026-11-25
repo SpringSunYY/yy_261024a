@@ -241,7 +241,7 @@ onMounted(() => {
           {{ $t('crm.customer.action.lock') }}
         </Button>
         <Button
-          v-if="!customer.ownerUserId"
+          v-if="customer.pool"
           type="primary"
           @click="handleReceive"
           v-access:code="['crm:customer:receive']"
@@ -249,7 +249,7 @@ onMounted(() => {
           {{ $t('crm.customer.action.receive') }}
         </Button>
         <Button
-          v-if="!customer.ownerUserId"
+          v-if="customer.pool"
           type="primary"
           @click="handleDistributeForm"
           v-access:code="['crm:customer:distribute']"
@@ -257,7 +257,7 @@ onMounted(() => {
           {{ $t('crm.customer.action.distribute') }}
         </Button>
         <Button
-          v-if="customer.ownerUserId && permissionListRef?.validateOwnerUser"
+          v-if="!customer.pool && permissionListRef?.validateOwnerUser"
           @click="handlePutPool"
           v-access:code="['crm:customer:update']"
         >

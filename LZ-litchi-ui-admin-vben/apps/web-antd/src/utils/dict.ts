@@ -163,6 +163,7 @@ enum DICT_TYPE {
   BPM_TASK_CANDIDATE_STRATEGY = 'bpm_task_candidate_strategy',
   BPM_TASK_STATUS = 'bpm_task_status',
   COMMON_STATUS = 'common_status',
+  COMMON_WHETHER = 'common_whether', // 通用是或否
   CRM_AUDIT_STATUS = 'crm_audit_status', // CRM 审批状态
   CRM_AUTO_ASSIGN_RULE_ALLOCATION_METHOD = 'crm_auto_assign_rule_allocation_method', // CRM 自动赋值规则分配方式
   CRM_AUTO_ASSIGN_RULE_IS_ROUND_ROBIN = 'crm_auto_assign_rule_is_round_robin', // CRM 自动赋值规则是否轮询

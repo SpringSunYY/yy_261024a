@@ -12,7 +12,12 @@ import { getBusinessPageByCustomer } from '#/api/crm/business';
 import { getContactPageByCustomer } from '#/api/crm/contact';
 import { createFollowUpRecord } from '#/api/crm/followup';
 import { $t } from '#/locales';
-import { DICT_TYPE, getDictOptions, MODULE_TYPE_ENUM } from '#/utils';
+import {
+  CommonWhether,
+  DICT_TYPE,
+  getDictOptions,
+  MODULE_TYPE_ENUM,
+} from '#/utils';
 
 const emit = defineEmits(['success']);
 
@@ -54,12 +59,43 @@ const [Form, formApi] = useVbenForm({
       },
       rules: 'required',
     },
+    /** 联系成功 */
+    {
+      fieldName: 'isSuccess',
+      label: $t('crm.followUpRecord.field.isSuccess'),
+      rules: 'required',
+      component: 'I18nRadioGroup',
+      componentProps: {
+        options: getDictOptions(DICT_TYPE.COMMON_WHETHER, 'number'),
+        buttonStyle: 'solid',
+        optionType: 'button',
+      },
+      defaultValue: CommonWhether.WHETHER_0,
+    },
+    /**
+     * 联系时间
+     *
+     * <p>本次实际联系客户的时间，不分业务类型，必选。
+     * <p>用于统计「连续 N 次联系不上」的次数：
+     * 「放入公海」使用总的连续失败次数，而「下一个用户」只统计当前负责人成为负责人之后的失败次数。
+     */
+    {
+      fieldName: 'contactTime',
+      label: $t('crm.followUpRecord.field.contactTime'),
+      component: 'DatePicker',
+      componentProps: {
+        showTime: true,
+        format: 'YYYY-MM-DD HH:mm:ss',
+        valueFormat: 'x',
+      },
+      rules: 'required',
+    },
     {
       fieldName: 'nextTime',
       label: $t('crm.followup.field.nextTime'),
       component: 'DatePicker',
       componentProps: {
-        showTime: false,
+        showTime: true,
         format: 'YYYY-MM-DD HH:mm:ss',
         valueFormat: 'x',
       },

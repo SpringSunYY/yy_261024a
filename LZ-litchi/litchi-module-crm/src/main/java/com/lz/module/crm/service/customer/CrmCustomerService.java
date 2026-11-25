@@ -54,6 +54,23 @@ public interface CrmCustomerService {
     void updateCustomerFollowUp(Long id, LocalDateTime contactNextTime, String contactLastContent);
 
     /**
+     * 处理客户「连续联系不上」的后果
+     *
+     * <p>根据自动分配规则中的「放入公海额度」与「下一个用户额度」处理：
+     * <ol>
+     *     <li>总的连续失败次数达到「放入公海额度」时，将客户放入公海（负责人保持不变）；</li>
+     *     <li>否则，当前负责人任期内连续失败次数达到「下一个用户额度」时，将客户转交给下一个用户作为负责人。</li>
+     * </ol>
+     *
+     * <p>两个额度都为 0 时不做任何处理；自动分配规则未开启时同样不做任何处理。
+     *
+     * @param id             客户编号
+     * @param totalFailCount 总的连续联系不上的次数（用于判断「放入公海额度」）
+     * @param ownerFailCount 当前负责人任期内连续联系不上的次数（用于判断「下一个用户额度」）
+     */
+    void handleCustomerFollowUpFail(Long id, int totalFailCount, int ownerFailCount);
+
+    /**
      * 删除客户
      *
      * @param id 编号
@@ -180,13 +197,24 @@ public interface CrmCustomerService {
     void putCustomerPool(Long id);
 
     /**
-     * 领取公海客户
+     * 领取 / 分配公海客户
      *
      * @param ids         要领取的客户编号数组
      * @param ownerUserId 负责人
      * @param isReceive   是/否领取；true - 领取；false - 分配
      */
     void receiveCustomer(List<Long> ids, Long ownerUserId, Boolean isReceive);
+
+    /**
+     * 分配公海客户给负责人
+     *
+     * <p>与 {@link #receiveCustomer} 的区别：负责人可以为空，此时走自动分配规则
+     * （触发动作 = 公海分配），每个客户单独计算出各自的负责人。
+     *
+     * @param ids         要分配的客户编号数组
+     * @param ownerUserId 负责人，为空时走自动分配规则
+     */
+    void distributeCustomer(List<Long> ids, Long ownerUserId);
 
     /**
      * 【系统】客户自动掉入公海

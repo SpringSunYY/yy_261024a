@@ -23,6 +23,7 @@ import {
 } from '#/api/crm/customer';
 import { $t } from '#/locales';
 import { setPendingExtraTitle } from '#/router/state';
+import { pickSort } from '#/utils';
 
 import { useGridColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
@@ -110,12 +111,14 @@ const [Grid, gridApi] = useVbenVxeGrid({
     keepSource: true,
     proxyConfig: {
       ajax: {
-        query: async ({ page }, formValues) => {
+        query: async ({ page }, ctx, formValues) => {
+          const { sortBy, sort } = pickSort(ctx);
           return await getCustomerPage({
             page: page.currentPage,
             pageSize: page.pageSize,
             sceneType: sceneType.value,
             ...formValues,
+            ...(sortBy?.length ? { sortBy, sort } : {}),
           });
         },
       },

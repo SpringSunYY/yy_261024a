@@ -2,6 +2,7 @@ import type { VbenFormSchema } from '#/adapter/form';
 
 import { $t } from '@vben/locales';
 
+import { BizTypeEnum, PermissionLevelEnum } from '#/api/crm/permission';
 import { CommonStatusEnum, DICT_TYPE, getDictOptions } from '#/utils';
 import {
   CrmAutoAssignRuleAllocationMethod,
@@ -15,8 +16,10 @@ const SCOPE_TYPE_CONDITION = CrmAutoAssignRuleScopeType.SCOPE_TYPE_2;
 /**
  * CRM 自动分配规则 - 配置表单（全局只有一条规则）
  *
- * <p>布局：一行两列。适用范围为「满足条件」时，才展示具体条件的 3 个多选字段；
- * 是否放入公海为「开启」时，才展示放入公海额度。
+ * <p>布局：一行两列。适用范围为「满足条件」时，才展示具体条件的 3 个多选字段。
+ *
+ * <p>「放入公海额度」与「下一个用户额度」用于处理「连续联系不上客户」的场景：
+ * 放入公海额度为 0 表示不放入公海，下一个用户额度为 0 表示不转交给下一个用户。
  *
  * <p>「当前分配员工」与「当前分配员工额度」由 index.vue 的插槽渲染，
  * 需要根据规则人员明细动态绑定选项与上限。
@@ -153,39 +156,128 @@ export function useFormSchema(): VbenFormSchema[] {
       },
       defaultValue: CrmAutoAssignRuleIsRoundRobin.IS_ROUND_ROBIN_1,
     },
-    /** 是否放入公海 */
+    /**
+     * 放入公海额度
+     *
+     * <p>连续 N 次联系不上客户时，将客户放入公海（负责人保持不变）；为 0 时表示不放入公海。
+     */
     {
-      fieldName: 'isPutPool',
-      label: $t('crm.autoAssignRule.field.isPutPool'),
+      fieldName: 'putPoolQuota',
+      label: $t('crm.autoAssignRule.field.putPoolQuota'),
+      rules: 'required',
+      component: 'InputNumber',
+      help: $t('crm.autoAssignRule.help.putPoolQuota'),
+      componentProps: {
+        min: 0,
+        defaultValue: 0,
+        controlsPosition: 'right',
+        placeholder: $t('ui.placeholder.input', [
+          $t('crm.autoAssignRule.field.putPoolQuota'),
+        ]),
+      },
+      defaultValue: 0,
+    },
+    /**
+     * 下一个用户额度
+     *
+     * <p>连续 N 次联系不上客户时，将客户转交给下一个用户作为负责人；为 0 时表示不转交。
+     */
+    {
+      fieldName: 'nextUserQuota',
+      label: $t('crm.autoAssignRule.field.nextUserQuota'),
+      rules: 'required',
+      component: 'InputNumber',
+      help: $t('crm.autoAssignRule.help.nextUserQuota'),
+      componentProps: {
+        min: 0,
+        defaultValue: 0,
+        controlsPosition: 'right',
+        placeholder: $t('ui.placeholder.input', [
+          $t('crm.autoAssignRule.field.nextUserQuota'),
+        ]),
+      },
+      defaultValue: 0,
+    },
+    /**
+     * 老负责人处理方式
+     *
+     * <p>自动转交给下一个用户时，老负责人的处理方式：
+     * true - 保留在团队中（降级为团队成员，权限级别见 oldOwnerPermissionLevel）；
+     * false - 移出团队（移除其数据权限）。
+     *
+     * <p>这样可以避免出现「一个客户多个负责人」的情况。
+     */
+    {
+      fieldName: 'oldOwnerHandler',
+      label: $t('crm.autoAssignRule.field.oldOwnerHandler'),
       rules: 'required',
       component: 'I18nRadioGroup',
       componentProps: {
-        options: getDictOptions(DICT_TYPE.COMMON_STATUS, 'number'),
-        buttonStyle: 'solid',
-        optionType: 'button',
+        options: [
+          {
+            label: $t('crm.permission.field.add'),
+            value: true,
+          },
+          {
+            label: $t('crm.permission.field.remove'),
+            value: false,
+          },
+        ],
       },
-      defaultValue: CommonStatusEnum.ENABLE,
+      defaultValue: false,
     },
-    /** 放入公海额度（仅「是否放入公海 = 开启」时显示） */
+    /**
+     * 老负责人权限级别
+     *
+     * <p>老负责人保留在团队中时的权限级别，只读 / 读写，不能是「负责人（OWNER）」。
+     */
     {
-      fieldName: 'isPutPoolQuota',
-      label: $t('crm.autoAssignRule.field.isPutPoolQuota'),
-      rules: 'required',
-      component: 'InputNumber',
+      fieldName: 'oldOwnerPermissionLevel',
+      label: $t('crm.autoAssignRule.field.oldOwnerPermissionLevel'),
+      component: 'I18nRadioGroup',
       componentProps: {
-        min: 1,
-        defaultValue: 3,
-        controlsPosition: 'right',
-        placeholder: $t('ui.placeholder.input', [
-          $t('crm.autoAssignRule.field.isPutPoolQuota'),
-        ]),
+        options: getDictOptions(
+          DICT_TYPE.CRM_PERMISSION_LEVEL,
+          'number',
+        ).filter((dict) => dict.value !== PermissionLevelEnum.OWNER),
       },
-      defaultValue: undefined,
       dependencies: {
-        triggerFields: ['isPutPool'],
-        // 切换时保留原有的额度值，不做清空
-        show: (values) => values.isPutPool === CommonStatusEnum.ENABLE,
+        triggerFields: ['oldOwnerHandler'],
+        show: (values) => values.oldOwnerHandler,
+        trigger(values) {
+          if (!values.oldOwnerHandler) {
+            values.oldOwnerPermissionLevel = undefined;
+          }
+        },
       },
+      rules: 'required',
+    },
+    /**
+     * 同时转移的关联业务类型
+     *
+     * <p>自动转交给下一个用户时，同时转移的关联业务：联系人、商机、合同。
+     */
+    {
+      fieldName: 'toBizTypes',
+      label: $t('crm.autoAssignRule.field.toBizTypes'),
+      component: 'CheckboxGroup',
+      componentProps: {
+        options: [
+          {
+            label: $t('crm.permission.field.contact'),
+            value: BizTypeEnum.CRM_CONTACT,
+          },
+          {
+            label: $t('crm.permission.field.business'),
+            value: BizTypeEnum.CRM_BUSINESS,
+          },
+          {
+            label: $t('crm.permission.field.contract'),
+            value: BizTypeEnum.CRM_CONTRACT,
+          },
+        ],
+      },
+      defaultValue: [],
     },
     /**
      * 当前分配员工

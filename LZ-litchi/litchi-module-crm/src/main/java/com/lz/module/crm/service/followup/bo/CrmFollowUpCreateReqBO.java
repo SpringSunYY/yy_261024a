@@ -47,6 +47,12 @@ public class CrmFollowUpCreateReqBO {
     @NotEmpty(message = "跟进内容不能为空")
     private String content;
     /**
+     * 联系时间
+     *
+     * <p>本次实际联系客户的时间，不分业务类型。
+     */
+    private LocalDateTime contactTime;
+    /**
      * 下次联系时间
      */
     @NotNull(message = "下次联系时间不能为空")

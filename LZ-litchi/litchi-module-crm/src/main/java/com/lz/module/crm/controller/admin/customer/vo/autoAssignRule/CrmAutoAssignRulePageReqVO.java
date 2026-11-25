@@ -58,16 +58,16 @@ public class CrmAutoAssignRulePageReqVO extends PageParam {
     private Integer isRoundRobin;
 
     /**
-    * 是否放入公海
-    */
-    @Schema(description = "是否放入公海")
-    private Integer isPutPool;
+     * 放入公海额度
+     */
+    @Schema(description = "放入公海额度", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Integer putPoolQuota;
 
     /**
-    * 放入公海额度
-    */
-    @Schema(description = "放入公海额度")
-    private Integer isPutPoolQuota;
+     * 下一个用户额度
+     */
+    @Schema(description = "下一个用户额度", requiredMode = Schema.RequiredMode.REQUIRED)
+    private Integer nextUserQuota;
 
     /**
     * 当前分配游标索引
@@ -82,14 +82,26 @@ public class CrmAutoAssignRulePageReqVO extends PageParam {
     private Long currentAssigneeId;
 
     /**
-    * 当前分配员工额度
-    */
+     * 当前分配员工额度
+     */
     @Schema(description = "当前分配员工额度")
     private Integer currentRemainQuota;
 
     /**
-    * 创建时间
-    */
+     * 老负责人处理方式
+     */
+    @Schema(description = "老负责人处理方式")
+    private Boolean oldOwnerHandler;
+
+    /**
+     * 老负责人权限级别
+     */
+    @Schema(description = "老负责人权限级别")
+    private Long oldOwnerPermissionLevel;
+
+    /**
+     * 创建时间
+     */
     @Sortable(value = "create_time")
     @I18nSize(i18nKey = "crm.autoAssignRule.back.createTime.size", min = 0, max = 2, message = "创建时间长度不能超过2")
     @Schema(description = "创建时间")

@@ -27,6 +27,12 @@
       "write": "write follow-up"
     }
   },
+  "followUpRecord": {
+    "field": {
+      "isSuccess": "contact succeeded",
+      "contactTime": "contact time"
+    }
+  },
   "customer": {
     "customer": "customer",
     "list": "customer list",
@@ -93,6 +99,7 @@
       "importTemplate": "customer import template.xls",
       "importSuccess": "import succeeded: {0} created, {1} updated",
       "importPartialSuccess": "import finished: {0} created, {1} updated, {2} failed",
+      "distributeOwnerHelp": "if an owner is selected, customers will be assigned to it; if not, the system will assign owners automatically by the auto assign rule (trigger action = pool distribution)",
       "updateSupport": "whether to overwrite",
       "updateSupportHelp": "whether to update existing user data",
       "selectExcel": "select excel file",
@@ -456,12 +463,22 @@
       "scopeLevel": "customer level",
       "allocationMethod": "allocation method",
       "isRoundRobin": "round robin",
-      "isPutPool": "put into pool",
-      "isPutPoolQuota": "put into pool quota",
+      "putPoolQuota": "put into pool quota",
+      "nextUserQuota": "next user quota",
       "currentCursorIndex": "current cursor index",
       "currentAssigneeId": "current assignee",
       "currentRemainQuota": "current remaining quota",
+      "oldOwnerHandler": "old owner handling",
+      "oldOwnerPermissionLevel": "old owner permission level",
+      "toBizTypes": "related businesses to transfer",
       "createTime": "create time"
+    },
+    "help": {
+      "putPoolQuota": "When the customer cannot be reached N times in a row, put it into the pool (the owner stays unchanged). 0 means never put it into the pool.",
+      "nextUserQuota": "When the customer cannot be reached N times in a row, transfer it to the next user as the owner. 0 means never transfer it to the next user.",
+      "oldOwnerHandler": "How to handle the old owner when automatically transferring to the next user: add to the team (downgrade to a team member) or remove (remove his data permission). This avoids a customer having multiple owners.",
+      "oldOwnerPermissionLevel": "The permission level of the old owner when kept in the team: read-only or read-write, cannot be the owner.",
+      "toBizTypes": "Related businesses transferred together when automatically transferring to the next user: contacts, businesses, contracts."
     }
   },
   "autoAssignRuleUser": {

@@ -39,6 +39,10 @@ public class CrmCustomerDO extends BaseDO {
      */
     private Boolean followUpStatus;
     /**
+     * 初次成交时间
+     */
+    private LocalDateTime firstTransactionTime;
+    /**
      * 最后跟进时间
      */
     private LocalDateTime contactLastTime;
@@ -70,6 +74,10 @@ public class CrmCustomerDO extends BaseDO {
      * 成交状态
      */
     private Boolean dealStatus;
+    /**
+     * 公海
+     */
+    private Boolean pool;
 
     /**
      * 手机

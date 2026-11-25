@@ -36,8 +36,10 @@ const [Form, formApi] = useVbenForm({
         api: () => getSimpleUserList(),
         labelField: 'nickname',
         valueField: 'id',
+        allowClear: true,
       },
-      rules: 'required',
+      // 不指定负责人时，走自动分配规则（触发动作 = 公海分配）
+      help: $t('crm.customer.message.distributeOwnerHelp'),
     },
   ],
   showDefaultActions: false,
@@ -52,7 +54,7 @@ const [Modal, modalApi] = useVbenModal({
     modalApi.lock();
     const data = await formApi.getValues();
     try {
-      await distributeCustomer([data.id], data.ownerUserId);
+      await distributeCustomer([data.id], data.ownerUserId ?? undefined);
       await modalApi.close();
       emit('success');
       message.success($t('ui.actionMessage.operationSuccess'));

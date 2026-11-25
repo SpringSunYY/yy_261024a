@@ -58,10 +58,25 @@ public class CrmFollowUpRecordDO extends BaseDO {
      * 关联 {@link DictTypeConstants#CRM_FOLLOW_UP_TYPE} 字典
      */
     private Integer type;
+
+    /**
+     * 联系成功
+     *
+     * 枚举 {@link com.lz.framework.common.enums.CommonWhetherEnum}
+     */
+    private Integer isSuccess;
     /**
      * 跟进内容
      */
     private String content;
+    /**
+     * 联系时间
+     *
+     * <p>本次实际联系客户的时间，不分业务类型，必选。
+     * <p>用于统计「连续 N 次联系不上」的次数：
+     * 「放入公海」使用总的连续失败次数，而「下一个用户」只统计当前负责人成为负责人之后的失败次数。
+     */
+    private LocalDateTime contactTime;
     /**
      * 下次联系时间
      */

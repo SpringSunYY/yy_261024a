@@ -5,6 +5,7 @@ import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
+import com.lz.framework.common.enums.CommonStatusEnum;
 import com.lz.framework.common.exception.ServiceException;
 import com.lz.framework.common.pojo.PageResult;
 import com.lz.framework.common.util.object.BeanUtils;
@@ -17,6 +18,7 @@ import com.lz.module.crm.controller.admin.customer.vo.limitconfig.CrmCustomerLim
 import com.lz.module.crm.dal.dataobject.business.CrmBusinessDO;
 import com.lz.module.crm.dal.dataobject.contact.CrmContactDO;
 import com.lz.module.crm.dal.dataobject.contract.CrmContractDO;
+import com.lz.module.crm.dal.dataobject.customer.CrmAutoAssignRuleDO;
 import com.lz.module.crm.dal.dataobject.customer.CrmCustomerDO;
 import com.lz.module.crm.dal.dataobject.customer.CrmCustomerPoolConfigDO;
 import com.lz.module.crm.dal.dto.customer.CrmCustomerAssignConditionDto;
@@ -277,6 +279,184 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
     }
 
     @Override
+    public void handleCustomerFollowUpFail(Long id, int totalFailCount, int ownerFailCount) {
+        // 1. 获得自动分配规则：规则不存在或未开启时，不做任何处理
+        CrmAutoAssignRuleDO rule = autoAssignRuleService.getAutoAssignRule();
+        if (rule == null
+                || !Objects.equals(rule.getIsEnabled(), CommonStatusEnum.ENABLE.getStatus())) {
+            return;
+        }
+        // 2. 获得客户
+        CrmCustomerDO customer = customerMapper.selectById(id);
+        if (customer == null) {
+            return;
+        }
+        // 3. 已在公海中的客户不再处理
+        if (Boolean.TRUE.equals(customer.getPool())) {
+            return;
+        }
+        // 4. 优先判断「放入公海额度」：达到则直接放入公海，负责人保持不变
+        //    注意：这里用的是「总的连续失败次数」，与负责人是谁无关
+        Integer putPoolQuota = rule.getPutPoolQuota();
+        if (putPoolQuota != null && putPoolQuota > 0 && totalFailCount >= putPoolQuota) {
+            log.info("[handleCustomerFollowUpFail][客户({})连续({})次联系不上，放入公海]", id, totalFailCount);
+            // 4.1 放入公海：负责人保持不变，仅标记 pool = true
+            putCustomerPool(customer);
+            // 4.2 记录自动放入公海的操作日志
+            getSelf().putCustomerPoolLog(customer, totalFailCount);
+            return;
+        }
+        // 5. 再判断「下一个用户额度」：达到则转交给下一个用户作为负责人
+        //    注意：这里用的是「当前负责人任期内连续失败次数」，
+        //    避免新负责人继承上一任负责人的失败记录，导致连续失败次数被算错
+        Integer nextUserQuota = rule.getNextUserQuota();
+        if (nextUserQuota == null || nextUserQuota <= 0 || ownerFailCount < nextUserQuota) {
+            return;
+        }
+        // 5.1 解析下一个负责人：排除当前负责人，避免转给自己
+        Long newOwnerUserId = resolveNextOwnerUserId(customer);
+        if (newOwnerUserId == null || Objects.equals(newOwnerUserId, customer.getOwnerUserId())) {
+            log.info("[handleCustomerFollowUpFail][客户({})连续({})次联系不上，但未找到可用的下一个负责人]", id,
+                    ownerFailCount);
+            return;
+        }
+        log.info("[handleCustomerFollowUpFail][客户({})连续({})次联系不上，转交给下一个负责人({})]", id, ownerFailCount,
+                newOwnerUserId);
+        // 5.2 更新负责人与数据权限
+        transferCustomerOwner(customer, rule, newOwnerUserId);
+        // 5.3 记录自动分配的操作日志
+        getSelf().autoAssignTransferLog(customer, ownerFailCount, newOwnerUserId);
+    }
+
+    /**
+     * 转交客户的负责人，并按规则处理老负责人的数据权限
+     *
+     * <p>注意：这里不能简单地「新建一条 OWNER 权限」，否则老负责人仍然是负责人，
+     * 就会出现一个客户多个负责人的情况。因此这里使用 {@link CrmPermissionService#transferPermission}，
+     * 把老负责人的权限降级（保留在团队中）或移除（移出团队）。
+     *
+     * @param customer       客户
+     * @param rule           自动分配规则
+     * @param newOwnerUserId 新的负责人编号
+     */
+    private void transferCustomerOwner(CrmCustomerDO customer, CrmAutoAssignRuleDO rule, Long newOwnerUserId) {
+        // 1. 解析老负责人的权限级别：
+        //    老负责人保留在团队中时，按规则配置的权限级别降级；否则为 null，表示移除老负责人
+        Long oldOwnerPermissionLevel = null;
+        if (Boolean.TRUE.equals(rule.getOldOwnerHandler())) {
+            oldOwnerPermissionLevel = rule.getOldOwnerPermissionLevel();
+            // 兜底：老负责人保留在团队中时，权限级别不能为空，也不能是「负责人（OWNER）」
+            if (oldOwnerPermissionLevel == null || CrmPermissionLevelEnum.isOwner(oldOwnerPermissionLevel)) {
+                oldOwnerPermissionLevel = CrmPermissionLevelEnum.READ.getLevel();
+            }
+        }
+        // 2. 转移数据权限：新负责人成为负责人，老负责人降级或被移除
+        permissionService.transferPermission(new CrmPermissionTransferReqBO(customer.getOwnerUserId(),
+                CrmBizTypeEnum.CRM_CUSTOMER.getType(), customer.getId(), newOwnerUserId, oldOwnerPermissionLevel));
+        // 3. 转移后重新设置负责人与「成为负责人的时间」
+        //    注意：这里必须更新 ownerTime，后续统计「当前负责人任期内连续失败次数」依赖它
+        customerMapper.updateById(new CrmCustomerDO().setId(customer.getId()).setOwnerUserId(newOwnerUserId)
+                .setOwnerTime(LocalDateTime.now()));
+        // 4. 同时转移关联的业务（联系人 / 商机 / 合同）
+        List<Integer> toBizTypes = autoAssignRuleService.parseToBizTypes(rule.getToBizTypes());
+        if (CollUtil.isNotEmpty(toBizTypes)) {
+            transferRelatedBiz(customer, newOwnerUserId, toBizTypes, oldOwnerPermissionLevel);
+        }
+    }
+
+    /**
+     * 同时转移客户的关联业务（联系人 / 商机 / 合同）
+     *
+     * @param customer               客户
+     * @param newOwnerUserId         新的负责人编号
+     * @param toBizTypes             需要转移的业务类型
+     * @param oldOwnerPermissionLevel 老负责人的权限级别，为 null 时表示移除
+     */
+    private void transferRelatedBiz(CrmCustomerDO customer, Long newOwnerUserId, List<Integer> toBizTypes,
+                                    Long oldOwnerPermissionLevel) {
+        Long customerId = customer.getId();
+        Long oldOwnerUserId = customer.getOwnerUserId();
+        if (toBizTypes.contains(CrmBizTypeEnum.CRM_CONTACT.getType())) {
+            List<CrmContactDO> contactList = contactService.getContactListByCustomerIdOwnerUserId(customerId, oldOwnerUserId);
+            contactList.forEach(item -> transferRelatedBizItem(() -> contactService.transferContact(
+                    new CrmContactTransferReqVO(item.getId(), newOwnerUserId, oldOwnerPermissionLevel), oldOwnerUserId),
+                    "联系人", item.getId()));
+        }
+        if (toBizTypes.contains(CrmBizTypeEnum.CRM_BUSINESS.getType())) {
+            List<CrmBusinessDO> businessList = businessService.getBusinessListByCustomerIdOwnerUserId(customerId, oldOwnerUserId);
+            businessList.forEach(item -> transferRelatedBizItem(() -> businessService.transferBusiness(
+                    new CrmBusinessTransferReqVO(item.getId(), newOwnerUserId, oldOwnerPermissionLevel), oldOwnerUserId),
+                    "商机", item.getId()));
+        }
+        if (toBizTypes.contains(CrmBizTypeEnum.CRM_CONTRACT.getType())) {
+            List<CrmContractDO> contractList = contractService.getContractListByCustomerIdOwnerUserId(customerId, oldOwnerUserId);
+            contractList.forEach(item -> transferRelatedBizItem(() -> contractService.transferContract(
+                    new CrmContractTransferReqVO(item.getId(), newOwnerUserId, oldOwnerPermissionLevel), oldOwnerUserId),
+                    "合同", item.getId()));
+        }
+    }
+
+    /**
+     * 转移单个关联业务，失败时只记录日志，不影响整体的自动分配
+     *
+     * <p>自动分配是系统行为，单个联系人 / 商机 / 合同转移失败（例如权限校验不通过），
+     * 不应该导致整个客户的自动转交失败，因此这里吞掉异常，只记录日志。
+     *
+     * @param action     转移动作
+     * @param bizTypeName 业务类型名称
+     * @param bizId      业务编号
+     */
+    private void transferRelatedBizItem(Runnable action, String bizTypeName, Long bizId) {
+        try {
+            action.run();
+        } catch (Throwable e) {
+            log.error("[transferRelatedBizItem][{} ({}) 转移失败]", bizTypeName, bizId, e);
+        }
+    }
+
+    /**
+     * 解析「下一个负责人」
+     *
+     * <p>该场景由规则的「下一个用户额度」驱动，不受用户勾选的触发动作限制，
+     * 因此这里调用不校验触发动作的自动分配方法。
+     *
+     * @param customer 客户
+     * @return 下一个负责人编号；没有可用的负责人时返回 null
+     */
+    private Long resolveNextOwnerUserId(CrmCustomerDO customer) {
+        // 1. 拿到可分配的负责人总数，作为循环的最大次数
+        Long ownerCount = autoAssignRuleService.getAssignableOwnerUserTotal();
+        if (ownerCount == null || ownerCount <= 0) {
+            return null;
+        }
+        CrmCustomerAssignConditionDto condition = new CrmCustomerAssignConditionDto(customer.getSource(),
+                customer.getIndustryId(), customer.getLevel());
+        Long ruleId = autoAssignRuleService.getAutoAssignRuleId();
+        // 2. 循环获取负责人：每次获取到的负责人都校验上限，达到上限则跳过该负责人，继续获取下一个
+        for (int i = 0; i < ownerCount; i++) {
+            Long nextOwnerUserId = autoAssignRuleService.getNextOwnerUserIdIgnoreTriggerAction(condition);
+            // 没有可用的负责人（规则未启用 / 不满足适用范围条件 / 候选人员已耗尽）
+            if (nextOwnerUserId == null) {
+                break;
+            }
+            // 需要排除的负责人（当前负责人），跳过他并推进规则
+            if (Objects.equals(customer.getOwnerUserId(), nextOwnerUserId)) {
+                log.info("[resolveNextOwnerUserId][负责人({})为当前负责人，自动分配下一个负责人]", nextOwnerUserId);
+                autoAssignRuleService.skipCurrentAssignee(ruleId, nextOwnerUserId);
+                continue;
+            }
+            // 该负责人拥有的客户数未达到上限，直接使用
+            if (!isCustomerExceedOwnerLimit(nextOwnerUserId, 1)) {
+                return nextOwnerUserId;
+            }
+            // 达到上限，则跳过该负责人，把规则推进到下一个负责人
+            log.info("[resolveNextOwnerUserId][负责人({})拥有的客户数已达到上限，自动分配下一个负责人]", nextOwnerUserId);
+            autoAssignRuleService.skipCurrentAssignee(ruleId, nextOwnerUserId);
+        }
+        return null;
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     @LogRecord(type = CRM_CUSTOMER_TYPE, subType = CRM_CUSTOMER_DELETE_SUB_TYPE, bizNo = "{{#id}}",
             success = CRM_CUSTOMER_DELETE_SUCCESS)
@@ -506,8 +686,8 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
         if (customer == null) {
             throw exception(CUSTOMER_NOT_EXISTS);
         }
-        // 1.2. 校验是否为公海数据
-        validateCustomerOwnerExists(customer, true);
+        // 1.2. 校验客户是否已在公海中
+        validateCustomerNotInPool(customer);
         // 1.3. 校验客户是否锁定
         validateCustomerIsLocked(customer, true);
 
@@ -530,8 +710,8 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
         adminUserApi.validateUserList(singletonList(ownerUserId));
         // 1.3 校验状态
         customers.forEach(customer -> {
-            // 校验是否已有负责人
-            validateCustomerOwnerExists(customer, false);
+            // 校验是否在公海中
+            validateCustomerInPool(customer);
             // 校验是否锁定
             validateCustomerIsLocked(customer, false);
             // 校验成交状态
@@ -544,9 +724,9 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
         List<CrmCustomerDO> updateCustomers = new ArrayList<>();
         List<CrmPermissionCreateReqBO> createPermissions = new ArrayList<>();
         customers.forEach(customer -> {
-            // 2.1. 设置负责人
+            // 2.1. 设置负责人，并退出公海（pool = false）
             updateCustomers.add(new CrmCustomerDO().setId(customer.getId())
-                    .setOwnerUserId(ownerUserId).setOwnerTime(LocalDateTime.now()));
+                    .setOwnerUserId(ownerUserId).setOwnerTime(LocalDateTime.now()).setPool(Boolean.FALSE));
             // 2.2. 创建负责人数据权限
             createPermissions.add(new CrmPermissionCreateReqBO().setBizType(CrmBizTypeEnum.CRM_CUSTOMER.getType())
                     .setBizId(customer.getId()).setUserId(ownerUserId).setLevel(CrmPermissionLevelEnum.OWNER.getLevel()));
@@ -564,6 +744,71 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
         }
         for (CrmCustomerDO customer : customers) {
             getSelf().receiveCustomerLog(customer, user == null ? null : user.getNickname());
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void distributeCustomer(List<Long> ids, Long ownerUserId) {
+        // 1.1 校验存在
+        List<CrmCustomerDO> customers = customerMapper.selectByIds(ids);
+        if (customers.size() != ids.size()) {
+            throw exception(CUSTOMER_NOT_EXISTS);
+        }
+        // 1.2 指定了负责人：校验负责人是否存在
+        if (ObjUtil.isNotEmpty(ownerUserId)) {
+            adminUserApi.validateUserList(singletonList(ownerUserId));
+        }
+        // 1.3 校验状态
+        customers.forEach(customer -> {
+            // 校验是否在公海中
+            validateCustomerInPool(customer);
+            // 校验是否锁定
+            validateCustomerIsLocked(customer, false);
+            // 校验成交状态
+            validateCustomerDeal(customer);
+        });
+
+        // 2. 逐个解析客户的负责人：指定了负责人则用指定的；
+        //    未指定负责人则走自动分配规则（触发动作 = 公海分配），每个客户单独计算
+        Map<Long, Long> customerOwnerMap = new LinkedHashMap<>();
+        if (ObjUtil.isNotEmpty(ownerUserId)) {
+            // 2.1 校验负责人是否到达上限
+            validateCustomerExceedOwnerLimit(ownerUserId, customers.size());
+            customers.forEach(customer -> customerOwnerMap.put(customer.getId(), ownerUserId));
+        } else {
+            // 2.2 自动分配：逐个客户解析负责人
+            for (CrmCustomerDO customer : customers) {
+                Long newOwnerUserId = resolveOwnerUserId(null, customer.getSource(), customer.getIndustryId(),
+                        customer.getLevel(), CrmAutoAssignRuleTriggerActionsEnum.TRIGGER_ACTIONS_4, null);
+                customerOwnerMap.put(customer.getId(), newOwnerUserId);
+            }
+        }
+
+        // 3. 更新客户负责人，并退出公海（pool = false）
+        List<CrmCustomerDO> updateCustomers = new ArrayList<>();
+        List<CrmPermissionCreateReqBO> createPermissions = new ArrayList<>();
+        customers.forEach(customer -> {
+            Long newOwnerUserId = customerOwnerMap.get(customer.getId());
+            // 3.1. 设置负责人，并退出公海
+            updateCustomers.add(new CrmCustomerDO().setId(customer.getId())
+                    .setOwnerUserId(newOwnerUserId).setOwnerTime(LocalDateTime.now()).setPool(Boolean.FALSE));
+            // 3.2. 创建负责人数据权限
+            createPermissions.add(new CrmPermissionCreateReqBO().setBizType(CrmBizTypeEnum.CRM_CUSTOMER.getType())
+                    .setBizId(customer.getId()).setUserId(newOwnerUserId).setLevel(CrmPermissionLevelEnum.OWNER.getLevel()));
+        });
+        customerMapper.updateBatch(updateCustomers);
+        // 3.3 创建负责人数据权限
+        permissionService.createPermissionBatch(createPermissions);
+
+        // 4. 记录操作日志
+        Map<Long, String> ownerNameMap = new HashMap<>();
+        for (Long userId : new HashSet<>(customerOwnerMap.values())) {
+            AdminUserRespDTO user = adminUserApi.getUser(userId);
+            ownerNameMap.put(userId, user == null ? null : user.getNickname());
+        }
+        for (CrmCustomerDO customer : customers) {
+            getSelf().receiveCustomerLog(customer, ownerNameMap.get(customerOwnerMap.get(customer.getId())));
         }
     }
 
@@ -590,19 +835,13 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
 
     @Transactional(rollbackFor = Exception.class) // 需要 protected 修饰，因为需要在事务中调用
     protected void putCustomerPool(CrmCustomerDO customer) {
-        // 1. 设置负责人为 NULL
-        int updateOwnerUserIncr = customerMapper.updateOwnerUserIdById(customer.getId(), null);
+        // 1. 标记为公海数据：pool = true
+        // 注意：负责人保持不变，负责人相当于该客户的「公海管理员」；
+        //      这里只更新 pool 字段，不动 ownerUserId 与 ownerTime
+        int updateOwnerUserIncr = customerMapper.updatePoolById(customer.getId(), Boolean.TRUE);
         if (updateOwnerUserIncr == 0) {
             throw exception(CUSTOMER_UPDATE_OWNER_USER_FAIL);
         }
-
-        // 2. 联系人的负责人，也要设置为 null。因为：因为领取后，负责人也要关联过来，这块和 receiveCustomer 是对应的
-        contactService.updateOwnerUserIdByCustomerId(customer.getId(), null);
-
-        // 3. 删除负责人数据权限
-        // 注意：需要放在 contactService 后面，不然【客户】数据权限已经被删除，无法操作！
-        permissionService.deletePermission(CrmBizTypeEnum.CRM_CUSTOMER.getType(), customer.getId(),
-                CrmPermissionLevelEnum.OWNER.getLevel());
     }
 
     @LogRecord(type = CRM_CUSTOMER_TYPE, subType = CRM_CUSTOMER_RECEIVE_SUB_TYPE, bizNo = "{{#customer.id}}",
@@ -611,6 +850,37 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
         // 记录操作日志上下文
         LogRecordContext.putVariable("customer", customer);
         LogRecordContext.putVariable("ownerUserName", ownerUserName);
+    }
+
+    /**
+     * 记录「自动放入公海」的操作日志
+     *
+     * @param customer  客户
+     * @param failCount 连续联系不上的次数
+     */
+    @LogRecord(type = CRM_CUSTOMER_TYPE, subType = CRM_CUSTOMER_AUTO_ASSIGN_POOL_SUB_TYPE, bizNo = "{{#customer.id}}",
+            success = CRM_CUSTOMER_AUTO_ASSIGN_POOL_SUCCESS)
+    public void putCustomerPoolLog(CrmCustomerDO customer, int failCount) {
+        // 记录操作日志上下文
+        LogRecordContext.putVariable("customer", customer);
+        LogRecordContext.putVariable("failCount", failCount);
+    }
+
+    /**
+     * 记录「自动分配负责人」的操作日志
+     *
+     * @param customer       客户
+     * @param failCount      当前负责人任期内连续联系不上的次数
+     * @param newOwnerUserId 新的负责人编号
+     */
+    @LogRecord(type = CRM_CUSTOMER_TYPE, subType = CRM_CUSTOMER_AUTO_ASSIGN_TRANSFER_SUB_TYPE, bizNo = "{{#customer.id}}",
+            success = CRM_CUSTOMER_AUTO_ASSIGN_TRANSFER_SUCCESS)
+    public void autoAssignTransferLog(CrmCustomerDO customer, int failCount, Long newOwnerUserId) {
+        // 记录操作日志上下文
+        LogRecordContext.putVariable("customer", customer);
+        LogRecordContext.putVariable("failCount", failCount);
+        LogRecordContext.putVariable("oldOwnerUserId", customer.getOwnerUserId());
+        LogRecordContext.putVariable("newOwnerUserId", newOwnerUserId);
     }
 
     //======================= 查询相关 =======================
@@ -738,17 +1008,34 @@ public class CrmCustomerServiceImpl implements CrmCustomerService {
         validateCustomerExists(id);
     }
 
-    private void validateCustomerOwnerExists(CrmCustomerDO customer, Boolean pool) {
+    /**
+     * 校验客户是否在公海中
+     *
+     * <p>公海数据的判定依据是 pool 字段，与负责人是否存在无关：
+     * 客户进入公海后，负责人相当于该客户的「公海管理员」，会被保留。
+     *
+     * @param customer 客户
+     */
+    private void validateCustomerInPool(CrmCustomerDO customer) {
         if (customer == null) { // 防御一下
             throw exception(CUSTOMER_NOT_EXISTS);
         }
-        // 校验是否为公海数据
-        if (pool && customer.getOwnerUserId() == null) {
-            throw exception(CUSTOMER_IN_POOL, customer.getName());
+        if (!Boolean.TRUE.equals(customer.getPool())) {
+            throw exception(CUSTOMER_NOT_IN_POOL, customer.getName());
         }
-        // 负责人已存在
-        if (!pool && customer.getOwnerUserId() != null) {
-            throw exception(CUSTOMER_OWNER_EXISTS, customer.getName());
+    }
+
+    /**
+     * 校验客户是否不在公海中
+     *
+     * @param customer 客户
+     */
+    private void validateCustomerNotInPool(CrmCustomerDO customer) {
+        if (customer == null) { // 防御一下
+            throw exception(CUSTOMER_NOT_EXISTS);
+        }
+        if (Boolean.TRUE.equals(customer.getPool())) {
+            throw exception(CUSTOMER_IN_POOL, customer.getName());
         }
     }
 

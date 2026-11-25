@@ -78,20 +78,20 @@ public class CrmAutoAssignRuleExcelVO {
     private Integer isRoundRobin;
 
     /**
-    * 是否放入公海
-    */
-    @ExcelProperty(value = "是否放入公海", converter = DictConvert.class)
-    @ExcelColumnSelect(dictType = "common_status", i18n = true)
-    @ExcelI18n(i18nKey = "crm.autoAssignRule.field.isPutPool")
-    @I18nNotNull(i18nKey = "crm.autoAssignRule.back.isPutPool.notNull", message = "是否放入公海不能为空")
-    private Integer isPutPool;
+     * 放入公海额度
+     */
+    @ExcelProperty("放入公海额度")
+    @ExcelI18n(i18nKey = "crm.autoAssignRule.field.putPoolQuota")
+    @I18nNotNull(i18nKey = "crm.autoAssignRule.back.putPoolQuota.notNull", message = "放入公海额度不能为空")
+    private Integer putPoolQuota;
 
     /**
-    * 放入公海额度
-    */
-    @ExcelProperty("放入公海额度")
-    @ExcelI18n(i18nKey = "crm.autoAssignRule.field.isPutPoolQuota")
-    private Integer isPutPoolQuota;
+     * 下一个用户额度
+     */
+    @ExcelProperty("下一个用户额度")
+    @ExcelI18n(i18nKey = "crm.autoAssignRule.field.nextUserQuota")
+    @I18nNotNull(i18nKey = "crm.autoAssignRule.back.nextUserQuota.notNull", message = "下一个用户额度不能为空")
+    private Integer nextUserQuota;
 
     /**
     * 当前分配游标索引
@@ -109,11 +109,36 @@ public class CrmAutoAssignRuleExcelVO {
     private Long currentAssigneeId;
 
     /**
-    * 当前分配员工额度
-    */
+     * 当前分配员工额度
+     */
     @ExcelProperty("当前分配员工额度")
     @ExcelI18n(i18nKey = "crm.autoAssignRule.field.currentRemainQuota")
     @I18nNotNull(i18nKey = "crm.autoAssignRule.back.currentRemainQuota.notNull", message = "当前分配员工额度不能为空")
     private Integer currentRemainQuota;
+
+    /**
+     * 老负责人处理方式
+     */
+    @ExcelProperty(value = "老负责人处理方式", converter = DictConvert.class)
+    @ExcelColumnSelect(dictType = "common_whether", i18n = true)
+    @ExcelI18n(i18nKey = "crm.autoAssignRule.field.oldOwnerHandler")
+    private Boolean oldOwnerHandler;
+
+    /**
+     * 老负责人权限级别
+     */
+    @ExcelProperty(value = "老负责人权限级别", converter = DictConvert.class)
+    @ExcelColumnSelect(dictType = "crm_permission_level", i18n = true)
+    @ExcelI18n(i18nKey = "crm.autoAssignRule.field.oldOwnerPermissionLevel")
+    private Long oldOwnerPermissionLevel;
+
+    /**
+     * 同时转移的关联业务类型
+     *
+     * <p>数据库中以 JSON 数组字符串存储，导出时原样输出
+     */
+    @ExcelProperty("同时转移")
+    @ExcelI18n(i18nKey = "crm.autoAssignRule.field.toBizTypes")
+    private String toBizTypes;
 
 }

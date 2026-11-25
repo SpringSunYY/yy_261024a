@@ -75,3 +75,14 @@ VALUES ('跟进记录-下次联系时间不能为空', 'crm.followUpRecord.back.
 DELETE FROM infra_i18n_message WHERE message_key = 'crm.followUpRecord.back.nextTime.notNull' AND locale = @LOCALE_ZH_CN;
 INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
 VALUES ('跟进记录-下次联系时间不能为空', 'crm.followUpRecord.back.nextTime.notNull', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '下次联系时间不能为空', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 6. 跟进记录-联系时间不能为空
+DELETE FROM infra_i18n_key WHERE message_key = 'crm.followUpRecord.back.contactTime.notNull';
+INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('跟进记录-联系时间不能为空', 'crm.followUpRecord.back.contactTime.notNull', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.followUpRecord.back.contactTime.notNull' AND locale = @LOCALE_EN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('跟进记录-联系时间不能为空', 'crm.followUpRecord.back.contactTime.notNull', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, 'follow-up record contact time cannot be empty', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.followUpRecord.back.contactTime.notNull' AND locale = @LOCALE_ZH_CN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('跟进记录-联系时间不能为空', 'crm.followUpRecord.back.contactTime.notNull', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_EXCEPTION, '联系时间不能为空', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);

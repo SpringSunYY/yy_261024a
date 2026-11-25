@@ -5,6 +5,15 @@ export const CommonStatusEnum = {
   DISABLE: 1, // 禁用
 };
 
+// 全局是否枚举
+export const CommonWhether = {
+  /** 是 */
+  WHETHER_0: 0,
+
+  /** 否 */
+  WHETHER_1: 1,
+} as const;
+
 // 全局用户类型枚举
 export const UserTypeEnum = {
   MEMBER: 1, // 会员

@@ -35,6 +35,14 @@ public class CrmCustomerRespVO {
     @ExcelI18n(i18nKey = "crm.customer.field.followUpStatus")
     private Boolean followUpStatus;
 
+    /**
+     * 初次成交时间
+     */
+    @Schema(description = "初次成交时间")
+    @ExcelProperty("初次成交时间")
+    @ExcelI18n(i18nKey = "crm.customer.field.firstTransactionTime")
+    private LocalDateTime firstTransactionTime;
+
     @Schema(description = "最后跟进时间")
     @ExcelProperty("最后跟进时间")
     @ExcelI18n(i18nKey = "crm.customer.field.contactLastTime")
@@ -74,6 +82,9 @@ public class CrmCustomerRespVO {
     @DictFormat(DictTypeConstants.BOOLEAN_STRING)
     @ExcelI18n(i18nKey = "crm.customer.field.dealStatus")
     private Boolean dealStatus;
+
+    @Schema(description = "是否在公海中", requiredMode = Schema.RequiredMode.REQUIRED, example = "false")
+    private Boolean pool;
 
     @Schema(description = "手机", example = "25682")
     @ExcelProperty("手机")

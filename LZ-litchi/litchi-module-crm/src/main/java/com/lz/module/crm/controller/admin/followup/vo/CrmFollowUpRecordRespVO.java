@@ -1,5 +1,6 @@
 package com.lz.module.crm.controller.admin.followup.vo;
 
+import com.lz.framework.common.validation.i18n.I18nNotNull;
 import com.lz.framework.excel.core.annotations.ExcelColumnSelect;
 import com.lz.framework.excel.core.annotations.ExcelI18n;
 import com.lz.module.crm.controller.admin.business.vo.business.CrmBusinessRespVO;
@@ -33,8 +34,21 @@ public class CrmFollowUpRecordRespVO {
     @ExcelI18n(i18nKey = "crm.followUpRecord.field.type")
     private Integer type;
 
+    /**
+     * 联系成功
+     */
+    @Schema(description = "联系成功", requiredMode = Schema.RequiredMode.REQUIRED)
+    @ExcelColumnSelect(dictType = "common_whether", i18n = true)
+    @ExcelI18n(i18nKey = "crm.followUpRecord.field.isSuccess")
+    @I18nNotNull(i18nKey = "crm.followUpRecord.back.isSuccess.notNull", message = "联系成功不能为空")
+    private Integer isSuccess;
+
+
     @Schema(description = "跟进内容", requiredMode = Schema.RequiredMode.REQUIRED)
     private String content;
+
+    @Schema(description = "联系时间", requiredMode = Schema.RequiredMode.REQUIRED)
+    private LocalDateTime contactTime;
 
     @Schema(description = "下次联系时间", requiredMode = Schema.RequiredMode.REQUIRED)
     private LocalDateTime nextTime;

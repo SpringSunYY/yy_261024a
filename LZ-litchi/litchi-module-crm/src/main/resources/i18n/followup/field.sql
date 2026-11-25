@@ -164,7 +164,18 @@ DELETE FROM infra_i18n_message WHERE message_key = 'crm.followUpRecord.field.cre
 INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
 VALUES ('跟进记录-创建时间', 'crm.followUpRecord.field.createTime', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_FILED, '创建时间', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
 
--- 14. 更新时间
+-- 14. 联系时间
+DELETE FROM infra_i18n_key WHERE message_key = 'crm.followUpRecord.field.contactTime';
+INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('跟进记录-联系时间', 'crm.followUpRecord.field.contactTime', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_FILED, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.followUpRecord.field.contactTime' AND locale = @LOCALE_EN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('跟进记录-联系时间', 'crm.followUpRecord.field.contactTime', @LOCALE_EN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_FILED, 'contact time', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+DELETE FROM infra_i18n_message WHERE message_key = 'crm.followUpRecord.field.contactTime' AND locale = @LOCALE_ZH_CN;
+INSERT INTO infra_i18n_message (message_name, message_key, locale, locale_target, is_system, module_type, use_type, message, remark, creator, create_time, updater, update_time, deleted)
+VALUES ('跟进记录-联系时间', 'crm.followUpRecord.field.contactTime', @LOCALE_ZH_CN, @LOCALE_TARGET_BACKEND, @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_FILED, '联系时间', @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);
+
+-- 15. 更新时间
 DELETE FROM infra_i18n_key WHERE message_key = 'crm.followUpRecord.field.updateTime';
 INSERT INTO infra_i18n_key (message_name, message_key, is_system, module_type, use_type, order_num, remark, creator, create_time, updater, update_time, deleted)
 VALUES ('跟进记录-更新时间', 'crm.followUpRecord.field.updateTime', @IS_SYSTEM, @MODULE_TYPE, @USE_TYPE_FILED, @ORDER_NUM, @REMARK, @CREATOR, NOW(), @CREATOR, NOW(), 0);

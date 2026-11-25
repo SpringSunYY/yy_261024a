@@ -58,6 +58,8 @@ public class CrmAutoAssignRuleServiceImpl implements CrmAutoAssignRuleService {
         CrmAutoAssignRuleDO rule = BeanUtils.toBean(saveReqVO, CrmAutoAssignRuleDO.class);
         // 2. 触发动作：组装成 JSON 数组字符串存储
         rule.setTriggerActions(serializeTriggerActions(saveReqVO.getTriggerActions()));
+        // 2.1 同时转移的关联业务类型：组装成 JSON 数组字符串存储
+        rule.setToBizTypes(serializeToBizTypes(saveReqVO.getToBizTypes()));
         // 3. 具体条件：组装成 DTO 后序列化为 JSON 存储
         rule.setScopeConditions(serializeScopeConditions(buildScopeCondition(saveReqVO)));
         // 4. 处理当前分配员工：校验 + 计算游标索引
@@ -169,6 +171,8 @@ public class CrmAutoAssignRuleServiceImpl implements CrmAutoAssignRuleService {
         CrmAutoAssignRuleRespVO respVO = BeanUtils.toBean(rule, CrmAutoAssignRuleRespVO.class);
         // 触发动作：从 JSON 解析为列表
         respVO.setTriggerActions(parseTriggerActions(rule.getTriggerActions()));
+        // 同时转移的关联业务类型：从 JSON 解析为列表
+        respVO.setToBizTypes(parseToBizTypes(rule.getToBizTypes()));
         // 具体条件：从 JSON 解析为 DTO，再回填到各个条件字段
         CrmAutoAssignRuleScopeConditionDTO scopeCondition = parseScopeConditions(rule.getScopeConditions());
         if (scopeCondition != null) {
@@ -242,6 +246,26 @@ public class CrmAutoAssignRuleServiceImpl implements CrmAutoAssignRuleService {
     }
 
     @Override
+    public List<Integer> parseToBizTypes(String toBizTypes) {
+        if (StrUtil.isBlank(toBizTypes)) {
+            return Collections.emptyList();
+        }
+        try {
+            List<Integer> list = JsonUtils.parseObject(toBizTypes, new TypeReference<List<Integer>>() {
+            });
+            return list != null ? list : Collections.emptyList();
+        } catch (Exception e) {
+            log.warn("[parseToBizTypes][解析同时转移的关联业务类型失败({})]", toBizTypes, e);
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public String serializeToBizTypes(List<Integer> toBizTypes) {
+        return CollUtil.isEmpty(toBizTypes) ? null : JsonUtils.toJsonString(toBizTypes);
+    }
+
+    @Override
     public PageResult<CrmAutoAssignRuleDO> getAutoAssignRulePage(CrmAutoAssignRulePageReqVO pageReqVO) {
         return autoAssignRuleMapper.selectPage(pageReqVO);
     }
@@ -254,6 +278,8 @@ public class CrmAutoAssignRuleServiceImpl implements CrmAutoAssignRuleService {
             CrmAutoAssignRuleRespVO respVO = BeanUtils.toBean(rule, CrmAutoAssignRuleRespVO.class);
             // 触发动作：从 JSON 解析为列表
             respVO.setTriggerActions(parseTriggerActions(rule.getTriggerActions()));
+            // 同时转移的关联业务类型：从 JSON 解析为列表
+            respVO.setToBizTypes(parseToBizTypes(rule.getToBizTypes()));
             // 具体条件：从 JSON 解析为 DTO，再回填到各个条件字段
             CrmAutoAssignRuleScopeConditionDTO scopeCondition = parseScopeConditions(rule.getScopeConditions());
             if (scopeCondition != null) {
@@ -433,6 +459,30 @@ public class CrmAutoAssignRuleServiceImpl implements CrmAutoAssignRuleService {
                 || !triggerActions.contains(NumberUtil.parseInt(triggerAction, -1))) {
             return null;
         }
+        return doGetNextOwnerUserId(rule, condition);
+    }
+
+    @Override
+    public Long getNextOwnerUserIdIgnoreTriggerAction(CrmCustomerAssignConditionDto condition) {
+        //首先获得规则
+        CrmAutoAssignRuleDO rule = this.getAutoAssignRule();
+        //校验规则是否启用
+        if (rule == null
+                || !Objects.equals(rule.getIsEnabled(), CommonStatusEnum.ENABLE.getStatus())) {
+            return null;
+        }
+        // 不校验触发动作：跳过 getNextOwnerUserId 中的 triggerActions 判断
+        return doGetNextOwnerUserId(rule, condition);
+    }
+
+    /**
+     * 获得下一个负责人（公共逻辑）
+     *
+     * @param rule      规则
+     * @param condition 具体条件
+     * @return 负责人编号；没有可用的负责人时返回 null
+     */
+    private Long doGetNextOwnerUserId(CrmAutoAssignRuleDO rule, CrmCustomerAssignConditionDto condition) {
         //判断是否是可以走规则
         boolean canExecute = false;
         //如果是全部条件,就不需要判断

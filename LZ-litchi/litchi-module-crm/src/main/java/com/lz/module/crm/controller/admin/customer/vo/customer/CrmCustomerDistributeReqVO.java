@@ -1,7 +1,6 @@
 package com.lz.module.crm.controller.admin.customer.vo.customer;
 
 import com.lz.framework.common.validation.i18n.I18nNotEmpty;
-import com.lz.framework.common.validation.i18n.I18nNotNull;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
@@ -15,8 +14,12 @@ public class CrmCustomerDistributeReqVO {
     @I18nNotEmpty(i18nKey = "crm.customer.back.ids.notEmpty", message = "客户编号不能为空")
     private List<Long> ids;
 
-    @Schema(description = "负责人", requiredMode = Schema.RequiredMode.REQUIRED, example = "1024")
-    @I18nNotNull(i18nKey = "crm.customer.back.ownerUserId.distribute.notNull", message = "负责人不能为空")
+    /**
+     * 负责人
+     *
+     * <p>为空时，走自动分配规则（触发动作 = 公海分配），由系统自动分配负责人
+     */
+    @Schema(description = "负责人，为空时走自动分配规则", example = "1024")
     private Long ownerUserId;
 
 }

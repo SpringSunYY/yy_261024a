@@ -59,4 +59,7 @@ export const CrmAutoAssignRuleTriggerActions = {
 
   /** 导入 */
   TRIGGER_ACTIONS_3: 3,
+
+  /** 公海分配 */
+  TRIGGER_ACTIONS_4: 4,
 } as const;

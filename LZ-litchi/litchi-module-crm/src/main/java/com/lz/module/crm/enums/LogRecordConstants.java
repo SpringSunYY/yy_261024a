@@ -47,6 +47,10 @@ public interface LogRecordConstants {
     String CRM_CUSTOMER_UPDATE_DEAL_STATUS_SUCCESS = "更新了客户【{{#customerName}}】的成交状态为【{{#dealStatus ? '已成交' : '未成交'}}】";
     String CRM_CUSTOMER_FOLLOW_UP_SUB_TYPE = "客户跟进";
     String CRM_CUSTOMER_FOLLOW_UP_SUCCESS = "客户跟进【{{#customerName}}】";
+    String CRM_CUSTOMER_AUTO_ASSIGN_POOL_SUB_TYPE = "自动放入公海";
+    String CRM_CUSTOMER_AUTO_ASSIGN_POOL_SUCCESS = "客户【{{#customer.name}}】连续【{{#failCount}}】次联系不上，已自动放入公海";
+    String CRM_CUSTOMER_AUTO_ASSIGN_TRANSFER_SUB_TYPE = "自动分配负责人";
+    String CRM_CUSTOMER_AUTO_ASSIGN_TRANSFER_SUCCESS = "客户【{{#customer.name}}】连续【{{#failCount}}】次联系不上，已将负责人从【{getAdminUserById{#customer.ownerUserId}}】自动变更为【{getAdminUserById{#newOwnerUserId}}】";
 
     // ======================= CRM_CUSTOMER_LIMIT_CONFIG 客户限制配置 =======================
 

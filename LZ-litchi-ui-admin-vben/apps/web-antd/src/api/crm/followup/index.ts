@@ -24,6 +24,7 @@ export namespace CrmFollowUpApi {
     content: string; // 跟进内容
     picUrls: string[]; // 图片
     fileUrls: string[]; // 附件
+    contactTime: Date; // 联系时间（本次实际联系客户的时间，不分业务类型，必选）
     nextTime: Date; // 下次联系时间
     businessIds: number[]; // 关联的商机编号数组
     businesses: Business[]; // 关联的商机数组

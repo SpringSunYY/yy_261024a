@@ -40,7 +40,7 @@ const [Form, formApi] = useVbenForm({
     componentProps: {
       class: 'w-full',
     },
-    labelWidth: 120,
+    labelWidth: 140,
   },
   // 一行两列
   wrapperClass: 'grid-cols-2',
